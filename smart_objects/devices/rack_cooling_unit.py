@@ -1,7 +1,7 @@
 import logging
 import time
 from typing import Dict, Any, Optional
-
+import paho.mqtt.client as mqtt
 from .SmartObject import SmartObject
 from ..resources.sensors.temperature_sensor import TemperatureSensor
 from ..resources.actuators.fan_actuator import FanActuator
@@ -13,9 +13,9 @@ class RackCoolingUnit(SmartObject):
     TEMP_THRESHOLD_HIGH = 35.0  # Above this, increase fan speed
     TEMP_THRESHOLD_CRITICAL = 40.0  # Above this, maximum fan speed
 
-    def __init__(self, object_id: str, location: str):
+    def __init__(self, object_id: str, location: str, mqtt_client: mqtt.Client = None):
 
-        super().__init__(object_id, location)
+        super().__init__(object_id, location, mqtt_client)
 
         self.resource_map["temperature"] = TemperatureSensor(f"{object_id}_temp")
         self.resource_map["fan"] = FanActuator(f"{object_id}_fan")
