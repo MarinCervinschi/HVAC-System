@@ -9,7 +9,7 @@ import threading
 class TemperatureSensor(Sensor):
 
     RESOURCE_TYPE: ClassVar[str] = "iot:sensor:temperature🌡️"
-    UNIT= ClassVar[str] = "Celsius"
+    UNIT: ClassVar[str] = "Celsius"
     DATA_TYPE: ClassVar[type] = float
     DEFAULT_MIN_TEMP: ClassVar[float] = 25.0
     DEFAULT_MAX_TEMP: ClassVar[float] = 45.0
@@ -33,7 +33,7 @@ class TemperatureSensor(Sensor):
         self.logger = logging.getLogger(f"{__name__}.{resource_id}")
         self._timer = None
 
-        self.measure()
+        self.start_periodic_event_value_update_task()
 
     def measure(self) -> None:
         try:
@@ -84,7 +84,6 @@ class TemperatureSensor(Sensor):
             self.logger.debug(
                 f"Stopped periodic temperature measurement task for {self.resource_id}."
             )
-
 
     def to_dict(self) -> Dict[str, Any]:
         return {

@@ -19,8 +19,9 @@ class Actuator(SmartObjectResource[Dict[str, Any]], ABC):
         is_operational: bool = True,
     ):
 
-        super().__init__(resource_id, data_type=self.DATA_TYPE)
+        super().__init__(resource_id)
         self.type = type
+        self.data_type = self.DATA_TYPE
         self.is_operational = is_operational
 
         self.logger = logging.getLogger(f"{__name__}.{resource_id}")

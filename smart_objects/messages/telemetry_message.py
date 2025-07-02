@@ -2,7 +2,7 @@ from dataclasses import asdict
 import time
 import json
 from typing import Any, Dict
-from messages.GenericMessage import GenericMessage
+from .GenericMessage import GenericMessage
 
 
 class TelemetryMessage(GenericMessage):
@@ -26,3 +26,9 @@ class TelemetryMessage(GenericMessage):
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)
+
+    def __str__(self) -> str:
+        return f"TelemetryMessage(type='{self.type}', data_value={self.data_value}, timestamp={self.timestamp})"
+
+    def __repr__(self) -> str:
+        return self.__str__()

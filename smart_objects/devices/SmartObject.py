@@ -7,7 +7,7 @@ import logging
 from smart_objects.resources.SmartObjectResource import SmartObjectResource
 from ..messages.telemetry_message import TelemetryMessage
 from smart_objects.resources.ResourceDataListener import ResourceDataListener
-from ...config.mqtt_conf_params import MqttConfigurationParameters
+from config.mqtt_conf_params import MqttConfigurationParameters
 
 T = TypeVar("T")
 
@@ -69,7 +69,7 @@ class SmartObject(ABC, Generic[T]):
                     continue
 
                 self.logger.info(
-                    f"Registering resource {name} with ID {resource.resource_id}"
+                    f"Registering resource {resource.type} with ID {resource.resource_id}"
                 )
 
                 listener = self._get_listener(
@@ -108,9 +108,7 @@ class SmartObject(ABC, Generic[T]):
 
         return Listener()
 
-    def _publish_telemetry_data(
-        self, topic: str, telemetry_message: TelemetryMessage[Any]
-    ):
+    def _publish_telemetry_data(self, topic: str, telemetry_message: TelemetryMessage):
         try:
             if topic is None or telemetry_message is None:
                 self.logger.error("Topic or telemetry_message is None!")

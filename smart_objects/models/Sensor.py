@@ -17,8 +17,9 @@ class Sensor(SmartObjectResource[float], ABC):
         min: float,
         max: float,
     ):
-        super().__init__(resource_id, data_type)
+        super().__init__(resource_id)
         self.type = type
+        self.data_type = data_type
         self.value = value
         self.unit = unit
         self.timestamp = timestamp
