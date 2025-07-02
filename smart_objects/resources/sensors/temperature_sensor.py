@@ -10,6 +10,7 @@ class TemperatureSensor(Sensor):
 
     RESOURCE_TYPE: ClassVar[str] = "iot:sensor:temperature🌡️"
     UNIT= ClassVar[str] = "Celsius"
+    DATA_TYPE: ClassVar[type] = float
     DEFAULT_MIN_TEMP: ClassVar[float] = 25.0
     DEFAULT_MAX_TEMP: ClassVar[float] = 45.0
     MEASUREMENT_PRECISION: ClassVar[int] = 2
@@ -21,6 +22,7 @@ class TemperatureSensor(Sensor):
         super().__init__(
             resource_id=resource_id,
             type=self.RESOURCE_TYPE,
+            data_type=self.DATA_TYPE,
             value=0.0,
             unit=self.UNIT,
             timestamp=0,

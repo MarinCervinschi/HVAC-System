@@ -10,6 +10,8 @@ T = TypeVar("T")
 
 class Actuator(SmartObjectResource[Dict[str, Any]], ABC):
 
+    DATA_TYPE: T = Dict[str, Any]
+
     def __init__(
         self,
         resource_id: str,
@@ -17,7 +19,7 @@ class Actuator(SmartObjectResource[Dict[str, Any]], ABC):
         is_operational: bool = True,
     ):
 
-        super().__init__(resource_id)
+        super().__init__(resource_id, data_type=self.DATA_TYPE)
         self.type = type
         self.is_operational = is_operational
 

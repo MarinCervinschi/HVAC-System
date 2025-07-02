@@ -8,6 +8,8 @@ T = TypeVar("T")
 
 class SmartObjectResource(ABC, Generic[T]):
     def __init__(self, resource_id: str):
+        self.type: str = None
+        self.data_type: T = None
         self.resource_id: str = resource_id
         self.resource_listener_list: List[ResourceDataListener] = []
 

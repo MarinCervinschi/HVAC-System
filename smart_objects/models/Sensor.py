@@ -1,5 +1,8 @@
 from ..resources.SmartObjectResource import SmartObjectResource
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
+
+T = TypeVar("T")
 
 
 class Sensor(SmartObjectResource[float], ABC):
@@ -7,13 +10,14 @@ class Sensor(SmartObjectResource[float], ABC):
         self,
         resource_id: str,
         type: str,
+        data_type: T,
         value: float,
         unit: str,
         timestamp: int,
         min: float,
         max: float,
     ):
-        super().__init__(resource_id)
+        super().__init__(resource_id, data_type)
         self.type = type
         self.value = value
         self.unit = unit
