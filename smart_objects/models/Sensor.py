@@ -30,6 +30,16 @@ class Sensor(SmartObjectResource[float], ABC):
         """Abstract method to be implemented by subclasses for measuring sensor values."""
         pass
 
+    @abstractmethod
+    def start_periodic_event_value_update_task(self) -> None:
+        """Abstract method to be implemented by subclasses for starting periodic updates."""
+        pass
+
+    @abstractmethod
+    def stop_periodic_event_value_update_task(self) -> None:
+        """Abstract method to be implemented by subclasses for stopping periodic updates."""
+        pass
+
     def _set_min(self, min_value: float) -> None:
         """Set the minimum value for the sensor."""
         self.min = min_value

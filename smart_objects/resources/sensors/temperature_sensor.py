@@ -2,28 +2,34 @@ import random
 import time
 import logging
 from ...models.Sensor import Sensor
-from typing import Dict, Any
+from typing import Dict, Any, ClassVar
+import threading
 
 
 class TemperatureSensor(Sensor):
 
-    DEFAULT_MIN_TEMP = 25.0
-    DEFAULT_MAX_TEMP = 45.0
-    MEASUREMENT_PRECISION = 2
+    RESOURCE_TYPE: ClassVar[str] = "iot:sensor:temperature🌡️"
+    UNIT= ClassVar[str] = "Celsius"
+    DEFAULT_MIN_TEMP: ClassVar[float] = 25.0
+    DEFAULT_MAX_TEMP: ClassVar[float] = 45.0
+    MEASUREMENT_PRECISION: ClassVar[int] = 2
+    UPDATE_PERIOD: ClassVar[int] = 60
+    TASK_DELAY_TIME: ClassVar[int] = 5
 
     def __init__(self, resource_id: str):
 
         super().__init__(
             resource_id=resource_id,
-            type="TemperatureSensor",
+            type=self.RESOURCE_TYPE,
             value=0.0,
-            unit="Celsius",
+            unit=self.UNIT,
             timestamp=0,
             min=self.DEFAULT_MIN_TEMP,
             max=self.DEFAULT_MAX_TEMP,
         )
 
         self.logger = logging.getLogger(f"{__name__}.{resource_id}")
+        self._timer = None
 
         self.measure()
 
@@ -50,6 +56,33 @@ class TemperatureSensor(Sensor):
         except Exception as e:
             self.logger.error(f"Failed to load updated temperature value: {e}")
             raise RuntimeError(f"Failed to get updated temperature: {e}")
+
+    def start_periodic_event_value_update_task(self) -> None:
+        self.logger.debug(
+            f"Starting periodic temperature measurement task for {self.resource_id}, will update every {self.UPDATE_PERIOD} seconds."
+        )
+
+        def update_task():
+            try:
+                updated_value = self.load_updated_value()
+                self.notify_update(updated_value)
+            except RuntimeError as e:
+                self.logger.error(f"Error during temperature update task: {e}")
+
+            self._timer = threading.Timer(self.UPDATE_PERIOD, update_task)
+            self._timer.start()
+
+        self._timer = threading.Timer(self.TASK_DELAY_TIME, update_task)
+        self._timer.start()
+
+    def stop_periodic_event_value_update_task(self) -> None:
+        if self._timer is not None:
+            self._timer.cancel()
+            self._timer = None
+            self.logger.debug(
+                f"Stopped periodic temperature measurement task for {self.resource_id}."
+            )
+
 
     def to_dict(self) -> Dict[str, Any]:
         return {
