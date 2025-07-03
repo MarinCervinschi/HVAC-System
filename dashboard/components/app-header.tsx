@@ -7,9 +7,14 @@ import { usePathname } from "next/navigation"
 import DashboardHeader from "@/components/headers/dashboard"
 import DevicesHeader from "./headers/device"
 import AlertsHeader from "./headers/alerts"
-
+import RoomsHeader from "./headers/room"
 // Mappa dei percorsi ai componenti header
 const getHeaderComponent = (pathname: string) => {
+  // Gestione dinamica per /rooms/[id]
+  if (/^\/rooms\/[^/]+$/.test(pathname)) {
+    // return <RoomDetailHeader />
+    return <RoomsHeader />
+  }
   switch (pathname) {
     case "/":
       return <DashboardHeader />

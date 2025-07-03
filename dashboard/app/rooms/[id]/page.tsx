@@ -43,7 +43,7 @@ export default function RoomDetailPage() {
   const [coolingStatus, setCoolingStatus] = useState(true)
   const [tempPolicy, setTempPolicy] = useState({ min: 18, max: 25 })
   const [humidityPolicy, setHumidityPolicy] = useState({ min: 40, max: 60 })
-
+  
   if (!room) {
     return (
       <div className="flex flex-col min-h-full">
@@ -70,22 +70,7 @@ export default function RoomDetailPage() {
 
   return (
     <div className="flex flex-col min-h-full">
-      {/* Page Header */}
-      <div className="flex h-16 shrink-0 items-center justify-between border-b px-4 md:px-8">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Indietro
-          </Button>
-          <Separator orientation="vertical" className="h-4" />
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-              <Building2 className="h-4 w-4" />
-            </div>
-            <h1 className="text-xl font-semibold">{room.name}</h1>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
@@ -158,8 +143,6 @@ export default function RoomDetailPage() {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
-
       <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
         {/* Room Info */}
         <Card>
