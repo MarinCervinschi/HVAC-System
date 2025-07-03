@@ -13,7 +13,7 @@ class SmartObjectResource(ABC, Generic[T]):
         self.resource_id: str = resource_id
         self.resource_listener_list: List[ResourceDataListener[T]] = []
 
-        self.logger = logging.getLogger(f"{__name__}.{resource_id}")
+        self.logger = logging.getLogger(f"{resource_id}")
 
     @abstractmethod
     def load_updated_value(self) -> T:

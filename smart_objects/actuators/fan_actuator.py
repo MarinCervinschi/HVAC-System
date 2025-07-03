@@ -23,10 +23,7 @@ class FanActuator(Actuator):
             "last_updated": int(time.time()),
         }
 
-        self.logger = logging.getLogger(f"{__name__}.{resource_id}")
-        self.logger.info(
-            f"Fan actuator {resource_id} initialized with max speed: {self.max_speed}%"
-        )
+        self.logger = logging.getLogger(f"{resource_id}")
 
     def apply_command(self, command: Dict[str, Any]) -> bool:
         if not self.is_ready_for_commands():

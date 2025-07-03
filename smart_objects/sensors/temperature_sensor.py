@@ -30,7 +30,7 @@ class TemperatureSensor(Sensor):
             max=self.DEFAULT_MAX_TEMP,
         )
 
-        self.logger = logging.getLogger(f"{__name__}.{resource_id}")
+        self.logger = logging.getLogger(f"{resource_id}")
         self._timer = None
 
         self.start_periodic_event_value_update_task()

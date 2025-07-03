@@ -25,7 +25,7 @@ class SmartObject(ABC, Generic[T]):
         self.mqtt_client = mqtt_client
         self.resource_map: Dict[str, SmartObjectResource] = {}
 
-        self.logger = logging.getLogger(f"{__name__}.{object_id}")
+        self.logger = logging.getLogger(f"{object_id}")
 
     def get_resource(self, name: str) -> SmartObjectResource:
         return self.resource_map[name]
@@ -35,7 +35,7 @@ class SmartObject(ABC, Generic[T]):
         try:
             if self.mqtt_client is not None and self.resource_map is not None:
                 self.logger.info(
-                    f"Starting SmartObject {self.object_id} at {self.room_id}"
+                    f"🏁 Starting SmartObject {self.object_id} at {self.room_id}"
                 )
 
                 self._register_resource_listeners()

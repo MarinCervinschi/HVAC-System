@@ -14,7 +14,7 @@ class CoapControllable(ABC):
         self.coap_context = None
         self.coap_server_thread = None
 
-        self.logger = logging.getLogger(f"{__name__}.CoapControllable")
+        self.logger = logging.getLogger(f"CoapControllable")
 
     @abstractmethod
     def get_coap_resource_tree(self) -> resource.Site:

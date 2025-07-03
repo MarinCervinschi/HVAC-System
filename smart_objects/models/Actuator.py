@@ -24,7 +24,7 @@ class Actuator(SmartObjectResource[Dict[str, Any]], ABC):
         self.data_type = self.DATA_TYPE
         self.is_operational = is_operational
 
-        self.logger = logging.getLogger(f"{__name__}.{resource_id}")
+        self.logger = logging.getLogger(f"{resource_id}")
 
     @abstractmethod
     def apply_command(self, command: Dict[str, Any]) -> bool:

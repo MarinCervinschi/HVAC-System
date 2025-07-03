@@ -26,8 +26,7 @@ class RackCoolingUnit(SmartObject, CoapControllable):
         self.resource_map["temperature"] = TemperatureSensor(f"{object_id}_temp")
         self.resource_map["fan"] = FanActuator(f"{object_id}_fan")
 
-        self.logger = logging.getLogger(f"{__name__}.{object_id}")
-        self.logger.info(f"Rack cooling unit {object_id} initialized at {room_id}")
+        self.logger = logging.getLogger(f"{object_id}")
 
     def get_temperature(self) -> float:
         try:
@@ -62,17 +61,15 @@ class RackCoolingUnit(SmartObject, CoapControllable):
         # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/fan/control
         resource_path = [
             "hvac",
-            "room",
-            self.room_id,
-            "rack",
-            self.rack_id,
-            "device",
-            self.object_id,
-            "fan",
-            "control",
+            "room", self.room_id,
+            "rack", self.rack_id,
+            "device", self.object_id,
+            "fan", "control",
         ]
 
-        self.logger.info(f"Registering CoAP resource at: {'/'.join(resource_path)}")
+        self.logger.info(
+            f"📢 Registered CoAP fan control resource for {fan_actuator.resource_id} at path: {'/'.join(resource_path)}"
+        )
 
         site.add_resource(
             resource_path,
@@ -119,5 +116,5 @@ class RackCoolingUnit(SmartObject, CoapControllable):
         temperature_sensor.add_data_listener(listener)
 
         self.logger.info(
-            f"Registered temperature sensor listener for {temperature_sensor.resource_id} on topic {topic} with QoS = 0, retain = False"
+            f"📢 Registered temperature sensor listener for {temperature_sensor.resource_id} on topic {topic}"
         )
