@@ -8,12 +8,17 @@ import DashboardHeader from "@/components/headers/dashboard"
 import DevicesHeader from "./headers/device"
 import AlertsHeader from "./headers/alerts"
 import RoomsHeader from "./headers/room"
+import { RackHeader } from "./headers/rack"
+
 // Mappa dei percorsi ai componenti header
 const getHeaderComponent = (pathname: string) => {
   // Gestione dinamica per /rooms/[id]
   if (/^\/rooms\/[^/]+$/.test(pathname)) {
     // return <RoomDetailHeader />
     return <RoomsHeader />
+  }
+  if (/^\/rooms\/[^/]+\/racks\/[^/]+$/.test(pathname)) {
+    return <RackHeader />;
   }
   switch (pathname) {
     case "/":

@@ -292,7 +292,7 @@ export default function RoomDetailPage() {
             <Card
               key={rack.id}
               className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => router.push(`/rooms/${roomId}/racks/${rack.id}`)}
+              onClick={() => router.push(`/rooms/${params.id}/racks/${rack.id}`)}
             >
               <CardHeader>
                 <div className="flex items-center justify-between">
