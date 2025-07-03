@@ -5,6 +5,9 @@ import paho.mqtt.client as mqtt
 from .SmartObject import SmartObject
 from ..resources.sensors.temperature_sensor import TemperatureSensor
 from ..resources.actuators.fan_actuator import FanActuator
+from ..messages.telemetry_message import TelemetryMessage
+from config.mqtt_conf_params import MqttConfigurationParameters
+from smart_objects.resources.SmartObjectResource import SmartObjectResource
 
 
 class RackCoolingUnit(SmartObject):
@@ -54,3 +57,41 @@ class RackCoolingUnit(SmartObject):
         except Exception as e:
             self.logger.error(f"Error getting fan status: {e}")
             return {}
+
+    def _register_resource_listeners(self) -> None:
+        """Register listeners for resource data changes."""
+        try:
+            for resource in self.resource_map.values():
+                if isinstance(resource, TemperatureSensor):
+                    self._register_temperature_sensor_listener()
+                elif isinstance(resource, FanActuator):
+                    pass
+
+        except Exception as e:
+            self.logger.error(f"Error registering resources: {e}")
+            raise e
+
+    def _register_temperature_sensor_listener(self) -> None:
+        temperature_sensor = self.get_resource("temperature")
+        if temperature_sensor is None:
+            self.logger.error("Temperature sensor resource not found!")
+            return
+
+        topic = "{0}/{1}/{2}/{3}".format(
+            MqttConfigurationParameters.BASIC_TOPIC,
+            self.object_id,
+            MqttConfigurationParameters.TELEMETRY_TOPIC,
+            temperature_sensor.resource_id,
+        )
+
+        listener = self._get_listener(
+            data_type=temperature_sensor.data_type,
+            message_type=TelemetryMessage,
+            topic=topic,
+        )
+
+        temperature_sensor.add_data_listener(listener)
+
+        self.logger.info(
+            f"Registered temperature sensor listener for {temperature_sensor.resource_id} on topic {topic} with QoS = 0, retain = False"
+        )

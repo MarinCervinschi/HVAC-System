@@ -11,19 +11,19 @@ class SmartObjectResource(ABC, Generic[T]):
         self.type: str = None
         self.data_type: T = None
         self.resource_id: str = resource_id
-        self.resource_listener_list: List[ResourceDataListener] = []
+        self.resource_listener_list: List[ResourceDataListener[T]] = []
 
     @abstractmethod
     def load_updated_value(self) -> T:
         pass
 
-    def add_data_listener(self, resource_data_listener: ResourceDataListener) -> None:
+    def add_data_listener(self, resource_data_listener: ResourceDataListener[T]) -> None:
         """Add a new listener to be notified of changes"""
         if resource_data_listener not in self.resource_listener_list:
             self.resource_listener_list.append(resource_data_listener)
 
     def remove_data_listener(
-        self, resource_data_listener: ResourceDataListener
+        self, resource_data_listener: ResourceDataListener[T]
     ) -> None:
         """Remove an existing listener"""
         if resource_data_listener in self.resource_listener_list:

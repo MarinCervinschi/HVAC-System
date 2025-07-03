@@ -6,6 +6,7 @@ import paho.mqtt.client as mqtt
 import logging
 from smart_objects.resources.SmartObjectResource import SmartObjectResource
 from ..messages.telemetry_message import TelemetryMessage
+from smart_objects.messages.GenericMessage import GenericMessage
 from smart_objects.resources.ResourceDataListener import ResourceDataListener
 from config.mqtt_conf_params import MqttConfigurationParameters
 
@@ -32,7 +33,7 @@ class SmartObject(ABC, Generic[T]):
                     f"Starting SmartObject {self.object_id} at {self.location}"
                 )
 
-                self.register_to_available_resources()
+                self._register_resource_listeners()
         except Exception as e:
             self.logger.error(f"Error starting SmartObject {self.object_id}: {e}")
 
@@ -62,70 +63,53 @@ class SmartObject(ABC, Generic[T]):
             except Exception as e:
                 self.logger.error(f"Error disconnecting MQTT client: {e}")
 
-    def register_to_available_resources(self) -> None:
-        try:
-            for name, resource in self.resource_map.items():
-                if not name or not resource:
-                    continue
-
-                self.logger.info(
-                    f"Registering resource {resource.type} with ID {resource.resource_id}"
-                )
-
-                listener = self._get_listener(
-                    type=resource.data_type,
-                    resource_name=name,
-                    smart_object_resource=resource,
-                )
-                resource.add_data_listener(listener)
-
-        except Exception as e:
-            self.logger.error(f"Error registering resources: {e}")
-            raise e
+    @abstractmethod
+    def _register_resource_listeners(self) -> None:
+        """Register listeners for resource data changes."""
+        pass
 
     def _get_listener(
-        self, type: Any, resource_name: str, smart_object_resource: SmartObjectResource
+        self,
+        data_type: Any,
+        message_type: GenericMessage,
+        topic: str,
+        qos: int = 0,
+        retain: bool = False,
     ):
-        object_id = self.object_id
-        publish_telemetry_data = self._publish_telemetry_data
+        """Create a listener for resource data changes and publish to MQTT topic."""
+        publish_data = self._publish_data
+        logger = self.logger
 
-        class Listener(ResourceDataListener[type]):
+        class Listener(ResourceDataListener[data_type]):
             def on_data_changed(self, resource, updated_value):
                 try:
-                    topic = "{0}/{1}/{2}/{3}".format(
-                        MqttConfigurationParameters.BASIC_TOPIC,
-                        object_id,
-                        MqttConfigurationParameters.TELEMETRY_TOPIC,
-                        resource_name,
-                    )
-                    telemetry_message = TelemetryMessage(
-                        smart_object_resource.type, updated_value
-                    )
+                    payload = message_type(resource.type, updated_value)
 
-                    publish_telemetry_data(topic, telemetry_message)
+                    publish_data(topic, payload, qos, retain)
                 except Exception as e:
-                    print(f"Error publishing telemetry data: {e}")
+                    logger.error(f"Error publishing data: {e}")
 
         return Listener()
 
-    def _publish_telemetry_data(self, topic: str, telemetry_message: TelemetryMessage):
+    def _publish_data(
+        self, topic: str, payload: GenericMessage, qos: int = 0, retain: bool = False
+    ) -> None:
+        """Publish data to the specified MQTT topic."""
         try:
-            if topic is None or telemetry_message is None:
-                self.logger.error("Topic or telemetry_message is None!")
+            if topic is None or payload is None:
+                self.logger.error("❌ Topic or payload is None!")
                 return
 
-            self.logger.info(f"Sending to topic: {topic} -> Data: {telemetry_message}")
+            self.logger.info(f"📤 Sending to topic: {topic} -> Data: {payload}")
 
             if self.mqtt_client is not None and self.mqtt_client.is_connected():
-                message_payload = telemetry_message.to_json()
-                self.mqtt_client.publish(
-                    topic=topic, payload=message_payload, qos=0, retain=False
-                )
-                self.logger.info(f"Data published to topic: {topic}")
+                message_payload = payload.to_json()
+                self.mqtt_client.publish(topic, message_payload, qos, retain)
+                self.logger.info(f"✅ Data published to topic: {topic}")
             else:
-                self.logger.error("MQTT Client is not connected!")
+                self.logger.error("⚠️ MQTT Client is not connected!")
         except Exception as e:
-            self.logger.error(f"Exception in _publish_telemetry_data: {e}")
+            self.logger.error(f"🔥 Exception in _publish_data: {e}")
             raise
 
     def to_dict(self) -> dict:
