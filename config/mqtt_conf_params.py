@@ -5,7 +5,7 @@ class MqttConfigurationParameters(object):
     BROKER_PORT: ClassVar[int] = 7883
     BASIC_TOPIC: ClassVar[str] = "hvac/room"
     RACK_TOPIC: ClassVar[str] = "rack"
-    AISLE_TOPIC: ClassVar[str] = "aisle"
+    DEVICE_TOPIC: ClassVar[str] = "device"
     TELEMETRY_TOPIC: ClassVar[str] = "telemetry"
     EVENT_TOPIC: ClassVar[str] = "event"
     CONTROL_TOPIC: ClassVar[str] = "control"
