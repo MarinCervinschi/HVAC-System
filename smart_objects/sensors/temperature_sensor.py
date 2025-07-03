@@ -1,9 +1,9 @@
-import random
 import time
+import random
 import logging
-from ...models.Sensor import Sensor
-from typing import Dict, Any, ClassVar
 import threading
+from typing import Dict, Any, ClassVar
+from smart_objects.models.Sensor import Sensor
 
 
 class TemperatureSensor(Sensor):

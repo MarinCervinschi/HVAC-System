@@ -4,10 +4,10 @@ from typing import Dict, Any
 import paho.mqtt.client as mqtt
 from .SmartObject import SmartObject
 from ..messages.telemetry_message import TelemetryMessage
-from ..resources.actuators.fan_actuator import FanActuator
+from smart_objects.actuators.fan_actuator import FanActuator
 from config.mqtt_conf_params import MqttConfigurationParameters
-from ..resources.sensors.temperature_sensor import TemperatureSensor
 from smart_objects.resources.CoapControllable import CoapControllable
+from smart_objects.sensors.temperature_sensor import TemperatureSensor
 from smart_objects.resources.actuator_control_resource import ActuatorControlResource
 
 

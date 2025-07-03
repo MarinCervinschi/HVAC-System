@@ -1,7 +1,7 @@
 import time
 import logging
-from typing import Dict, Any, Optional, ClassVar
-from ...models.Actuator import Actuator
+from typing import Dict, Any, ClassVar
+from smart_objects.models.Actuator import Actuator
 
 
 class FanActuator(Actuator):
@@ -12,9 +12,7 @@ class FanActuator(Actuator):
 
     def __init__(self, resource_id: str):
         super().__init__(
-            resource_id=resource_id,
-            type=self.RESOURCE_TYPE,
-            is_operational=True
+            resource_id=resource_id, type=self.RESOURCE_TYPE, is_operational=True
         )
 
         self.max_speed = self.MAX_SPEED
@@ -22,7 +20,7 @@ class FanActuator(Actuator):
             "status": "OFF",
             "speed": 0,
             "target_speed": 0,
-            "last_updated": int(time.time())
+            "last_updated": int(time.time()),
         }
 
         self.logger = logging.getLogger(f"{__name__}.{resource_id}")
@@ -43,7 +41,9 @@ class FanActuator(Actuator):
             if "status" in command:
                 status = command["status"].upper()
                 if status not in self.VALID_STATUSES:
-                    raise ValueError(f"Invalid status '{status}'. Must be one of {self.VALID_STATUSES}")
+                    raise ValueError(
+                        f"Invalid status '{status}'. Must be one of {self.VALID_STATUSES}"
+                    )
                 self.state["status"] = status
                 updated = True
 
@@ -54,7 +54,9 @@ class FanActuator(Actuator):
             if "speed" in command:
                 speed = int(command["speed"])
                 if not (self.MIN_SPEED <= speed <= self.max_speed):
-                    raise ValueError(f"Speed must be between {self.MIN_SPEED} and {self.max_speed}, got: {speed}")
+                    raise ValueError(
+                        f"Speed must be between {self.MIN_SPEED} and {self.max_speed}, got: {speed}"
+                    )
 
                 # Se status è OFF, ignora il comando speed
                 if self.state["status"] == "OFF":
@@ -68,9 +70,7 @@ class FanActuator(Actuator):
 
             if updated:
                 self.state["last_updated"] = int(time.time())
-                self.logger.info(
-                    f"Fan {self.resource_id} updated state: {self.state}"
-                )
+                self.logger.info(f"Fan {self.resource_id} updated state: {self.state}")
                 return True
             else:
                 self.logger.warning(
@@ -90,17 +90,19 @@ class FanActuator(Actuator):
             "type": self.type,
             "is_operational": self.is_operational,
             "max_speed": self.max_speed,
-            **self.state
+            **self.state,
         }
 
     def reset(self) -> bool:
         try:
-            self.state.update({
-                "status": "OFF",
-                "speed": 0,
-                "target_speed": 0,
-                "last_updated": int(time.time())
-            })
+            self.state.update(
+                {
+                    "status": "OFF",
+                    "speed": 0,
+                    "target_speed": 0,
+                    "last_updated": int(time.time()),
+                }
+            )
             self.logger.info(f"Fan {self.resource_id} reset to default state.")
             return True
         except Exception as e:
