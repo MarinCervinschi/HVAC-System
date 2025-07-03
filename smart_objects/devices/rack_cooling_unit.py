@@ -1,20 +1,17 @@
 import logging
-import time
-from typing import Dict, Any, Optional
+from aiocoap import resource
+from typing import Dict, Any
 import paho.mqtt.client as mqtt
 from .SmartObject import SmartObject
-from ..resources.sensors.temperature_sensor import TemperatureSensor
-from ..resources.actuators.fan_actuator import FanActuator
 from ..messages.telemetry_message import TelemetryMessage
+from ..resources.actuators.fan_actuator import FanActuator
 from config.mqtt_conf_params import MqttConfigurationParameters
-from smart_objects.resources.SmartObjectResource import SmartObjectResource
+from ..resources.sensors.temperature_sensor import TemperatureSensor
+from smart_objects.resources.CoapControllable import CoapControllable
+from smart_objects.resources.actuator_control_resource import ActuatorControlResource
 
 
-class RackCoolingUnit(SmartObject):
-
-    TEMP_THRESHOLD_LOW = 28.0  # Below this, reduce fan speed
-    TEMP_THRESHOLD_HIGH = 35.0  # Above this, increase fan speed
-    TEMP_THRESHOLD_CRITICAL = 40.0  # Above this, maximum fan speed
+class RackCoolingUnit(SmartObject, CoapControllable):
 
     def __init__(
         self,
@@ -23,30 +20,14 @@ class RackCoolingUnit(SmartObject):
         rack_id: str,
         mqtt_client: mqtt.Client = None,
     ):
-
-        super().__init__(object_id, room_id, rack_id, mqtt_client)
+        SmartObject.__init__(self, object_id, room_id, rack_id, mqtt_client)
+        CoapControllable.__init__(self)
 
         self.resource_map["temperature"] = TemperatureSensor(f"{object_id}_temp")
         self.resource_map["fan"] = FanActuator(f"{object_id}_fan")
 
         self.logger = logging.getLogger(f"{__name__}.{object_id}")
         self.logger.info(f"Rack cooling unit {object_id} initialized at {room_id}")
-
-    def control_fan(self, command: Dict[str, Any]) -> bool:
-        try:
-            fan = self.get_resource("fan")
-            success = fan.apply_command(command)
-
-            if success:
-                self.logger.info(f"Fan control command applied: {command}")
-            else:
-                self.logger.warning(f"Failed to apply fan control command: {command}")
-
-            return success
-
-        except Exception as e:
-            self.logger.error(f"Error controlling fan: {e}")
-            return False
 
     def get_temperature(self) -> float:
         try:
@@ -58,11 +39,47 @@ class RackCoolingUnit(SmartObject):
 
     def get_fan_status(self) -> Dict[str, Any]:
         try:
-            fan = self.get_resource("fan")
+            fan: FanActuator = self.get_resource("fan")
             return fan.get_current_state()
         except Exception as e:
             self.logger.error(f"Error getting fan status: {e}")
             return {}
+
+    def get_coap_resource_tree(self) -> resource.Site:
+        """Return the CoAP resource tree for this smart object."""
+        site = resource.Site()
+        fan_actuator = self.get_resource("fan")
+
+        if fan_actuator is None:
+            self.logger.error("Fan actuator resource not found!")
+            return None
+
+        site.add_resource(
+            (".well-known", "core"),
+            resource.WKCResource(site.get_resources_as_linkheader),
+        )
+
+        # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/fan/control
+        resource_path = [
+            "hvac",
+            "room",
+            self.room_id,
+            "rack",
+            self.rack_id,
+            "device",
+            self.object_id,
+            "fan",
+            "control",
+        ]
+
+        self.logger.info(f"Registering CoAP resource at: {'/'.join(resource_path)}")
+
+        site.add_resource(
+            resource_path,
+            ActuatorControlResource(fan_actuator),
+        )
+
+        return site
 
     def _register_resource_listeners(self) -> None:
         """Register listeners for resource data changes."""
@@ -70,8 +87,6 @@ class RackCoolingUnit(SmartObject):
             for resource in self.resource_map.values():
                 if isinstance(resource, TemperatureSensor):
                     self._register_temperature_sensor_listener()
-                elif isinstance(resource, FanActuator):
-                    pass
 
         except Exception as e:
             self.logger.error(f"Error registering resources: {e}")

@@ -1,14 +1,12 @@
-from typing import Dict
-from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, List, Any
 import json
-import paho.mqtt.client as mqtt
 import logging
-from smart_objects.resources.SmartObjectResource import SmartObjectResource
-from ..messages.telemetry_message import TelemetryMessage
+import paho.mqtt.client as mqtt
+from abc import ABC, abstractmethod
+from typing import Generic, TypeVar, Any, Dict
 from smart_objects.messages.GenericMessage import GenericMessage
+from smart_objects.resources.CoapControllable import CoapControllable
+from smart_objects.resources.SmartObjectResource import SmartObjectResource
 from smart_objects.resources.ResourceDataListener import ResourceDataListener
-from config.mqtt_conf_params import MqttConfigurationParameters
 
 T = TypeVar("T")
 
@@ -41,6 +39,9 @@ class SmartObject(ABC, Generic[T]):
                 )
 
                 self._register_resource_listeners()
+
+                if isinstance(self, CoapControllable):
+                    self.start_coap_server()
         except Exception as e:
             self.logger.error(f"Error starting SmartObject {self.object_id}: {e}")
 
