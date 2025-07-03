@@ -33,6 +33,7 @@ import {
     Wifi,
     AlertTriangle,
     CheckCircle,
+    WifiOff,
 } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts"
 import { getRoomById, getRackById, type SmartObject, type Sensor, type Actuator } from "@/lib/datacenter-data"
@@ -238,7 +239,7 @@ export default function RackDetailPage() {
         )
     }
 
-    const renderSmartObjectChart = (smartObject: SmartObject) => {
+    const renderSmartObjectTable = (smartObject: SmartObject) => {
         const sensorsWithData = smartObject.sensors.filter((sensor) => sensor.data && sensor.data.length > 0)
 
         if (sensorsWithData.length === 0) return null
@@ -248,41 +249,64 @@ export default function RackDetailPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Activity className="h-5 w-5" />
-                        Grafici Telemetrie - {smartObject.name}
+                        Dati Telemetrie - {smartObject.name}
                     </CardTitle>
-                    <CardDescription>Andamento dei sensori nelle ultime ore</CardDescription>
+                    <CardDescription>Storico delle letture dei sensori</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-6">
                         {sensorsWithData.map((sensor) => {
-                            const color = sensorColors[sensor.type as keyof typeof sensorColors] || "#8884d8"
                             const policy = getSensorPolicy(sensor)
 
                             return (
                                 <div key={sensor.id} className="space-y-2">
                                     <h4 className="font-medium">{sensor.name}</h4>
-                                    <div className="h-64">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <LineChart data={sensor.data}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="time" />
-                                                <YAxis />
-                                                <Tooltip
-                                                    formatter={(value) => [`${value}${sensor.unit}`, sensor.name]}
-                                                    labelFormatter={(label) => `Ora: ${label}`}
-                                                />
-                                                <ReferenceLine y={policy.max} stroke="#ef4444" strokeDasharray="5 5" label="Soglia Max" />
-                                                <ReferenceLine y={policy.min} stroke="#ef4444" strokeDasharray="5 5" label="Soglia Min" />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="value"
-                                                    stroke={color}
-                                                    strokeWidth={2}
-                                                    dot={{ fill: color, strokeWidth: 2, r: 4 }}
-                                                    activeDot={{ r: 6 }}
-                                                />
-                                            </LineChart>
-                                        </ResponsiveContainer>
+                                    <div className="rounded-md border">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead>
+                                                    <tr className="border-b bg-muted/50">
+                                                        <th className="h-10 px-4 text-left align-middle font-medium">Ora</th>
+                                                        <th className="h-10 px-4 text-left align-middle font-medium">Valore</th>
+                                                        <th className="h-10 px-4 text-left align-middle font-medium">Stato</th>
+                                                        <th className="h-10 px-4 text-left align-middle font-medium">Timestamp</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {sensor.data.slice(-10).map((dataPoint, index) => {
+                                                        const isOverThreshold = dataPoint.value < policy.min || dataPoint.value > policy.max
+                                                        return (
+                                                            <tr key={index} className="border-b">
+                                                                <td className="h-10 px-4 align-middle">{dataPoint.time}</td>
+                                                                <td className="h-10 px-4 align-middle font-medium">
+                                                                    {dataPoint.value}
+                                                                    {sensor.unit}
+                                                                </td>
+                                                                <td className="h-10 px-4 align-middle">
+                                                                    {isOverThreshold ? (
+                                                                        <Badge variant="destructive" className="text-xs">
+                                                                            <AlertTriangle className="h-3 w-3 mr-1" />
+                                                                            Fuori soglia
+                                                                        </Badge>
+                                                                    ) : (
+                                                                        <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                                                                            <CheckCircle className="h-3 w-3 mr-1" />
+                                                                            Normale
+                                                                        </Badge>
+                                                                    )}
+                                                                </td>
+                                                                <td className="h-10 px-4 align-middle text-muted-foreground">{dataPoint.timestamp}</td>
+                                                            </tr>
+                                                        )
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                        Policy: {policy.min}
+                                        {sensor.unit} - {policy.max}
+                                        {sensor.unit} | Mostrando le ultime 10 letture
                                     </div>
                                 </div>
                             )
@@ -292,6 +316,7 @@ export default function RackDetailPage() {
             </Card>
         )
     }
+
 
     const renderPolicyDialog = (smartObject: SmartObject) => {
         const sensorsWithPolicies = smartObject.sensors.filter((sensor) => sensor.policy)
@@ -389,23 +414,32 @@ export default function RackDetailPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid gap-4 md:grid-cols-3">
-                            <div className="text-center">
+                            <div className="border p-6 rounded-lg space-y-8">
+                                <div className="flex flex-row justify-between">
+                                    <div className="text-sm font-bold text-muted-foreground">Dispositivi Totali</div>
+                                    <Activity className="h-4 w-4 text-muted-foreground" />
+                                </div>
                                 <div className="text-2xl font-bold">{rack.smartObjects.length}</div>
-                                <div className="text-sm text-muted-foreground">Dispositivi Totali</div>
                             </div>
-                            <div className="text-center">
+                            <div className="border p-6 rounded-lg space-y-8">
+                                <div className="flex flex-row justify-between">
+                                    <div className="text-sm font-bold text-muted-foreground">Dispositivi Attivi</div>
+                                    <Wifi className="h-4 w-4 text-green-600" />
+                                </div>
                                 <div className="text-2xl font-bold text-green-600">
                                     {rackActive ? rack.smartObjects.filter((obj) => obj.status === "active").length : 0}
                                 </div>
-                                <div className="text-sm text-muted-foreground">Dispositivi Attivi</div>
                             </div>
-                            <div className="text-center">
+                            <div className="border p-6 rounded-lg space-y-8">
+                                <div className="flex flex-row justify-between">
+                                    <div className="text-sm font-bold text-muted-foreground">Dispositivi Inattivi</div>
+                                    <WifiOff className="h-4 w-4 text-red-600" />
+                                </div>
                                 <div className="text-2xl font-bold text-red-600">
                                     {rackActive
                                         ? rack.smartObjects.filter((obj) => obj.status === "inactive").length
                                         : rack.smartObjects.length}
                                 </div>
-                                <div className="text-sm text-muted-foreground">Dispositivi Inattivi</div>
                             </div>
                         </div>
 
@@ -427,7 +461,7 @@ export default function RackDetailPage() {
                     const SmartObjectIcon = smartObjectIcons[smartObject.type as keyof typeof smartObjectIcons] || Server
 
                     return (
-                        <div key={smartObject.id} className="space-y-4">
+                        <div key={smartObject.id} className="border p-6 rounded-lg space-y-10">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-2xl font-semibold flex items-center gap-2">
                                     <SmartObjectIcon className="h-6 w-6" />
@@ -436,28 +470,32 @@ export default function RackDetailPage() {
                                 {renderPolicyDialog(smartObject)}
                             </div>
 
-                            {/* Sensori */}
-                            {smartObject.sensors.length > 0 && (
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-medium">Sensori</h3>
-                                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                        {smartObject.sensors.map(renderSensorCard)}
-                                    </div>
+                            <div className="grid grid-cols-2 gap-20 ">
+                                <div className="space-y-6">
+                                    {/* Sensori */}
+                                    {smartObject.sensors.length > 0 && (
+                                        <div className="space-y-4">
+                                            <h3 className="text-lg font-semibold">Sensori</h3>
+                                            <div className="flex flex-col">
+                                                {smartObject.sensors.map(renderSensorCard)}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Attuatori */}
+                                    {smartObject.actuators.length > 0 && (
+                                        <div className="space-y-4">
+                                            <h3 className="text-lg font-semibold">Attuatori</h3>
+                                            <div className="flex flex-col">{smartObject.actuators.map(renderActuatorCard)}</div>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-
-                            {/* Attuatori */}
-                            {smartObject.actuators.length > 0 && (
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-medium">Attuatori</h3>
-                                    <div className="grid gap-4 md:grid-cols-2">{smartObject.actuators.map(renderActuatorCard)}</div>
+                                    <h3 className="text-lg font-semibold">Telemetrie</h3>
+                                    {renderSmartObjectTable(smartObject)}
                                 </div>
-                            )}
+                            </div>
 
-                            {/* Grafici */}
-                            {renderSmartObjectChart(smartObject)}
-
-                            <Separator />
                         </div>
                     )
                 })}
