@@ -6,10 +6,12 @@ import logging
 # Configurazione del logging
 logging.basicConfig(level=logging.INFO)
 
+
 def run():
     try:
-        object_id = f"RACK-COOLING-UNIT-001"
-        location = "Server Room A"
+        object_id = f"rack_cooling_unit"
+        room_id = "room_001"
+        rack_id = "rack_001"
         mqtt_client = mqtt.Client(object_id)
         mqtt_client.connect(
             MqttConfigurationParameters.BROKER_ADDRESS,
@@ -17,7 +19,10 @@ def run():
         )
 
         rack_cooling_unit = RackCoolingUnit(
-            object_id=object_id, location=location, mqtt_client=mqtt_client
+            object_id=object_id,
+            room_id=room_id,
+            rack_id=rack_id,
+            mqtt_client=mqtt_client,
         )
 
         rack_cooling_unit.start()

@@ -16,15 +16,21 @@ class RackCoolingUnit(SmartObject):
     TEMP_THRESHOLD_HIGH = 35.0  # Above this, increase fan speed
     TEMP_THRESHOLD_CRITICAL = 40.0  # Above this, maximum fan speed
 
-    def __init__(self, object_id: str, location: str, mqtt_client: mqtt.Client = None):
+    def __init__(
+        self,
+        object_id: str,
+        room_id: str,
+        rack_id: str,
+        mqtt_client: mqtt.Client = None,
+    ):
 
-        super().__init__(object_id, location, mqtt_client)
+        super().__init__(object_id, room_id, rack_id, mqtt_client)
 
         self.resource_map["temperature"] = TemperatureSensor(f"{object_id}_temp")
         self.resource_map["fan"] = FanActuator(f"{object_id}_fan")
 
         self.logger = logging.getLogger(f"{__name__}.{object_id}")
-        self.logger.info(f"Rack cooling unit {object_id} initialized at {location}")
+        self.logger.info(f"Rack cooling unit {object_id} initialized at {room_id}")
 
     def control_fan(self, command: Dict[str, Any]) -> bool:
         try:
@@ -77,8 +83,12 @@ class RackCoolingUnit(SmartObject):
             self.logger.error("Temperature sensor resource not found!")
             return
 
-        topic = "{0}/{1}/{2}/{3}".format(
+        topic = "{0}/{1}/{2}/{3}/{4}/{5}/{6}/{7}".format(
             MqttConfigurationParameters.BASIC_TOPIC,
+            self.room_id,
+            MqttConfigurationParameters.RACK_TOPIC,
+            self.rack_id,
+            MqttConfigurationParameters.DEVICE_TOPIC,
             self.object_id,
             MqttConfigurationParameters.TELEMETRY_TOPIC,
             temperature_sensor.resource_id,

@@ -14,9 +14,16 @@ T = TypeVar("T")
 
 
 class SmartObject(ABC, Generic[T]):
-    def __init__(self, object_id: str, location: str, mqtt_client: mqtt.Client = None):
+    def __init__(
+        self,
+        object_id: str,
+        room_id: str,
+        rack_id: str,
+        mqtt_client: mqtt.Client = None,
+    ):
         self.object_id = object_id
-        self.location = location
+        self.room_id = room_id
+        self.rack_id = rack_id
         self.mqtt_client = mqtt_client
         self.resource_map: Dict[str, SmartObjectResource] = {}
 
@@ -30,7 +37,7 @@ class SmartObject(ABC, Generic[T]):
         try:
             if self.mqtt_client is not None and self.resource_map is not None:
                 self.logger.info(
-                    f"Starting SmartObject {self.object_id} at {self.location}"
+                    f"Starting SmartObject {self.object_id} at {self.room_id}"
                 )
 
                 self._register_resource_listeners()
@@ -39,7 +46,7 @@ class SmartObject(ABC, Generic[T]):
 
     def stop(self) -> None:
         """Stop the SmartObject behavior"""
-        self.logger.info(f"Stopping SmartObject {self.object_id} at {self.location}")
+        self.logger.info(f"Stopping SmartObject {self.object_id} at {self.room_id}")
         if self.resource_map:
             for resource in self.resource_map.values():
                 for attr_name in dir(resource):
@@ -115,7 +122,7 @@ class SmartObject(ABC, Generic[T]):
     def to_dict(self) -> dict:
         return {
             "id": self.object_id,
-            "location": self.location,
+            "room_id": self.room_id,
             "resources": {k: r.to_dict() for k, r in self.resource_map.items()},
         }
 
@@ -123,4 +130,4 @@ class SmartObject(ABC, Generic[T]):
         return json.dumps(self.to_dict(), indent=4)
 
     def __str__(self):
-        return f"SmartObject(id={self.object_id}, location={self.location}, resources={list(self.resource_map.keys())})"
+        return f"SmartObject(id={self.object_id}, room_id={self.room_id}, resources={list(self.resource_map.keys())})"
