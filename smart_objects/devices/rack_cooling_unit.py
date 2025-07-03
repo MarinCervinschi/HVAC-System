@@ -83,6 +83,7 @@ class RackCoolingUnit(SmartObject):
             self.logger.error("Temperature sensor resource not found!")
             return
 
+        # /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/telemetry/{temperature_sensor.resource_id}
         topic = "{0}/{1}/{2}/{3}/{4}/{5}/{6}/{7}".format(
             MqttConfigurationParameters.BASIC_TOPIC,
             self.room_id,

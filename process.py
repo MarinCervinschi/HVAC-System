@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 
 def run():
     try:
-        object_id = f"rack_cooling_unit"
+        object_id = "rack_cooling_unit"
         room_id = "room_001"
         rack_id = "rack_001"
         mqtt_client = mqtt.Client(object_id)
