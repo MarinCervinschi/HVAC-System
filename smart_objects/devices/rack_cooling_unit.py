@@ -1,8 +1,8 @@
 import logging
 from aiocoap import resource
-from typing import Dict, Any
 import paho.mqtt.client as mqtt
 from .SmartObject import SmartObject
+from typing import Dict, Any, ClassVar
 from ..messages.telemetry_message import TelemetryMessage
 from smart_objects.actuators.fan_actuator import FanActuator
 from config.mqtt_conf_params import MqttConfigurationParameters
@@ -13,20 +13,21 @@ from smart_objects.resources.actuator_control_resource import ActuatorControlRes
 
 class RackCoolingUnit(SmartObject, CoapControllable):
 
+    OBJECT_ID: ClassVar[str] = "rack_cooling_unit"
+
     def __init__(
         self,
-        object_id: str,
         room_id: str,
         rack_id: str,
         mqtt_client: mqtt.Client = None,
     ):
-        SmartObject.__init__(self, object_id, room_id, rack_id, mqtt_client)
+        SmartObject.__init__(self, self.OBJECT_ID, room_id, rack_id, mqtt_client)
         CoapControllable.__init__(self)
 
-        self.resource_map["temperature"] = TemperatureSensor(f"{object_id}_temp")
-        self.resource_map["fan"] = FanActuator(f"{object_id}_fan")
+        self.resource_map["temperature"] = TemperatureSensor(f"{self.OBJECT_ID}_temp")
+        self.resource_map["fan"] = FanActuator(f"{self.OBJECT_ID}_fan")
 
-        self.logger = logging.getLogger(f"{object_id}")
+        self.logger = logging.getLogger(f"{self.OBJECT_ID}")
 
     def get_temperature(self) -> float:
         try:
@@ -63,7 +64,7 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             "hvac",
             "room", self.room_id,
             "rack", self.rack_id,
-            "device", self.object_id,
+            "device", self.OBJECT_ID,
             "fan", "control",
         ]
 
@@ -102,7 +103,7 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             MqttConfigurationParameters.RACK_TOPIC,
             self.rack_id,
             MqttConfigurationParameters.DEVICE_TOPIC,
-            self.object_id,
+            self.OBJECT_ID,
             MqttConfigurationParameters.TELEMETRY_TOPIC,
             temperature_sensor.resource_id,
         )
