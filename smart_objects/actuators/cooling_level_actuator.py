@@ -4,37 +4,34 @@ from typing import Dict, Any, ClassVar
 from smart_objects.models.Actuator import Actuator
 from smart_objects.resources.SwitchActuator import SwitchActuator
 
+class CoolingLevelsActuator(SwitchActuator):
+    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:cooling_levels❄️"
+    MIN_LEV: ClassVar[int] = 0
+    MAX_LEV: ClassVar[int] = 5
 
-class FanActuator(SwitchActuator):
-    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:fan🪭"
-    MIN_SPEED: ClassVar[int] = 0
-    MAX_SPEED: ClassVar[int] = 100
-    
     def __init__(self, resource_id: str):
         super().__init__(
             resource_id=resource_id, type=self.RESOURCE_TYPE, is_operational=True
         )
 
         self.state.update({
-            "speed": 0,
-            "target_speed": 0,
+            "level": 0,
         })
 
         self.logger = logging.getLogger(f"{resource_id}")
 
     def _on_status_change(self, old_status: str, new_status: str) -> None:
-        """Handle fan-specific behavior when status changes."""
+        """Handle cooling-specific behavior when status changes."""
         if new_status == "OFF":
-            self.state["speed"] = 0
-            self.state["target_speed"] = 0
-            self.logger.info(f"Fan {self.resource_id} turned off, speed reset to 0")
+            self.state["level"] = 0
+            self.logger.info(f"Cooling {self.resource_id} turned off, level reset to 0")
         else:
-            self.logger.info(f"Fan {self.resource_id} turned on")
+            self.logger.info(f"Cooling {self.resource_id} turned on")
 
     def apply_command(self, command: Dict[str, Any]) -> bool:
         if not self.is_ready_for_commands():
             self.logger.warning(
-                f"Fan {self.resource_id} not ready for commands. Operational: {self.is_operational}"
+                f"CoolingLevelsActuator {self.resource_id} not ready for commands. Operational: {self.is_operational}"
             )
             return False
 
@@ -42,43 +39,40 @@ class FanActuator(SwitchActuator):
 
         try:
             old_status = self.state["status"]
-
+            
             updated = self.apply_switch(command)
-
+            
             if updated and self.state["status"] != old_status:
                 self._on_status_change(old_status, self.state["status"])
-
               
-            if "speed" in command:
-                speed = int(command["speed"])
-                if not (self.MIN_SPEED <= speed <= self.MAX_SPEED):
+            if "level" in command:
+                level = int(command["level"])
+                if not (self.MIN_LEV <= level <= self.MAX_LEV):
                     raise ValueError(
-                        f"Speed must be between {self.MIN_SPEED} and {self.MAX_SPEED}, got: {speed}"
+                        f"Level must be between {self.MIN_LEV} and {self.MAX_LEV}, got: {level}"
                     )
 
-                # Se status è OFF, ignora il comando speed
                 if self.state["status"] == "OFF":
-                    self.logger.warning(f"Cannot set speed while fan is OFF.")
+                    self.logger.warning(f"Cannot set level while cooling is OFF.")
                 else:
-                    self.state["target_speed"] = speed
-                    self.state["speed"] = speed
-                    if speed > 0:
+                    self.state["level"] = level
+                    if level > 0:
                         self.state["status"] = "ON"
                     updated = True
 
             if updated:
                 self.state["last_updated"] = int(time.time())
-                self.logger.info(f"Fan {self.resource_id} updated state: {self.state}")
+                self.logger.info(f"Cooling {self.resource_id} updated state: {self.state}")
                 return True
             else:
                 self.logger.warning(
-                    f"No changes applied to fan {self.resource_id}. Command: {command}"
+                    f"No changes applied to cooling {self.resource_id}. Command: {command}"
                 )
                 return False
 
         except (ValueError, TypeError) as e:
             self.logger.error(
-                f"Failed to apply command {command} to fan {self.resource_id}: {e}"
+                f"Failed to apply command {command} to cooling {self.resource_id}: {e}"
             )
             return False
 
@@ -87,7 +81,8 @@ class FanActuator(SwitchActuator):
             "resource_id": self.resource_id,
             "type": self.type,
             "is_operational": self.is_operational,
-            "max_speed": self.MAX_SPEED,
+            "max_level": self.MAX_LEV,
+            "min_level": self.MIN_LEV,
             **self.state,
         }
 
@@ -97,17 +92,16 @@ class FanActuator(SwitchActuator):
             self.state.update(
                 {
                     "status": "OFF",
-                    "speed": 0,
-                    "target_speed": 0,
+                    "level": 0,
                     "last_updated": int(time.time()),
                 }
             )
-            self.logger.info(f"Fan {self.resource_id} reset to default state.")
+            self.logger.info(f"Cooling {self.resource_id} reset to default state.")
             
             if old_status != "OFF":
                 self._on_status_change(old_status, "OFF")
-            
+
             return True
         except Exception as e:
-            self.logger.error(f"Failed to reset fan {self.resource_id}: {e}")
+            self.logger.error(f"Failed to reset cooling {self.resource_id}: {e}")
             return False
