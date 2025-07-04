@@ -1,6 +1,7 @@
 from factories.room_factory import RoomFactory
 from data_collector.core.data_collector import DataCollector
 from data_collector.core.policy_manager import PolicyManager
+from data_collector.models.Room import Room
 import paho.mqtt.client as mqtt
 from typing import List, Dict, Any
 from config.mqtt_conf_params import MqttConfigurationParameters
@@ -17,9 +18,9 @@ class HVACSystemManager:
             MqttConfigurationParameters.BROKER_ADDRESS,
             MqttConfigurationParameters.BROKER_PORT,
         )
-        
+
         self.initialize_rooms(room_configs)
-        
+
         self.mqtt_client.loop_start()
 
     def initialize_rooms(self, room_configs: List[Dict[str, Any]]) -> None:
@@ -31,6 +32,10 @@ class HVACSystemManager:
             collector = DataCollector(room, policy_manager)
             collector.connect(self.mqtt_client)
             self.data_collectors.append(collector)
+
+    def get_room_by_id(self, room_id: str) -> Room:
+        """Retrieve a room by its ID"""
+        return self.rooms.get(room_id)
 
     def disconnect(self) -> None:
         """Disconnect MQTT client gracefully"""
