@@ -1,5 +1,5 @@
 import logging
-from typing import classVar
+from typing import ClassVar
 from aiocoap import resource
 from typing import Dict, Any
 import paho.mqtt.client as mqtt
@@ -13,7 +13,7 @@ from smart_objects.resources.actuator_control_resource import ActuatorControlRes
 
 
 class WaterLoopController(SmartObject, CoapControllable):
-    OBJECT_ID: classVar[str] = "water_loop_controller"
+    OBJECT_ID: ClassVar[str] = "water_loop_controller"
 
     def __init__(
         self,
