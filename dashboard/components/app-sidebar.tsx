@@ -25,11 +25,6 @@ const menuItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Devices",
-    url: "/devices",
-    icon: Cpu,
-  },
-  {
     title: "Alerts",
     url: "/alerts",
     icon: AlertTriangle,

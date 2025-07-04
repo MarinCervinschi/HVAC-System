@@ -2,10 +2,8 @@
 
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
-import { Bell, Search, User, Cpu } from "lucide-react"
 import { usePathname } from "next/navigation"
 import DashboardHeader from "@/components/headers/dashboard"
-import DevicesHeader from "./headers/device"
 import AlertsHeader from "./headers/alerts"
 import RoomsHeader from "./headers/room"
 import { RackHeader } from "./headers/rack"
@@ -23,8 +21,6 @@ const getHeaderComponent = (pathname: string) => {
   switch (pathname) {
     case "/":
       return <DashboardHeader />
-    case "/devices":
-      return <DevicesHeader />
     case "/rooms":
       // return <RoomsHeader />
       return null
