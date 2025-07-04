@@ -22,6 +22,8 @@ class PumpActuator(SwitchActuator):
             "target_speed": 0,
         })
 
+        self.logger = logging.getLogger(f"{resource_id}")
+
     def _on_status_change(self, old_status: str, new_status: str) -> None:
         """Handle pump-specific behavior when status changes."""
         if new_status == "OFF":
@@ -41,17 +43,13 @@ class PumpActuator(SwitchActuator):
         updated = False
 
         try:
-            # Store old status to detect changes
             old_status = self.state["status"]
             
-            # Prima gestisce il comando di switch usando la classe base
             updated = self.apply_switch(command)
             
-            # Check if status changed and call the callback
             if updated and self.state["status"] != old_status:
                 self._on_status_change(old_status, self.state["status"])
 
-            # Poi gestisce i comandi specifici della pompa
             if "speed" in command:
                 speed = int(command["speed"])
                 if not (self.MIN_SPEED <= speed <= self.MAX_SPEED):
@@ -59,7 +57,6 @@ class PumpActuator(SwitchActuator):
                         f"Speed must be between {self.MIN_SPEED} and {self.MAX_SPEED}, got: {speed}"
                     )
 
-                # Se status è OFF, ignora il comando speed
                 if self.state["status"] == "OFF":
                     self.logger.warning(f"Cannot set speed while pump is OFF.")
                 else:
