@@ -1,16 +1,23 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Dict
-from smart_objects.devices.SmartObject import SmartObject
+from data_collector.models.AbstractSmartEntity import (
+    AbstractSmartEntity,
+)
 
 
-class Rack(ABC):
+class Rack(AbstractSmartEntity, ABC):
     def __init__(self, rack_id: str, rack_type: str):
+        super().__init__()
         self.rack_id = rack_id
         self.rack_type = rack_type
-        self.smart_objects: Dict[str, SmartObject] = {}
 
-    def add_smart_object(self, smart_object: SmartObject):
-        self.smart_objects[smart_object.object_id] = smart_object
+    def to_dict(self) -> Dict:
+        """Return a dictionary representation of the rack."""
+        return {
+            "rack_id": self.rack_id,
+            "rack_type": self.rack_type,
+            "smart_objects": {k: v.to_dict() for k, v in self.smart_objects.items()},
+        }
 
-    def get_smart_object(self, object_id: str) -> SmartObject:
-        return self.smart_objects[object_id]
+    def __str__(self):
+        return f"Rack ID: {self.rack_id}, Type: {self.rack_type}, Smart Objects: {list(self.smart_objects.keys())}"
