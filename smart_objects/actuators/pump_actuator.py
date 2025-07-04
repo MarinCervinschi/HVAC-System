@@ -1,28 +1,35 @@
 import time
 import logging
 from typing import Dict, Any, ClassVar
-from smart_objects.models.Actuator import Actuator
+from smart_objects.resources.SwitchActuator import SwitchActuator
 
 
-class PumpActuator(Actuator):
+class PumpActuator(SwitchActuator):
     RESOURCE_TYPE: ClassVar[str] = "iot:actuator:pump🛠️"
     MIN_SPEED: ClassVar[int] = 0
     MAX_SPEED: ClassVar[int] = 100
-    VALID_STATUSES: ClassVar[list[str]] = ["ON", "OFF"]
 
     def __init__(self, resource_id: str):
         super().__init__(
-            resource_id=resource_id, type=self.RESOURCE_TYPE, is_operational=True
+            resource_id=resource_id, 
+            resource_type=self.RESOURCE_TYPE, 
+            is_operational=True
         )
-
-        self.state = {
-            "status": "OFF",
+        
+        # Aggiungi attributi specifici per la pompa
+        self.state.update({
             "speed": 0,
             "target_speed": 0,
-            "last_updated": int(time.time()),
-        }
+        })
 
-        self.logger = logging.getLogger(f"{resource_id}")
+    def _on_status_change(self, old_status: str, new_status: str) -> None:
+        """Handle pump-specific behavior when status changes."""
+        if new_status == "OFF":
+            self.state["speed"] = 0
+            self.state["target_speed"] = 0
+            self.logger.info(f"Pump {self.resource_id} turned off, speed reset to 0")
+        else:
+            self.logger.info(f"Pump {self.resource_id} turned on")
 
     def apply_command(self, command: Dict[str, Any]) -> bool:
         if not self.is_ready_for_commands():
@@ -34,19 +41,17 @@ class PumpActuator(Actuator):
         updated = False
 
         try:
-            if "status" in command:
-                status = command["status"].upper()
-                if status not in self.VALID_STATUSES:
-                    raise ValueError(
-                        f"Invalid status '{status}'. Must be one of {self.VALID_STATUSES}"
-                    )
-                self.state["status"] = status
-                updated = True
+            # Store old status to detect changes
+            old_status = self.state["status"]
+            
+            # Prima gestisce il comando di switch usando la classe base
+            updated = self.apply_switch(command)
+            
+            # Check if status changed and call the callback
+            if updated and self.state["status"] != old_status:
+                self._on_status_change(old_status, self.state["status"])
 
-                if status == "OFF":
-                    self.state["speed"] = 0
-                    self.state["target_speed"] = 0
-
+            # Poi gestisce i comandi specifici della pompa
             if "speed" in command:
                 speed = int(command["speed"])
                 if not (self.MIN_SPEED <= speed <= self.MAX_SPEED):
@@ -91,22 +96,21 @@ class PumpActuator(Actuator):
 
     def reset(self) -> bool:
         try:
-            self.state.update(
-                {
-                    "status": "OFF",
-                    "speed": 0,
-                    "target_speed": 0,
-                    "last_updated": int(time.time()),
-                }
-            )
+            old_status = self.state["status"]
+            self.state.update({
+                "status": "OFF",
+                "speed": 0,
+                "target_speed": 0,
+                "last_updated": int(time.time()),
+            })
+            
             self.logger.info(f"Pump {self.resource_id} reset to default state.")
+            
+            # Call the status change handler if status changed
+            if old_status != "OFF":
+                self._on_status_change(old_status, "OFF")
+            
             return True
         except Exception as e:
             self.logger.error(f"Failed to reset pump {self.resource_id}: {e}")
             return False
-
-    def is_ready_for_commands(self) -> bool:
-        return self.is_operational
-
-    def to_dict(self) -> Dict[str, Any]:
-        return self.get_current_state()
