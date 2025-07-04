@@ -8,8 +8,8 @@ from smart_objects.resources.CoapControllable import CoapControllable
 from smart_objects.resources.actuator_control_resource import ActuatorControlResource
 
 
-class RackCoolingUnit(SmartObject, CoapControllable):
-    OBJECT_ID: ClassVar[str] = "rack_cooling_unit"
+class CoolingSystemHub(SmartObject, CoapControllable):
+    OBJECT_ID: ClassVar[str] = "cooling_system_hub"
 
     def __init__(
         self,

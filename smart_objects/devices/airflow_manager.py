@@ -11,8 +11,8 @@ from smart_objects.sensors.airspeed_sensor import AirSpeedSensor
 from smart_objects.resources.actuator_control_resource import ActuatorControlResource
 
 
-class RackCoolingUnit(SmartObject, CoapControllable):
-    OBJECT_ID: ClassVar[str] = "rack_cooling_unit"
+class AirflowManager(SmartObject, CoapControllable):
+    OBJECT_ID: ClassVar[str] = "airflow_manager"
 
     def __init__(
         self,
