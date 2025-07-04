@@ -16,7 +16,7 @@ class SmartObject(ABC, Generic[T]):
         self,
         object_id: str,
         room_id: str,
-        rack_id: str,
+        rack_id: str | None,
         mqtt_client: mqtt.Client = None,
     ):
         self.object_id = object_id
