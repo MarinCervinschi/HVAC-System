@@ -1,28 +1,33 @@
-from typing import Any, Dict, Optional, Set, Tuple
+from typing import Any, Dict, Optional, Tuple
 from flask_restful import Resource
-from data_collector.app import get_system_manager
 from data_collector.models.Room import Room
+from data_collector.core.manager import HVACSystemManager
 
 
 class RoomListAPI(Resource):
-    def get(self) -> Tuple[Dict[str, Any], int]:
-        manager = get_system_manager()
 
-        if not manager:
+    def __init__(self, **kwargs):
+        self.system_manager: HVACSystemManager = kwargs.get("system_manager")
+
+    def get(self) -> Tuple[Dict[str, Any], int]:
+
+        if not self.system_manager:
             return {"error": "System manager not available"}, 500
-        rooms = manager.rooms
-        data: Set[Dict[str, Any]] = {room.to_dict() for room in rooms.values()}
+        rooms = self.system_manager.rooms
+        data = list(rooms)
         return {"status": "success", "rooms": data}, 200
 
 
 class RoomDetailAPI(Resource):
-    def get(self, room_id: str) -> Tuple[Dict[str, Any], int]:
-        manager = get_system_manager()
+    def __init__(self, **kwargs):
+        self.system_manager: HVACSystemManager = kwargs.get("system_manager")
 
-        if not manager:
+    def get(self, room_id: str) -> Tuple[Dict[str, Any], int]:
+
+        if not self.system_manager:
             return {"error": "System manager not available"}, 500
 
-        room: Optional[Room] = manager.get_room_by_id(room_id)
+        room: Optional[Room] = self.system_manager.get_room_by_id(room_id)
 
         if not room:
             return {"error": f"Room {room_id} not found"}, 404

@@ -3,9 +3,13 @@ from flask_restful import Resource
 import asyncio
 import json
 from aiocoap import Context, Message, POST
+from data_collector.core.manager import HVACSystemManager
 
 
 class DeviceControlAPI(Resource):
+    def __init__(self, **kwargs):
+        self.system_manager: HVACSystemManager = kwargs.get("system_manager")
+
     def post(self, room_id, rack_id, device_id):
         try:
             payload = request.get_json(force=True)
@@ -27,5 +31,3 @@ class DeviceControlAPI(Resource):
         payload = json.dumps(payload_dict).encode("utf-8")
         request = Message(code=POST, uri=uri, payload=payload)
         response = await context.request(request).response
-        
-
