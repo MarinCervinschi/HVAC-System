@@ -4,7 +4,7 @@ from typing import ClassVar, Dict, Any
 import paho.mqtt.client as mqtt
 from .SmartObject import SmartObject
 from ..messages.telemetry_message import TelemetryMessage
-from smart_objects.actuators.fan_actuator import FanActuator
+from smart_objects.actuators.cooling_level_actuator import CoolingLevelsActuator
 from config.mqtt_conf_params import MqttConfigurationParameters
 from smart_objects.resources.CoapControllable import CoapControllable
 from smart_objects.sensors.airspeed_sensor import AirSpeedSensor
@@ -24,7 +24,7 @@ class RackCoolingUnit(SmartObject, CoapControllable):
         CoapControllable.__init__(self)
 
         self.resource_map["air_speed"] = AirSpeedSensor(f"{self.OBJECT_ID}_air_speed")
-        self.resource_map["fan"] = FanActuator(f"{self.OBJECT_ID}_fan")
+        self.resource_map["cooling_levels"] = CoolingLevelsActuator(f"{self.OBJECT_ID}_cooling_levels")
 
         self.logger = logging.getLogger(f"{self.OBJECT_ID}")
 
@@ -36,21 +36,21 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             self.logger.error(f"Error reading air speed: {e}")
             return 0.0
 
-    def get_fan_status(self) -> Dict[str, Any]:
+    def get_cooling_levels_status(self) -> Dict[str, Any]:
         try:
-            fan: FanActuator = self.get_resource("fan")
-            return fan.get_current_state()
+            cooling_levels: CoolingLevelsActuator = self.get_resource("cooling_levels")
+            return cooling_levels.get_current_state()
         except Exception as e:
-            self.logger.error(f"Error getting fan status: {e}")
+            self.logger.error(f"Error getting cooling levels status: {e}")
             return {}
 
     def get_coap_resource_tree(self) -> resource.Site:
         """Return the CoAP resource tree for this smart object."""
         site = resource.Site()
-        fan_actuator = self.get_resource("fan")
+        cooling_levels_actuator = self.get_resource("cooling_levels")
 
-        if fan_actuator is None:
-            self.logger.error("Fan actuator resource not found!")
+        if cooling_levels_actuator is None:
+            self.logger.error("Cooling levels actuator resource not found!")
             return None
 
         site.add_resource(
@@ -58,22 +58,22 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             resource.WKCResource(site.get_resources_as_linkheader),
         )
 
-        # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/fan/control
+        # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/cooling_levels/control
         resource_path = [
             "hvac",
             "room", self.room_id,
             "rack", self.rack_id,
             "device", self.object_id,
-            "fan", "control",
+            "cooling_levels", "control",
         ]
 
         self.logger.info(
-            f"📢 Registered CoAP fan control resource for {fan_actuator.resource_id} at path: {'/'.join(resource_path)}"
+            f"📢 Registered CoAP cooling levels control resource for {cooling_levels_actuator.resource_id} at path: {'/'.join(resource_path)}"
         )
 
         site.add_resource(
             resource_path,
-            ActuatorControlResource(fan_actuator),
+            ActuatorControlResource(cooling_levels_actuator),
         )
 
         return site
