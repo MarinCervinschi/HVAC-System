@@ -1,43 +1,39 @@
 import time
 import logging
 from typing import Dict, Any, ClassVar
-from smart_objects.models.Actuator import Actuator
+from smart_objects.resources.SwitchActuator import SwitchActuator as BaseSwitchActuator
 
 
-class SwitchActuator(Actuator):
+class SwitchActuatorConcrete(BaseSwitchActuator):
     RESOURCE_TYPE: ClassVar[str] = "iot:actuator:switch🔌"
-    VALID_STATUSES: ClassVar[list[str]] = ["ON", "OFF"]
 
     def __init__(self, resource_id: str):
         super().__init__(
-            resource_id=resource_id, type=self.RESOURCE_TYPE, is_operational=True
+            resource_id=resource_id, 
+            resource_type=self.RESOURCE_TYPE, 
+            is_operational=True
         )
-
-        self.state = {
-            "status": "OFF",
-            "last_updated": int(time.time()),
-        }
-
-        self.logger = logging.getLogger(f"{resource_id}")
-
+    
     def apply_command(self, command: Dict[str, Any]) -> bool:
+        """
+        Apply a command to the switch actuator.
+        
+        Args:
+            command: Dictionary containing the command parameters
+            
+        Returns:
+            bool: True if the command was applied successfully, False otherwise
+        """
         if not self.is_ready_for_commands():
             self.logger.warning(
                 f"Switch {self.resource_id} not ready for commands. Operational: {self.is_operational}"
             )
             return False
-
+        
         updated = False
 
         try:
-            if "status" in command:
-                status = command["status"].upper()
-                if status not in self.VALID_STATUSES:
-                    raise ValueError(
-                        f"Invalid status '{status}'. Must be one of {self.VALID_STATUSES}"
-                    )
-                self.state["status"] = status
-                updated = True
+            updated = self.apply_switch(command)
 
             if updated:
                 self.state["last_updated"] = int(time.time())
@@ -55,30 +51,32 @@ class SwitchActuator(Actuator):
             )
             return False
 
-    def get_current_state(self) -> Dict[str, Any]:
-        return {
-            "resource_id": self.resource_id,
-            "type": self.type,
-            "is_operational": self.is_operational,
-            **self.state,
-        }
-
     def reset(self) -> bool:
+        """Reset the switch actuator to its default state."""
         try:
-            self.state.update(
-                {
-                    "status": "OFF",
-                    "last_updated": int(time.time()),
-                }
-            )
+            old_status = self.state["status"]
+            self.state.update({
+                "status": "OFF",
+                "last_updated": int(time.time()),
+            })
+            
             self.logger.info(f"Switch {self.resource_id} reset to default state.")
+            
+            # Call the specific implementation for status change
+            if old_status != "OFF":
+                self._on_status_change(old_status, "OFF")
+            
             return True
         except Exception as e:
             self.logger.error(f"Failed to reset switch {self.resource_id}: {e}")
             return False
-
-    def is_ready_for_commands(self) -> bool:
-        return self.is_operational
-
-    def to_dict(self) -> Dict[str, Any]:
-        return self.get_current_state()
+    
+    def _on_status_change(self, old_status: str, new_status: str) -> None:
+        """
+        Handle specific behavior when status changes.
+        For a basic switch, we just log the change.
+        """
+        if new_status == "ON":
+            self.logger.info(f"Switch {self.resource_id} turned on")
+        else:
+            self.logger.info(f"Switch {self.resource_id} turned off")
