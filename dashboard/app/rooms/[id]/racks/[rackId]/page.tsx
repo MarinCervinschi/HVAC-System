@@ -81,7 +81,9 @@ export default function RackDetailPage() {
     const [actuatorStates, setActuatorStates] = useState<Record<string, { status: "on" | "off"; level?: number }>>({})
     const [sensorPolicies, setSensorPolicies] = useState<Record<string, { min: number; max: number }>>({})
     const [isToggling, setIsToggling] = useState<Record<string, boolean>>({})
-
+    const [previousActuatorStates, setPreviousActuatorStates] = useState<
+        Record<string, { status: "on" | "off"; level?: number }>
+    >({})
     if (!room || !rack) {
         return (
             <div className="flex flex-col min-h-full">
@@ -192,9 +194,9 @@ export default function RackDetailPage() {
                             <p className="text-sm text-muted-foreground">{state.status === "on" ? "Attivo" : "Spento"}</p>
                         </div>
                         <Switch
-                            checked={state.status === "on"}
+                            checked={state.status === "on" && rackActive}
                             onCheckedChange={(checked) => handleActuatorToggle(actuator.id, checked)}
-                            disabled={isTogglingActuator}
+                            disabled={isTogglingActuator || !rackActive}
                         />
                     </div>
 
@@ -205,29 +207,32 @@ export default function RackDetailPage() {
                         </div>
                     )}
 
-                    {state.status === "on" && actuator.maxLevel && (
+                    {state.status === "on" && rackActive && (actuator.maxLevel || actuator.type === "rack-fan") && (
                         <div className="space-y-4">
                             <Separator />
                             <div>
                                 <Label className="text-sm font-medium">
                                     {actuator.type === "fan"
-                                        ? "Velocità Ventole"
+                                        ? "Velocità Ventole: "
                                         : actuator.type === "pump"
-                                            ? "Velocità Pompa"
-                                            : "Livello"}
-                                    {state.level || actuator.currentLevel}
+                                            ? "Velocità Pompa: "
+                                            : actuator.type === "rack-fan"
+                                                ? "Velocità Ventole Rack: "
+                                                : "Livello: "}
+                                    {state.level || actuator.currentLevel || 3}
                                 </Label>
                                 <Slider
-                                    value={[state.level || actuator.currentLevel || 1]}
+                                    value={[state.level || actuator.currentLevel || 3]}
                                     onValueChange={(value) => handleLevelChange(actuator.id, value[0])}
-                                    max={actuator.maxLevel}
+                                    max={actuator.maxLevel || 5}
                                     min={1}
                                     step={1}
                                     className="mt-2"
+                                    disabled={!rackActive}
                                 />
                                 <div className="flex justify-between text-xs text-muted-foreground mt-1">
                                     <span>Min (1)</span>
-                                    <span>Max ({actuator.maxLevel})</span>
+                                    <span>Max ({actuator.maxLevel || 5})</span>
                                 </div>
                             </div>
                         </div>
@@ -388,6 +393,55 @@ export default function RackDetailPage() {
         )
     }
 
+
+    const handleRackToggle = async (checked: boolean) => {
+        setIsToggling((prev) => ({ ...prev, rack: true }))
+
+        if (!checked) {
+            // Quando spengo il rack, salvo lo stato attuale degli actuator
+            const currentStates: Record<string, { status: "on" | "off"; level?: number }> = {}
+            const statesToSave: Record<string, { status: "on" | "off"; level?: number }> = {}
+
+            rack.smartObjects.forEach((smartObject) => {
+                smartObject.actuators.forEach((actuator) => {
+                    const currentState = getActuatorState(actuator.id, actuator.status, actuator.currentLevel)
+                    // Salvo lo stato attuale per ripristinarlo dopo
+                    statesToSave[actuator.id] = { ...currentState }
+                    // Spengo tutti gli actuator
+                    currentStates[actuator.id] = {
+                        status: "off",
+                        level: currentState.level || actuator.currentLevel,
+                    }
+                })
+            })
+
+            setPreviousActuatorStates(statesToSave)
+            setActuatorStates(currentStates)
+        } else {
+            // Quando riaccendo il rack, ripristino lo stato precedente
+            if (Object.keys(previousActuatorStates).length > 0) {
+                setActuatorStates(previousActuatorStates)
+            } else {
+                // Se non ho stati precedenti, uso gli stati di default
+                const defaultStates: Record<string, { status: "on" | "off"; level?: number }> = {}
+                rack.smartObjects.forEach((smartObject) => {
+                    smartObject.actuators.forEach((actuator) => {
+                        defaultStates[actuator.id] = {
+                            status: actuator.status,
+                            level: actuator.currentLevel,
+                        }
+                    })
+                })
+                setActuatorStates(defaultStates)
+            }
+        }
+
+        // Simula una chiamata API
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        setRackActive(checked)
+        setIsToggling((prev) => ({ ...prev, rack: false }))
+    }
+
     return (
         <div className="flex flex-col min-h-full">
 
@@ -450,8 +504,14 @@ export default function RackDetailPage() {
                                 <p className="text-sm font-medium">Stato Rack</p>
                                 <p className="text-sm text-muted-foreground">{rackActive ? "Rack operativo" : "Rack spento"}</p>
                             </div>
-                            <Switch checked={rackActive} onCheckedChange={setRackActive} />
+                            <Switch checked={rackActive} onCheckedChange={handleRackToggle} disabled={isToggling.rack} />
                         </div>
+                        {isToggling.rack && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                                Aggiornamento rack in corso...
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -499,6 +559,7 @@ export default function RackDetailPage() {
                         </div>
                     )
                 })}
+                
             </div>
         </div>
     )

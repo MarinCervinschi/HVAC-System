@@ -55,7 +55,11 @@ export function RackHeader() {
                     <Download className="h-4 w-4 mr-2" />
                     Esporta Dati
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.refresh()}
+                >
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Aggiorna
                 </Button>
