@@ -11,7 +11,9 @@ class CoolingLevelsActuator(SwitchActuator):
 
     def __init__(self, resource_id: str):
         super().__init__(
-            resource_id=resource_id, type=self.RESOURCE_TYPE, is_operational=True
+            resource_id=resource_id, 
+            resource_type=self.RESOURCE_TYPE, 
+            is_operational=True
         )
 
         self.state.update({
