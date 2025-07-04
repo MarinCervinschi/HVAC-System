@@ -1,4 +1,4 @@
-from factories.room_factory import RoomFactory
+from data_collector.factories.room_factory import RoomFactory
 from data_collector.core.data_collector import DataCollector
 from data_collector.core.policy_manager import PolicyManager
 from data_collector.models.Room import Room

@@ -1,6 +1,6 @@
 from data_collector.models.Room import Room
-from factories.rack_factory import RackFactory
-from factories.smart_object_factory import SmartObjectFactory
+from data_collector.factories.rack_factory import RackFactory
+from data_collector.factories.smart_object_factory import SmartObjectFactory
 """ from smart.EnvironmentMonitor import EnvironmentMonitor
 from smart.CoolingSystemHub import CoolingSystemHub """
 
