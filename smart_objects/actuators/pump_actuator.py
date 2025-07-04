@@ -4,8 +4,8 @@ from typing import Dict, Any, ClassVar
 from smart_objects.models.Actuator import Actuator
 
 
-class FanActuator(Actuator):
-    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:fan🪭"
+class PumpActuator(Actuator):
+    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:pump🛠️"
     MIN_SPEED: ClassVar[int] = 0
     MAX_SPEED: ClassVar[int] = 100
     VALID_STATUSES: ClassVar[list[str]] = ["ON", "OFF"]
@@ -27,7 +27,7 @@ class FanActuator(Actuator):
     def apply_command(self, command: Dict[str, Any]) -> bool:
         if not self.is_ready_for_commands():
             self.logger.warning(
-                f"Fan {self.resource_id} not ready for commands. Operational: {self.is_operational}"
+                f"Pump {self.resource_id} not ready for commands. Operational: {self.is_operational}"
             )
             return False
 
@@ -56,7 +56,7 @@ class FanActuator(Actuator):
 
                 # Se status è OFF, ignora il comando speed
                 if self.state["status"] == "OFF":
-                    self.logger.warning(f"Cannot set speed while fan is OFF.")
+                    self.logger.warning(f"Cannot set speed while pump is OFF.")
                 else:
                     self.state["target_speed"] = speed
                     self.state["speed"] = speed
@@ -66,17 +66,17 @@ class FanActuator(Actuator):
 
             if updated:
                 self.state["last_updated"] = int(time.time())
-                self.logger.info(f"Fan {self.resource_id} updated state: {self.state}")
+                self.logger.info(f"Pump {self.resource_id} updated state: {self.state}")
                 return True
             else:
                 self.logger.warning(
-                    f"No changes applied to fan {self.resource_id}. Command: {command}"
+                    f"No changes applied to pump {self.resource_id}. Command: {command}"
                 )
                 return False
 
         except (ValueError, TypeError) as e:
             self.logger.error(
-                f"Failed to apply command {command} to fan {self.resource_id}: {e}"
+                f"Failed to apply command {command} to pump {self.resource_id}: {e}"
             )
             return False
 
@@ -99,10 +99,10 @@ class FanActuator(Actuator):
                     "last_updated": int(time.time()),
                 }
             )
-            self.logger.info(f"Fan {self.resource_id} reset to default state.")
+            self.logger.info(f"Pump {self.resource_id} reset to default state.")
             return True
         except Exception as e:
-            self.logger.error(f"Failed to reset fan {self.resource_id}: {e}")
+            self.logger.error(f"Failed to reset pump {self.resource_id}: {e}")
             return False
 
     def is_ready_for_commands(self) -> bool:
