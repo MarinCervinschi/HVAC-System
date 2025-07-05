@@ -43,3 +43,10 @@ class HVACSystemManager:
         if self.mqtt_client:
             self.mqtt_client.loop_stop()
             self.mqtt_client.disconnect()
+
+    def __del__(self) -> None:
+        """Ensure MQTT client is disconnected when the manager is deleted"""
+        print("HVACSystemManager is being deleted, disconnecting MQTT client...")
+        self.disconnect()
+        self.data_collectors.clear()
+        self.rooms.clear()
