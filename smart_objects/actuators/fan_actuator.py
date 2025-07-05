@@ -1,7 +1,6 @@
 import time
 import logging
 from typing import Dict, Any, ClassVar
-from smart_objects.models.Actuator import Actuator
 from smart_objects.resources.SwitchActuator import SwitchActuator
 
 
@@ -9,16 +8,18 @@ class FanActuator(SwitchActuator):
     RESOURCE_TYPE: ClassVar[str] = "iot:actuator:fan🪭"
     MIN_SPEED: ClassVar[int] = 0
     MAX_SPEED: ClassVar[int] = 100
-    
+
     def __init__(self, resource_id: str):
         super().__init__(
             resource_id=resource_id, type=self.RESOURCE_TYPE, is_operational=True
         )
 
-        self.state.update({
-            "speed": 0,
-            "target_speed": 0,
-        })
+        self.state.update(
+            {
+                "speed": 0,
+                "target_speed": 0,
+            }
+        )
 
         self.logger = logging.getLogger(f"{resource_id}")
 
@@ -48,7 +49,6 @@ class FanActuator(SwitchActuator):
             if updated and self.state["status"] != old_status:
                 self._on_status_change(old_status, self.state["status"])
 
-              
             if "speed" in command:
                 speed = int(command["speed"])
                 if not (self.MIN_SPEED <= speed <= self.MAX_SPEED):
@@ -103,10 +103,10 @@ class FanActuator(SwitchActuator):
                 }
             )
             self.logger.info(f"Fan {self.resource_id} reset to default state.")
-            
+
             if old_status != "OFF":
                 self._on_status_change(old_status, "OFF")
-            
+
             return True
         except Exception as e:
             self.logger.error(f"Failed to reset fan {self.resource_id}: {e}")

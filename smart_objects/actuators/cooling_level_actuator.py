@@ -1,8 +1,8 @@
 import time
 import logging
 from typing import Dict, Any, ClassVar
-from smart_objects.models.Actuator import Actuator
 from smart_objects.resources.SwitchActuator import SwitchActuator
+
 
 class CoolingLevelsActuator(SwitchActuator):
     RESOURCE_TYPE: ClassVar[str] = "iot:actuator:cooling_levels❄️"
@@ -11,14 +11,14 @@ class CoolingLevelsActuator(SwitchActuator):
 
     def __init__(self, resource_id: str):
         super().__init__(
-            resource_id=resource_id, 
-            resource_type=self.RESOURCE_TYPE, 
-            is_operational=True
+            resource_id=resource_id, type=self.RESOURCE_TYPE, is_operational=True
         )
 
-        self.state.update({
-            "level": 0,
-        })
+        self.state.update(
+            {
+                "level": 0,
+            }
+        )
 
         self.logger = logging.getLogger(f"{resource_id}")
 
@@ -41,12 +41,12 @@ class CoolingLevelsActuator(SwitchActuator):
 
         try:
             old_status = self.state["status"]
-            
+
             updated = self.apply_switch(command)
-            
+
             if updated and self.state["status"] != old_status:
                 self._on_status_change(old_status, self.state["status"])
-              
+
             if "level" in command:
                 level = int(command["level"])
                 if not (self.MIN_LEV <= level <= self.MAX_LEV):
@@ -64,7 +64,9 @@ class CoolingLevelsActuator(SwitchActuator):
 
             if updated:
                 self.state["last_updated"] = int(time.time())
-                self.logger.info(f"Cooling {self.resource_id} updated state: {self.state}")
+                self.logger.info(
+                    f"Cooling {self.resource_id} updated state: {self.state}"
+                )
                 return True
             else:
                 self.logger.warning(
@@ -99,7 +101,7 @@ class CoolingLevelsActuator(SwitchActuator):
                 }
             )
             self.logger.info(f"Cooling {self.resource_id} reset to default state.")
-            
+
             if old_status != "OFF":
                 self._on_status_change(old_status, "OFF")
 

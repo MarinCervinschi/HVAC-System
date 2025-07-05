@@ -11,16 +11,15 @@ class PumpActuator(SwitchActuator):
 
     def __init__(self, resource_id: str):
         super().__init__(
-            resource_id=resource_id, 
-            resource_type=self.RESOURCE_TYPE, 
-            is_operational=True
+            resource_id=resource_id, type=self.RESOURCE_TYPE, is_operational=True
         )
-        
-        # Aggiungi attributi specifici per la pompa
-        self.state.update({
-            "speed": 0,
-            "target_speed": 0,
-        })
+
+        self.state.update(
+            {
+                "speed": 0,
+                "target_speed": 0,
+            }
+        )
 
         self.logger = logging.getLogger(f"{resource_id}")
 
@@ -44,9 +43,9 @@ class PumpActuator(SwitchActuator):
 
         try:
             old_status = self.state["status"]
-            
+
             updated = self.apply_switch(command)
-            
+
             if updated and self.state["status"] != old_status:
                 self._on_status_change(old_status, self.state["status"])
 
@@ -94,19 +93,20 @@ class PumpActuator(SwitchActuator):
     def reset(self) -> bool:
         try:
             old_status = self.state["status"]
-            self.state.update({
-                "status": "OFF",
-                "speed": 0,
-                "target_speed": 0,
-                "last_updated": int(time.time()),
-            })
-            
+            self.state.update(
+                {
+                    "status": "OFF",
+                    "speed": 0,
+                    "target_speed": 0,
+                    "last_updated": int(time.time()),
+                }
+            )
+
             self.logger.info(f"Pump {self.resource_id} reset to default state.")
-            
-            # Call the status change handler if status changed
+
             if old_status != "OFF":
                 self._on_status_change(old_status, "OFF")
-            
+
             return True
         except Exception as e:
             self.logger.error(f"Failed to reset pump {self.resource_id}: {e}")
