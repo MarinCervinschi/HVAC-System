@@ -124,6 +124,7 @@ class SmartObject(ABC, Generic[T]):
         return {
             "id": self.object_id,
             "room_id": self.room_id,
+            "rack_id": self.rack_id,
             "resources": {k: r.to_dict() for k, r in self.resource_map.items()},
         }
 
