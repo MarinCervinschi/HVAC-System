@@ -6,10 +6,8 @@ from data_collector.resources.device import DeviceControlAPI
 from data_collector.resources.policy import PolicyUpdateAPI
 
 import json
-import logging
 
 from data_collector.core.manager import HVACSystemManager
-from dotenv import load_dotenv
 import os
 
 
@@ -17,11 +15,18 @@ def create_app() -> Flask:
     app = Flask(__name__)
     api = Api(app)
 
-    with open("data_collector/conf/rooms_config.json") as f:
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    rooms_config_path = os.path.join(
+        base_dir, "data_collector", "conf", "rooms_config.json"
+    )
+    policy_file_path = os.path.join(base_dir, "data_collector", "conf", "policy.json")
+
+    with open(rooms_config_path) as f:
         room_configs = json.load(f).get("rooms", [])
 
     system_manager = HVACSystemManager(
-        room_configs=room_configs, policy_file="data_collector/conf/policy.json"
+        room_configs=room_configs, policy_file=policy_file_path
     )
 
     # Room endpoints
@@ -52,16 +57,3 @@ def create_app() -> Flask:
     )
 
     return app
-
-
-if __name__ == "__main__":
-    load_dotenv()  # Carica le variabili da .flaskenv e .env
-
-    # Verifica se una variabile tipica di .flaskenv è stata letta, ad esempio FLASK_ENV
-    flask_env = os.getenv("FLASK_ENV")
-    print(f"FLASK_ENV: {flask_env}")
-
-    app = create_app()
-    app.logger.setLevel(logging.INFO)
-    app.logger.info("Starting HVAC System Manager...")
-    app.run(debug=True)
