@@ -4,12 +4,13 @@ from data_collector.core.policy_manager import PolicyManager
 from data_collector.models.Room import Room
 import paho.mqtt.client as mqtt
 from typing import List, Dict, Any
+from data_collector.models.Room import Room
 from config.mqtt_conf_params import MqttConfigurationParameters
 
 
 class HVACSystemManager:
     def __init__(self, room_configs: List[Dict[str, Any]], policy_file: str) -> None:
-        self.rooms: Dict[str, Any] = {}
+        self.rooms: Dict[str, Room] = {}
         self.data_collectors: List[DataCollector] = []
         self.policy_file: str = policy_file
 
