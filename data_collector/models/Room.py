@@ -19,12 +19,20 @@ class Room(AbstractSmartEntity, ABC):
     def get_rack(self, rack_id: str) -> Rack:
         return self.racks[rack_id]
 
-    def to_dict(self) -> Dict:
+    def to_full_dict(self) -> Dict:
         """Return a dictionary representation of the room."""
         return {
             "room_id": self.room_id,
             "racks": {k: v.to_dict() for k, v in self.racks.items()},
             "smart_objects": {k: v.to_dict() for k, v in self.smart_objects.items()},
+        }
+
+    def to_dict(self) -> Dict:
+        """Return a dictionary representation of the room."""
+        return {
+            "room_id": self.room_id,
+            "racks": list(self.racks.keys()),
+            "smart_objects": list(self.smart_objects.keys()),
         }
 
     def __str__(self):

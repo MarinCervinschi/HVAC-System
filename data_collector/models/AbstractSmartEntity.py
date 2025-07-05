@@ -15,6 +15,11 @@ class AbstractSmartEntity(ABC):
         return self.smart_objects[object_id]
 
     @abstractmethod
+    def to_full_dict(self) -> Dict:
+        """Return a full dictionary representation of the entity."""
+        pass
+
+    @abstractmethod
     def to_dict(self) -> Dict:
         """Return a dictionary representation of the entity."""
         pass

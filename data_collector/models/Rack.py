@@ -11,12 +11,20 @@ class Rack(AbstractSmartEntity, ABC):
         self.rack_id = rack_id
         self.rack_type = rack_type
 
+    def to_full_dict(self) -> Dict:
+        """Return a full dictionary representation of the rack."""
+        return {
+            "rack_id": self.rack_id,
+            "rack_type": self.rack_type,
+            "smart_objects": {k: v.to_dict() for k, v in self.smart_objects.items()},
+        }
+
     def to_dict(self) -> Dict:
         """Return a dictionary representation of the rack."""
         return {
             "rack_id": self.rack_id,
             "rack_type": self.rack_type,
-            "smart_objects": {k: v.to_dict() for k, v in self.smart_objects.items()},
+            "smart_objects": list(self.smart_objects.keys()),
         }
 
     def __str__(self):
