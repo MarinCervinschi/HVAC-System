@@ -38,12 +38,27 @@ class SmartObject(ABC, Generic[T]):
                     f"🏁 Starting SmartObject {self.object_id} at {self.room_id}"
                 )
 
+                for resource in self.resource_map.values():
+                    for attr_name in dir(resource):
+                        if attr_name.startswith("start_periodic_"):
+                            start_method = getattr(resource, attr_name)
+                            if callable(start_method):
+                                try:
+                                    start_method()
+                                    self.logger.info(
+                                        f"Called {attr_name} on resource {resource}"
+                                    )
+                                except Exception as e:
+                                    raise RuntimeError(
+                                        f"Error calling {attr_name} on resource {resource}: {e}"
+                                    )
+
                 self._register_resource_listeners()
 
                 if isinstance(self, CoapControllable):
                     self.start_coap_server()
         except Exception as e:
-            self.logger.error(f"Error starting SmartObject {self.object_id}: {e}")
+            raise RuntimeError(f"Failed to start SmartObject {self.object_id}: {e}")
 
     def stop(self) -> None:
         """Stop the SmartObject behavior"""
@@ -60,16 +75,9 @@ class SmartObject(ABC, Generic[T]):
                                     f"Called {attr_name} on resource {resource}"
                                 )
                             except Exception as e:
-                                self.logger.error(
+                                raise RuntimeError(
                                     f"Error calling {attr_name} on resource {resource}: {e}"
                                 )
-
-        if self.mqtt_client is not None:
-            try:
-                self.mqtt_client.disconnect()
-                self.logger.info("MQTT client disconnected.")
-            except Exception as e:
-                self.logger.error(f"Error disconnecting MQTT client: {e}")
 
     @abstractmethod
     def _register_resource_listeners(self) -> None:
@@ -86,7 +94,6 @@ class SmartObject(ABC, Generic[T]):
     ):
         """Create a listener for resource data changes and publish to MQTT topic."""
         publish_data = self._publish_data
-        logger = self.logger
 
         class Listener(ResourceDataListener[data_type]):
             def on_data_changed(self, resource, updated_value):
@@ -95,7 +102,9 @@ class SmartObject(ABC, Generic[T]):
 
                     publish_data(topic, payload, qos, retain)
                 except Exception as e:
-                    logger.error(f"Error publishing data: {e}")
+                    raise RuntimeError(
+                        f"Failed to publish data for resource {resource}: {e}"
+                    )
 
         return Listener()
 
@@ -117,8 +126,7 @@ class SmartObject(ABC, Generic[T]):
             else:
                 self.logger.error("⚠️ MQTT Client is not connected!")
         except Exception as e:
-            self.logger.error(f"🔥 Exception in _publish_data: {e}")
-            raise
+            raise RuntimeError(f"Failed to publish data to topic {topic}: {e}")
 
     def to_dict(self) -> dict:
         return {

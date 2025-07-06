@@ -5,6 +5,7 @@ import threading
 from smart_objects.models.Sensor import Sensor
 from typing import Dict, Any, ClassVar
 
+
 class HumiditySensor(Sensor):
     RESOURCE_TYPE: ClassVar[str] = "iot:sensor:humidity💧"
     UNIT: ClassVar[str] = "%"
@@ -12,7 +13,7 @@ class HumiditySensor(Sensor):
     DEFAULT_MIN_HUMIDITY: ClassVar[float] = 0.0
     DEFAULT_MAX_HUMIDITY: ClassVar[float] = 70.0
     MEASUREMENT_PRECISION: ClassVar[int] = 2
-    UPDATE_PERIOD: ClassVar[int] = 60  
+    UPDATE_PERIOD: ClassVar[int] = 60
     TASK_DELAY_TIME: ClassVar[int] = 5
 
     def __init__(self, resource_id):
@@ -24,14 +25,11 @@ class HumiditySensor(Sensor):
             unit=self.UNIT,
             timestamp=0,
             min=self.DEFAULT_MIN_HUMIDITY,
-            max=self.DEFAULT_MAX_HUMIDITY
+            max=self.DEFAULT_MAX_HUMIDITY,
         )
-        
-        
+
         self.logger = logging.getLogger(f"{resource_id}")
         self._timer = None
-
-        self.start_periodic_event_value_update_task()
 
     def load_updated_value(self) -> float:
         try:
@@ -43,10 +41,12 @@ class HumiditySensor(Sensor):
 
     def measure(self) -> None:
         try:
-            new_value = random.uniform(self.min, self.max)  
+            new_value = random.uniform(self.min, self.max)
             self.value = round(new_value, self.MEASUREMENT_PRECISION)
             self.timestamp = int(time.time())
-            self.logger.debug(f"Humidity measured: {self.value} {self.unit} at timestamp {self.timestamp}")
+            self.logger.debug(
+                f"Humidity measured: {self.value} {self.unit} at timestamp {self.timestamp}"
+            )
         except Exception as e:
             self.logger.error(f"Failed to measure humidity: {e}")
             raise RuntimeError(f"Humidity measurement failed: {e}")
@@ -69,7 +69,7 @@ class HumiditySensor(Sensor):
         self._timer = threading.Timer(self.TASK_DELAY_TIME, update_task)
         self._timer.start()
 
-    def stop_periodic_event_value_update_task(self) -> None: 
+    def stop_periodic_event_value_update_task(self) -> None:
         if self._timer is not None:
             self._timer.cancel()
             self._timer = None
@@ -85,5 +85,5 @@ class HumiditySensor(Sensor):
             "unit": self.unit,
             "timestamp": self.timestamp,
             "min": self.min,
-            "max": self.max
+            "max": self.max,
         }

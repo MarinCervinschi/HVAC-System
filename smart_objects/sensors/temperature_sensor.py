@@ -33,8 +33,6 @@ class TemperatureSensor(Sensor):
         self.logger = logging.getLogger(f"{resource_id}")
         self._timer = None
 
-        self.start_periodic_event_value_update_task()
-
     def measure(self) -> None:
         try:
             new_value = random.uniform(self.min, self.max)
