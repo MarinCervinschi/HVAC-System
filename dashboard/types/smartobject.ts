@@ -4,8 +4,8 @@ import type { Actuator } from "./actuator";
 
 export interface SmartObject {
   id: string
-  name: string
-  type: string
+  room_id: string
+  rack_id?: string
   sensors: Sensor[]
   actuators: Actuator[]
 }

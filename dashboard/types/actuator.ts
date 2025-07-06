@@ -1,10 +1,11 @@
 export interface Actuator {
-  id: string
-  name: string
+  resource_id: string
   type: string
-  status: "on" | "off"      
-  currentLevel?: number
-  maxLevel?: number
-  currentPercentage?: number
-  lastUpdate: string
+  is_operational: boolean
+  status: "ON" | "OFF"
+  max_level?: number
+  min_level?: number
+  level?: number
+  current_percentage?: number
+  last_updated: string
 }

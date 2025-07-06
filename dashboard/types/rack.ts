@@ -1,11 +1,10 @@
 import { SmartObject } from "./smartobject"
 
 export interface Rack {
-  id: string
-  name: string
-  type: "air-cooled" | "water-cooled"
-  location: string
-  smartObjects: SmartObject[]
-  status: "active" | "inactive"
-  lastUpdate: string
+  rack_id: string
+  room_id: string
+  status: "ON" | "OFF"
+  rack_type: "air_cooled" | "water_cooled"
+  smart_objects: SmartObject[]
+  last_update: string
 }

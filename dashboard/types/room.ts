@@ -2,11 +2,10 @@ import { Racks } from "./racks"
 import { SmartObject } from "./smartobject"
 
 export interface Room {
-  id: string
-  name: string
+  room_id: string
   location: string
-  smartObjects: SmartObject[]
+  smart_objects: SmartObject[]
   racks: Racks[]
-  numberOfSmartObjects: number
-  lastUpdate: string
+  total_smart_objects: number
+  last_update: string
 }

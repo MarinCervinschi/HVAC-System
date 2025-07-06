@@ -1,8 +1,7 @@
 export interface Racks {
-  id: string
-  name: string
-  type: "air-cooled" | "water-cooled"
-  smartObjects: string[]
-  status: "active" | "inactive"
-  lastUpdate: string
+  rack_id: string
+  status: "ON" | "OFF"
+  rack_type: "air_cooled" | "water_cooled"
+  smart_objects: string[]
+  last_update: string
 }
