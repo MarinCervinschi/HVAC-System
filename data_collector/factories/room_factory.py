@@ -13,7 +13,8 @@ class RoomFactory:
     @staticmethod
     def create_room(room_conf: Dict[str, Any], mqtt_client: mqtt.Client) -> Room:
         room_id = room_conf["room_id"]
-        room = Room(room_id)
+        location = room_conf["location"]
+        room = Room(room_id, location)
 
         env_monitor = EnvironmentMonitor(room_id, None, mqtt_client)
         cooling_hub = CoolingSystemHub(room_id, None, mqtt_client)

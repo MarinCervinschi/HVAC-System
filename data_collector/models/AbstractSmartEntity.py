@@ -20,10 +20,16 @@ class AbstractSmartEntity(ABC):
         pass
 
     @abstractmethod
-    def to_dict(self) -> Dict:
+    def to_dict(self, title_format: bool = False) -> Dict:
         """Return a dictionary representation of the entity."""
         pass
 
     def to_json(self) -> str:
         """Return a JSON string representation of the entity."""
         return json.dumps(self.to_dict(), indent=4)
+
+    def title_format(self, value: str) -> str:
+        """Convert a string to title format, replacing hyphens with spaces."""
+        for char in ["-", "_"]:
+            value = value.replace(char, " ")
+        return value.title()

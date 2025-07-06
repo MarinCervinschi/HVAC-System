@@ -19,12 +19,23 @@ class Rack(AbstractSmartEntity, ABC):
             "smart_objects": {k: v.to_dict() for k, v in self.smart_objects.items()},
         }
 
-    def to_dict(self) -> Dict:
+    def to_dict(self, title_format: bool = False) -> Dict:
         """Return a dictionary representation of the rack."""
+        if title_format and hasattr(self, "title_format"):
+            rack_id = self.title_format(self.rack_id)
+            rack_type = self.title_format(self.rack_type)
+            smart_objects = [
+                self.title_format(obj_id) for obj_id in self.smart_objects.keys()
+            ]
+        else:
+            rack_id = self.rack_id
+            rack_type = self.rack_type
+            smart_objects = list(self.smart_objects.keys())
+
         return {
-            "rack_id": self.rack_id,
-            "rack_type": self.rack_type,
-            "smart_objects": list(self.smart_objects.keys()),
+            "rack_id": rack_id,
+            "rack_type": rack_type,
+            "smart_objects": smart_objects,
         }
 
     def __str__(self):

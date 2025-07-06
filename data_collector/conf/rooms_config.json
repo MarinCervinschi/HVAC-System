@@ -1,7 +1,8 @@
 {
     "rooms": [
         {
-            "room_id": "room_01",
+            "room_id": "room_A1",
+            "location": "Building A, Floor 1",
             "racks": [
                 {
                     "rack_id": "rack_A1",
@@ -14,7 +15,8 @@
             ]
         },
         {
-            "room_id": "room_02",
+            "room_id": "room_B2",
+            "location": "Building B, Floor 2",
             "racks": [
                 {
                     "rack_id": "rack_A2",
@@ -25,23 +27,7 @@
                     "type": "air_cooled"
                 }
             ]
-        },
-        {
-            "room_id": "room_03",
-            "racks": [
-                {
-                    "rack_id": "rack_W2",
-                    "type": "water_cooled"
-                },
-                {
-                    "rack_id": "rack_W3",
-                    "type": "water_cooled"
-                },
-                {
-                    "rack_id": "rack_A4",
-                    "type": "air_cooled"
-                }
-            ]
         }
+
     ]
 }

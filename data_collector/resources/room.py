@@ -13,9 +13,10 @@ class RoomListAPI(Resource):
 
         if not self.system_manager:
             return {"error": "System manager not available"}, 500
-        rooms = self.system_manager.rooms
-        #data = list(rooms)
-        data = [room.to_dict() for room in rooms.values()]
+
+        rooms: Dict[str, Room] = self.system_manager.rooms
+        data: Dict[str, str] = [room.to_dict(title_format=True) for room in rooms.values()]
+
         return {"status": "success", "rooms": data}, 200
 
 
