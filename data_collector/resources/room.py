@@ -15,7 +15,7 @@ class RoomListAPI(Resource):
             return {"error": "System manager not available"}, 500
 
         rooms: Dict[str, Room] = self.system_manager.rooms
-        data: Dict[str, str] = [room.to_dict(title_format=True) for room in rooms.values()]
+        data: Dict[str, str] = [room.to_dict() for room in rooms.values()]
 
         return {"status": "success", "rooms": data}, 200
 
@@ -35,4 +35,6 @@ class RoomDetailAPI(Resource):
             return {"error": f"Room {room_id} not found"}, 404
 
         data: Dict[str, Any] = room.to_dict()
+        data["racks"] = [rack.to_dict() for rack in room.racks.values()]
+        data["smart_objects"] = [obj.to_dict() for obj in room.smart_objects.values()]
         return {"status": "success", "room": data}, 200

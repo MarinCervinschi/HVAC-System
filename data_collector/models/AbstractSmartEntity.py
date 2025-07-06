@@ -15,21 +15,10 @@ class AbstractSmartEntity(ABC):
         return self.smart_objects[object_id]
 
     @abstractmethod
-    def to_full_dict(self) -> Dict:
-        """Return a full dictionary representation of the entity."""
-        pass
-
-    @abstractmethod
-    def to_dict(self, title_format: bool = False) -> Dict:
+    def to_dict(self, full_dict: bool = False) -> Dict:
         """Return a dictionary representation of the entity."""
         pass
 
     def to_json(self) -> str:
         """Return a JSON string representation of the entity."""
         return json.dumps(self.to_dict(), indent=4)
-
-    def title_format(self, value: str) -> str:
-        """Convert a string to title format, replacing hyphens with spaces."""
-        for char in ["-", "_"]:
-            value = value.replace(char, " ")
-        return value.title()

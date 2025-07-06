@@ -28,27 +28,17 @@ class Room(AbstractSmartEntity, ABC):
             "smart_objects": {k: v.to_dict() for k, v in self.smart_objects.items()},
         }
 
-    def to_dict(self, title_format: bool = False) -> Dict:
+    def to_dict(self, full_dict: bool = False) -> Dict:
         """Return a dictionary representation of the room."""
-        if title_format:
-            room_id = self.title_format(self.room_id)
-            location = self.title_format(self.location)
-            racks = [self.title_format(rack_id) for rack_id in self.racks.keys()]
-            smart_objects = [
-                self.title_format(obj_id) for obj_id in self.smart_objects.keys()
-            ]
-        else:
-            room_id = self.room_id
-            location = self.location
-            racks = list(self.racks.keys())
-            smart_objects = list(self.smart_objects.keys())
+        if full_dict:
+            return self.to_full_dict()
 
         return {
-            "room_id": room_id,
-            "location": location,
+            "room_id": self.room_id,
+            "location": self.location,
             "total_smart_objects": self._num_smart_objects(),
-            "racks": racks,
-            "smart_objects": smart_objects,
+            "racks": list(self.racks.keys()),
+            "smart_objects": list(self.smart_objects.keys()),
         }
 
     def _num_smart_objects(self) -> int:
