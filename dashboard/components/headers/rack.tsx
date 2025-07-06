@@ -4,14 +4,14 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import { ArrowLeft, Wind, Waves, Download, RefreshCw } from "lucide-react";
-import { getRackById } from "@/lib/datacenter-data";
+import { formatName } from "@/lib/utils";
 
 export function RackHeader() {
     const router = useRouter();
     const params = useParams();
     const roomId = params.id as string;
     const rackId = params.rackId as string;
-    const rack = getRackById(roomId, rackId);
+    const rack = formatName(rackId)
 
     if (!rack) {
         return (
@@ -32,18 +32,19 @@ export function RackHeader() {
         <div className="flex w-full h-16 shrink-0 items-center justify-between border-b px-4 md:px-8">
             <div className="flex items-center gap-2">
                 <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg ${rack.type === "air-cooled"
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                        rackId.includes("_A")
                             ? "bg-orange-100 text-orange-600"
                             : "bg-blue-100 text-blue-600"
-                        }`}
+                    }`}
                 >
-                    {rack.type === "air-cooled" ? (
+                    {rackId.includes("_A") ? (
                         <Wind className="h-4 w-4" />
                     ) : (
                         <Waves className="h-4 w-4" />
                     )}
                 </div>
-                <h1 className="text-xl font-semibold">{rack.name}</h1>
+                <h1 className="text-xl font-semibold">{rack}</h1>
             </div>
 
             <div className="flex items-center gap-2">
