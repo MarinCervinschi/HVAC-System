@@ -2,33 +2,71 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Building2, Server, Cpu, ArrowRight, Wifi } from "lucide-react"
+import { Building2, Server, Cpu, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { datacenterData, getTotalStats } from "@/lib/datacenter-data"
-
-const weeklyData = [
-  { day: "Lun", temperature: 22, humidity: 65, power: 85 },
-  { day: "Mar", temperature: 24, humidity: 62, power: 78 },
-  { day: "Mer", temperature: 23, humidity: 68, power: 92 },
-  { day: "Gio", temperature: 25, humidity: 60, power: 88 },
-  { day: "Ven", temperature: 26, humidity: 58, power: 95 },
-  { day: "Sab", temperature: 24, humidity: 63, power: 82 },
-  { day: "Dom", temperature: 23, humidity: 66, power: 79 },
-]
-
-const dailyStats = [
-  { day: "L", value: 85 },
-  { day: "M", value: 92 },
-  { day: "M", value: 78 },
-  { day: "G", value: 95 },
-  { day: "V", value: 88 },
-  { day: "S", value: 82 },
-  { day: "D", value: 79 },
-]
+import { Rooms } from "@/types/rooms"
+import { useEffect, useState } from "react"
+import { formatName } from "@/lib/utils"
 
 export default function Dashboard() {
   const router = useRouter()
-  const { totalRooms, totalRacks, totalDevices } = getTotalStats()
+  const [roomsInfo, setRoomsInfo] = useState<Rooms[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const totalRooms = roomsInfo.length
+  const totalRacks = roomsInfo.reduce((acc, room) => acc + (room.racks ? room.racks.length : 0), 0)
+  const totalDevices = roomsInfo.reduce((acc, room) => acc + (room.total_smart_objects ? room.total_smart_objects : 0), 0)
+
+  // Sample data for local development
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      setRoomsInfo([
+        {
+          room_id: "room_A1",
+          location: "Building A, Floor 1",
+          racks: ["Rack A1", "Rack W1"],
+          total_smart_objects: 8,
+          smart_objects: ["Environment Monitor", "Cooling System Hub"],
+          last_update: "2 min ago",
+        },
+        {
+          room_id: "room_B2",
+          location: "Building B, Floor 2",
+          racks: ["Rack A2", "Rack A3"],
+          total_smart_objects: 8,
+          smart_objects: ["Environment Monitor", "Cooling System Hub"],
+          last_update: "2 min ago",
+        },
+      ])
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const res = await fetch("/hvac/api/rooms")
+
+        if (!res.ok) {
+          console.error("Failed to fetch rooms data:", res.statusText)
+          setError("Failed to fetch rooms data")
+          return
+        }
+
+        const data = await res.json()
+        setRoomsInfo(data)
+      } catch (err: any) {
+        console.error("Unexpected error fetching room information:", err)
+        setError(err.message || "Unknown error")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchRooms()
+  }, [])
+
+  if (loading) return <div>Loading rooms...</div>
 
   return (
     <div className="flex flex-col min-h-full">  
@@ -37,45 +75,48 @@ export default function Dashboard() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Sale Totali</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Rooms</CardTitle>
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalRooms}</div>
-              <p className="text-xs text-muted-foreground">Sale server attive</p>
+              <p className="text-xs text-muted-foreground">Server rooms</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Rack Totali</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Racks</CardTitle>
               <Server className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalRacks}</div>
-              <p className="text-xs text-muted-foreground">Rack in funzione</p>
+              <p className="text-xs text-muted-foreground">Racks</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Dispositivi Attivi</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Devices</CardTitle>
               <Cpu className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalDevices}</div>
-              <p className="text-xs text-muted-foreground">Smart objects operativi</p>
+              <p className="text-xs text-muted-foreground">Smart objects</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Rooms Grid */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-semibold">Sale Server</h2>
+          <h2 className="text-2xl font-semibold">Server Rooms</h2>
           <div className="grid gap-6 md:grid-cols-2">
-            {datacenterData.map((room) => (
+            {roomsInfo.map((room) => (
               <Card
-                key={room.id}
+                key={room.room_id}
                 className="cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => router.push(`/rooms/${room.id}`)}
+                onClick={() => {
+                  console.log("Room clicked:", room.room_id)
+                  router.push(`/rooms/${room.room_id}`)
+                }}
               >
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -84,7 +125,7 @@ export default function Dashboard() {
                         <Building2 className="h-6 w-6" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg">{room.name}</CardTitle>
+                        <CardTitle className="text-lg">{formatName(room.room_id)}</CardTitle>
                         <CardDescription>{room.location}</CardDescription>
                       </div>
                     </div>
@@ -98,14 +139,13 @@ export default function Dashboard() {
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="text-center bg-blue-100 py-3 rounded-lg">
                         <div className="text-lg font-semibold">{room.racks.length}</div>
-                        <div className="text-muted-foreground">Rack</div>
+                        <div className="text-muted-foreground">Racks</div>
                       </div>
                       <div className="text-center bg-blue-100 py-3 rounded-lg">
                         <div className="text-lg font-semibold">
-                          {room.smartObjects.length +
-                            room.racks.reduce((sum, rack) => sum + rack.smartObjects.length, 0)}
+                          {room.total_smart_objects}
                         </div>
-                        <div className="text-muted-foreground">Dispositivi</div>
+                        <div className="text-muted-foreground">Devices</div>
                       </div>
                     </div>
 
@@ -114,17 +154,17 @@ export default function Dashboard() {
                         <span className="text-muted-foreground">Smart Objects:</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {room.smartObjects.map((obj) => (
-                          <Badge key={obj.id} variant="outline" className="text-xs">
-                            {obj.name}
+                        {room.smart_objects.map((obj) => (
+                          <Badge key={obj} variant="outline" className="text-xs">
+                            {obj}
                           </Badge>
                         ))}
                       </div>
                     </div>
 
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Ultimo aggiornamento:</span>
-                      <span>{room.lastUpdate}</span>
+                      <span className="text-muted-foreground">Last update:</span>
+                      <span>{room.last_update}</span>
                     </div>
                   </div>
                 </CardContent>
