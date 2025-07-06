@@ -10,6 +10,8 @@ import json
 from data_collector.core.manager import HVACSystemManager
 import os
 
+BASE_URL = "/hvac/api"
+
 
 def create_app() -> Flask:
     app = Flask(__name__)
@@ -32,27 +34,27 @@ def create_app() -> Flask:
     # Room endpoints
     api.add_resource(
         RoomListAPI,
-        "/hvac/rooms",
+        f"{BASE_URL}/rooms",
         resource_class_kwargs={"system_manager": system_manager},
     )
     api.add_resource(
         RoomDetailAPI,
-        "/hvac/room/<string:room_id>",
+        f"{BASE_URL}/room/<string:room_id>",
         resource_class_kwargs={"system_manager": system_manager},
     )
     api.add_resource(
         RackDetailAPI,
-        "/hvac/room/<string:room_id>/rack/<string:rack_id>",
+        f"{BASE_URL}/room/<string:room_id>/rack/<string:rack_id>",
         resource_class_kwargs={"system_manager": system_manager},
     )
     api.add_resource(
         DeviceControlAPI,
-        "/hvac/room/<string:room_id>/rack/<string:rack_id>/device/<string:device_id>/fan/control",
+        f"{BASE_URL}/room/<string:room_id>/rack/<string:rack_id>/device/<string:device_id>/fan/control",
         resource_class_kwargs={"system_manager": system_manager},
     )
     api.add_resource(
         PolicyUpdateAPI,
-        "/hvac/policies",
+        f"{BASE_URL}/policies",
         resource_class_kwargs={"system_manager": system_manager},
     )
 
