@@ -4,7 +4,7 @@ from data_collector.resources.room import RoomListAPI, RoomDetailAPI
 from data_collector.resources.rack import RackDetailAPI
 from data_collector.resources.device import DeviceControlAPI
 from data_collector.resources.policy import PolicyUpdateAPI
-
+from flask_cors import CORS
 import json
 
 from data_collector.core.manager import HVACSystemManager
@@ -15,6 +15,7 @@ BASE_URL = "/hvac/api"
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    CORS(app)
     api = Api(app)
 
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
