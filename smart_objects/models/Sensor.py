@@ -1,5 +1,8 @@
 from ..resources.SmartObjectResource import SmartObjectResource
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
+
+T = TypeVar("T")
 
 
 class Sensor(SmartObjectResource[float], ABC):
@@ -7,6 +10,7 @@ class Sensor(SmartObjectResource[float], ABC):
         self,
         resource_id: str,
         type: str,
+        data_type: T,
         value: float,
         unit: str,
         timestamp: int,
@@ -15,6 +19,7 @@ class Sensor(SmartObjectResource[float], ABC):
     ):
         super().__init__(resource_id)
         self.type = type
+        self.data_type = data_type
         self.value = value
         self.unit = unit
         self.timestamp = timestamp
@@ -28,6 +33,16 @@ class Sensor(SmartObjectResource[float], ABC):
     @abstractmethod
     def measure(self) -> None:
         """Abstract method to be implemented by subclasses for measuring sensor values."""
+        pass
+
+    @abstractmethod
+    def start_periodic_event_value_update_task(self) -> None:
+        """Abstract method to be implemented by subclasses for starting periodic updates."""
+        pass
+
+    @abstractmethod
+    def stop_periodic_event_value_update_task(self) -> None:
+        """Abstract method to be implemented by subclasses for stopping periodic updates."""
         pass
 
     def _set_min(self, min_value: float) -> None:

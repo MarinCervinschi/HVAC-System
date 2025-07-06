@@ -1,0 +1,195 @@
+{
+    "room_001": [
+        {
+            "id": "temp_control_room_001_high",
+            "description": "Temperature control for room 001 - High temperature threshold",
+            "room_id": "room_001",
+            "rack_id": null,
+            "sensor_type": "temperature",
+            "condition": {
+                "operator": ">",
+                "value": 28.0
+            },
+            "action": {
+                "endpoint": "coap://localhost:5683/hvac/room/001/cooling_hub/actuator/fan",
+                "command": {
+                    "action": "SET",
+                    "value": {
+                        "status": "ON",
+                        "speed": 80
+                    }
+                }
+            }
+        },
+        {
+            "id": "temp_control_room_001_low",
+            "description": "Temperature control for room 001 - Low temperature threshold",
+            "room_id": "room_001",
+            "rack_id": null,
+            "sensor_type": "temperature",
+            "condition": {
+                "operator": "<",
+                "value": 22.0
+            },
+            "action": {
+                "endpoint": "coap://localhost:5683/hvac/room/001/cooling_hub/actuator/fan",
+                "command": {
+                    "action": "SET",
+                    "value": {
+                        "status": "OFF",
+                        "speed": 0
+                    }
+                }
+            }
+        },
+        {
+            "id": "humidity_control_room_001_high",
+            "description": "Humidity control for room 001 - High humidity threshold",
+            "room_id": "room_001",
+            "rack_id": null,
+            "sensor_type": "humidity",
+            "condition": {
+                "operator": ">",
+                "value": 70.0
+            },
+            "action": {
+                "endpoint": "coap://localhost:5683/hvac/room/001/cooling_hub/actuator/dehumidifier",
+                "command": {
+                    "action": "SET",
+                    "value": {
+                        "status": "ON",
+                        "intensity": 60
+                    }
+                }
+            }
+        },
+        {
+            "id": "temp_control_room_001_rack_001_critical",
+            "description": "Critical temperature control for rack 001 in room 001",
+            "room_id": "room_001",
+            "rack_id": "rack_001",
+            "sensor_type": "temperature",
+            "condition": {
+                "operator": ">",
+                "value": 35.0
+            },
+            "action": {
+                "endpoint": "coap://localhost:5683/hvac/room/001/rack/001/device/cooling_unit/actuator/fan",
+                "command": {
+                    "action": "SET",
+                    "value": {
+                        "status": "ON",
+                        "speed": 100
+                    }
+                }
+            }
+        },
+        {
+            "id": "temp_control_room_001_rack_001_normal",
+            "description": "Normal temperature control for rack 001 in room 001",
+            "room_id": "room_001",
+            "rack_id": "rack_001",
+            "sensor_type": "temperature",
+            "condition": {
+                "operator": ">",
+                "value": 30.0
+            },
+            "action": {
+                "endpoint": "coap://localhost:5683/hvac/room/001/rack/001/device/cooling_unit/actuator/fan",
+                "command": {
+                    "action": "SET",
+                    "value": {
+                        "status": "ON",
+                        "speed": 70
+                    }
+                }
+            }
+        },
+        {
+            "id": "temp_control_room_001_rack_002_critical",
+            "description": "Critical temperature control for rack 002 in room 001",
+            "room_id": "room_001",
+            "rack_id": "rack_002",
+            "sensor_type": "temperature",
+            "condition": {
+                "operator": ">",
+                "value": 35.0
+            },
+            "action": {
+                "endpoint": "coap://localhost:5683/hvac/room/001/rack/002/device/cooling_unit/actuator/fan",
+                "command": {
+                    "action": "SET",
+                    "value": {
+                        "status": "ON",
+                        "speed": 100
+                    }
+                }
+            }
+        }
+    ],
+    "room_002": [
+        {
+            "id": "temp_control_room_002_high",
+            "description": "Temperature control for room 002 - High temperature threshold",
+            "room_id": "room_002",
+            "rack_id": null,
+            "sensor_type": "temperature",
+            "condition": {
+                "operator": ">",
+                "value": 27.0
+            },
+            "action": {
+                "endpoint": "coap://localhost:5683/hvac/room/002/cooling_hub/actuator/fan",
+                "command": {
+                    "action": "SET",
+                    "value": {
+                        "status": "ON",
+                        "speed": 75
+                    }
+                }
+            }
+        },
+        {
+            "id": "temp_control_room_002_low",
+            "description": "Temperature control for room 002 - Low temperature threshold",
+            "room_id": "room_002",
+            "rack_id": null,
+            "sensor_type": "temperature",
+            "condition": {
+                "operator": "<",
+                "value": 20.0
+            },
+            "action": {
+                "endpoint": "coap://localhost:5683/hvac/room/002/cooling_hub/actuator/fan",
+                "command": {
+                    "action": "SET",
+                    "value": {
+                        "status": "OFF",
+                        "speed": 0
+                    }
+                }
+            }
+        },
+        {
+            "id": "temp_control_room_002_rack_001_warning",
+            "description": "Warning temperature control for rack 001 in room 002",
+            "room_id": "room_002",
+            "rack_id": "rack_001",
+            "sensor_type": "temperature",
+            "condition": {
+                "operator": ">",
+                "value": 32.0
+            },
+            "action": {
+                "endpoint": "coap://localhost:5683/hvac/room/002/rack/001/device/cooling_unit/actuator/fan",
+                "command": {
+                    "action": "SET",
+                    "value": {
+                        "status": "ON",
+                        "speed": 85
+                    }
+                }
+            }
+        }
+    ]
+}

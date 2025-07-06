@@ -1,0 +1,33 @@
+{
+    "rooms": [
+        {
+            "room_id": "room_A1",
+            "location": "Building A, Floor 1",
+            "racks": [
+                {
+                    "rack_id": "rack_A1",
+                    "type": "air_cooled"
+                },
+                {
+                    "rack_id": "rack_W1",
+                    "type": "water_cooled"
+                }
+            ]
+        },
+        {
+            "room_id": "room_B2",
+            "location": "Building B, Floor 2",
+            "racks": [
+                {
+                    "rack_id": "rack_A2",
+                    "type": "air_cooled"
+                },
+                {
+                    "rack_id": "rack_A3",
+                    "type": "air_cooled"
+                }
+            ]
+        }
+
+    ]
+}

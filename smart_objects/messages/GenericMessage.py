@@ -17,3 +17,7 @@ class GenericMessage(ABC):
 
     def to_json(self) -> str:
         return json.dumps(self, default=lambda o: o.__dict__)
+    
+    @abstractmethod
+    def __str__(self) -> str:
+        pass

@@ -10,6 +10,8 @@ T = TypeVar("T")
 
 class Actuator(SmartObjectResource[Dict[str, Any]], ABC):
 
+    DATA_TYPE: T = Dict[str, Any]
+
     def __init__(
         self,
         resource_id: str,
@@ -19,9 +21,10 @@ class Actuator(SmartObjectResource[Dict[str, Any]], ABC):
 
         super().__init__(resource_id)
         self.type = type
+        self.data_type = self.DATA_TYPE
         self.is_operational = is_operational
 
-        self.logger = logging.getLogger(f"{__name__}.{resource_id}")
+        self.logger = logging.getLogger(f"{resource_id}")
 
     @abstractmethod
     def apply_command(self, command: Dict[str, Any]) -> bool:
