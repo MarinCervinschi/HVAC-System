@@ -18,7 +18,7 @@ class Rack(AbstractSmartEntity, ABC):
 
     def start_all_smart_objects(self):
         """Start all smart objects in the rack."""
-        if not self.is_ready_for_commands():
+        if not self._is_ready_for_commands():
             self.logger.warning(
                 f"Rack {self.rack_id} is not ready for commands. Status: {self.status}"
             )
@@ -34,7 +34,7 @@ class Rack(AbstractSmartEntity, ABC):
     def stop_all_smart_objects(self):
         """Stop all smart objects in the rack."""
         try:
-            if not self.is_ready_for_commands():
+            if not self._is_ready_for_commands():
                 raise RuntimeError(
                     f"Rack {self.rack_id} is not ready for commands. Status: {self.status}"
                 )
@@ -50,29 +50,29 @@ class Rack(AbstractSmartEntity, ABC):
                 f"Error while stopping all smart objects in rack {self.rack_id}: {e}"
             ) from e
 
-    def apply_command(self, command: Dict) -> bool:
-        """Apply a command to the rack."""
-        updated = False
+    def apply_command(self, command: str) -> None:
+        """Apply a status command to the rack."""
         try:
-            if "status" in command:
-                new_status = command["status"]
-                if new_status in ["ON", "OFF"]:
-                    old_status = self.status
-                    self.status = new_status
-                    updated = True
-                    self.logger.info(
-                        f"Rack {self.rack_id} status changed from {old_status} to {new_status}"
-                    )
-                else:
-                    raise ValueError("Invalid status value")
+            if command in ["ON", "OFF"]:
+                old_status = self.status
+                self.status = command
+                self.logger.info(
+                    f"Rack {self.rack_id} status changed from {old_status} to {command}"
+                )
+                if command == "ON":
+                    self.start_all_smart_objects()
+                elif command == "OFF":
+                    self.stop_all_smart_objects()
             else:
-                raise ValueError("Command must contain a 'status' key")
+                raise ValueError("Invalid status value")
         except Exception as e:
             raise RuntimeError(
-                f"Failed to apply command {command} to rack {self.rack_id}: {e}"
+                f"Failed to apply command '{command}' to rack {self.rack_id}: {e}"
             )
 
-        return updated
+    def _is_ready_for_commands(self):
+        """Check if the rack is ready for commands based on its status."""
+        return self.status == "ON"
 
     def to_full_dict(self) -> Dict:
         """Return a full dictionary representation of the rack."""

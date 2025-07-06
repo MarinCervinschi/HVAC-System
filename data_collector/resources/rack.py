@@ -1,3 +1,4 @@
+from flask import request
 from flask_restful import Resource
 from typing import Dict, Any, Optional
 from data_collector.models.Rack import Rack
@@ -23,3 +24,31 @@ class RackDetailAPI(Resource):
 
         data: Dict[str, Any] = rack.to_dict()
         return {"status": "success", "rack": data}, 200
+
+    def post(self, room_id: str, rack_id: str) -> tuple[Dict[str, Any], int]:
+        if not self.system_manager:
+            return {"error": "System manager not available"}, 500
+
+        room: Optional[Room] = self.system_manager.get_room_by_id(room_id)
+        if not room:
+            return {"error": f"Room {room_id} not found"}, 404
+
+        rack: Optional[Rack] = room.get_rack(rack_id)
+        if not rack:
+            return {"error": f"Rack {rack_id} not found in room {room_id}"}, 404
+
+        json_data = request.get_json(force=True)
+        status = json_data.get("status")
+        if status not in ("ON", "OFF"):
+            return {"error": "Invalid status value. Must be 'ON' or 'OFF'."}, 400
+
+        try:
+            rack.apply_command(status)
+        except ValueError as ve:
+            return {"error": str(ve)}, 400
+        except RuntimeError as re:
+            return {"error": str(re)}, 500
+        except AttributeError:
+            return {"error": "Rack object does not support status update."}, 500
+        
+        return {"status": "success"}, 200

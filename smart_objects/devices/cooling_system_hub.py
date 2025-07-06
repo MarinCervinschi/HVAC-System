@@ -46,11 +46,9 @@ class CoolingSystemHub(SmartObject, CoapControllable):
             resource.WKCResource(site.get_resources_as_linkheader),
         )
 
-        # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/cooling_levels/control
         resource_path = [
             "hvac",
             "room", self.room_id,
-            "rack", self.rack_id,
             "device", self.object_id,
             "cooling_levels", "control",
         ]
