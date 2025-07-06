@@ -30,20 +30,23 @@ export function RackHeader() {
 
     return (
         <div className="flex w-full h-16 shrink-0 items-center justify-between border-b px-4 md:px-8">
-            <div className="flex items-center gap-2">
-                <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+            <div className="flex items-center gap-2" >
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`h-8 w-8 rounded-lg ${
                         rackId.includes("_A")
                             ? "bg-orange-100 text-orange-600"
                             : "bg-blue-100 text-blue-600"
                     }`}
+                    onClick={() => router.push(`/`)}
                 >
                     {rackId.includes("_A") ? (
                         <Wind className="h-4 w-4" />
                     ) : (
                         <Waves className="h-4 w-4" />
                     )}
-                </div>
+                </Button>
                 <h1 className="text-xl font-semibold">{rack}</h1>
             </div>
 

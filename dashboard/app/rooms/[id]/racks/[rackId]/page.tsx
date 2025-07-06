@@ -115,7 +115,7 @@ export default function RackDetailPage() {
         setLoading(true)
         setError(null)
         try {
-            const res = await fetch(`/hvac/api/room/${roomId}/rack/${rackId}`)
+            const res = await fetch(`http://localhost:7070/hvac/api/room/${roomId}/rack/${rackId}`)
 
             if (!res.ok) {
                 console.error("Failed to fetch rack data:", res.statusText)
@@ -141,13 +141,7 @@ export default function RackDetailPage() {
     }
 
     useEffect(() => {
-        if (process.env.NODE_ENV === "development") {
-            setRackInfo(mockRack)
-            setLoading(false)
-            setError(null)
-        } else {
-            fetchRackData()
-        }
+        fetchRackData()  
     }, [rackId, roomId])
 
     if (!rackInfo) {

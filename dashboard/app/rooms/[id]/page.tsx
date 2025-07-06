@@ -109,6 +109,7 @@ export default function RoomDetailPage() {
     ]
   }
 
+  /*
   // Use mock data if in development
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
@@ -116,14 +117,15 @@ export default function RoomDetailPage() {
       setLoading(false)
       setError(null)
     }
-  }, [])
+  }, [])*/
 
   useEffect(() => {
     const fetchRoom = async () => {
+      console.log("Fetching room data for roomId:", roomId)
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(`/hvac/api/room/${roomId}`)
+        const res = await fetch(`http://localhost:7070/hvac/api/room/${roomId}`)
 
         if (!res.ok) {
           console.error("Failed to fetch room data:", res.statusText)
@@ -133,6 +135,7 @@ export default function RoomDetailPage() {
 
         const response = await res.json()
         const roomData = response.room || response
+        console.log("Fetched room data:", roomData)
         
         // Converti i smart objects dal nuovo formato al vecchio formato
         const convertedRoomData = {
@@ -142,15 +145,16 @@ export default function RoomDetailPage() {
         
         setRoomInfo(convertedRoomData)
       } catch (err: any) {
+        console.error("Unexpected error fetching room information:", err)
         setError(err.message || "An error occurred while fetching room data")
       } finally {
         setLoading(false)
       }
     }
     
-    if (process.env.NODE_ENV !== "development") {
-      fetchRoom()
-    }
+    
+    fetchRoom()
+    
   }, [roomId])
 
 

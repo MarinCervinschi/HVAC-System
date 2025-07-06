@@ -17,8 +17,7 @@ export default function Dashboard() {
   const totalRooms = roomsInfo.length
   const totalRacks = roomsInfo.reduce((acc, room) => acc + (room.racks ? room.racks.length : 0), 0)
   const totalDevices = roomsInfo.reduce((acc, room) => acc + (room.total_smart_objects ? room.total_smart_objects : 0), 0)
-
-  // Sample data for local development
+ /*  // Sample data for local development
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
       setRoomsInfo([
@@ -41,12 +40,12 @@ export default function Dashboard() {
       ])
       setLoading(false)
     }
-  }, [])
+  }, [])*/
 
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const res = await fetch("/hvac/api/rooms")
+        const res = await fetch("http://localhost:7070/hvac/api/rooms")
 
         if (!res.ok) {
           console.error("Failed to fetch rooms data:", res.statusText)
@@ -55,7 +54,7 @@ export default function Dashboard() {
         }
 
         const data = await res.json()
-        setRoomsInfo(data)
+        setRoomsInfo(data.rooms)
       } catch (err: any) {
         console.error("Unexpected error fetching room information:", err)
         setError(err.message || "Unknown error")
