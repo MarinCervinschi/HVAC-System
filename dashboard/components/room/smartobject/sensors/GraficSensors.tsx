@@ -58,7 +58,7 @@ const defaultSensorConfigs: Record<string, SensorConfig> = {
     }
 }
 
-// Funzione per generare dati mock per i grafici
+// Function to generate mock data for charts
 const generateMockData = (baseValue: number, variance: number = 2) => {
     const data = []
     const startTime = new Date()
@@ -69,13 +69,12 @@ const generateMockData = (baseValue: number, variance: number = 2) => {
         time.setMinutes(time.getMinutes() + i * 4)
         const value = baseValue + (Math.random() - 0.5) * variance
         data.push({
-            time: time.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }),
+            time: time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
             value: Math.round(value * 10) / 10
         })
     }
     return data
 }
-
 
 export default function GraficSensors({ smartObject, sensorTypes }: GraficSensorsProps) {
 
@@ -84,7 +83,7 @@ export default function GraficSensors({ smartObject, sensorTypes }: GraficSensor
         console.log(`Getting config for sensor: ${sensor.resource_id} (${formatType(sensor.type)})`)
 
         if (!defaultConfig) {
-            // Configurazione di fallback per sensori sconosciuti
+            // Fallback configuration for unknown sensors
             return {
                 type: sensor.type,
                 icon: Gauge,
@@ -104,55 +103,62 @@ export default function GraficSensors({ smartObject, sensorTypes }: GraficSensor
                     <Thermometer className="h-5 w-5" />
                     {formatName(smartObject.id)}
                 </CardTitle>
-                <CardDescription>Monitoraggio ambientale della sala</CardDescription>
+                <CardDescription>Room environmental monitoring</CardDescription>
             </CardHeader>
 
             <CardContent>
-                <div className={`grid gap-6 ${smartObject.sensors.length === 1 ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
-                    {smartObject.sensors.map((sensor, index) => {
-                        console.log(`Rendering sensor: ${sensor.resource_id} (${sensor.type}) with value: ${sensor.value}${sensor.unit}`)
-                        const config = getSensorConfig(sensor)
-                        const IconComponent = config.icon
-                        const mockData = generateMockData(sensor.value)
+                {smartObject?.sensors && smartObject.sensors.length > 0 ? (
+                    <div className={`grid gap-6 ${smartObject.sensors.length === 1 ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
+                        {smartObject.sensors.map((sensor, index) => {
+                            console.log(`Rendering sensor: ${sensor.resource_id} (${sensor.type}) with value: ${sensor.value}${sensor.unit}`)
+                            const config = getSensorConfig(sensor)
+                            const IconComponent = config.icon
+                            const mockData = generateMockData(sensor.value)
 
-                        return (
-                            <div
-                                key={`${sensor.type}-${index}`}
-                                className={`border-2 ${config.borderColor} ${config.bgColor} p-6 rounded-lg space-y-4 hover:shadow-md transition-shadow`}
-                            >
-                                <div>
-                                    <div className="flex items-center justify-between">
-                                        <h4 className="font-semibold">{formatType(sensor.type).charAt(0).toUpperCase() + formatType(sensor.type).slice(1)} Sensor</h4>
-                                        <IconComponent className="h-8 w-8" style={{ color: config.color }} />
+                            return (
+                                <div
+                                    key={`${sensor.type}-${index}`}
+                                    className={`border-2 ${config.borderColor} ${config.bgColor} p-6 rounded-lg space-y-4 hover:shadow-md transition-shadow`}
+                                >
+                                    <div>
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="font-semibold">{formatType(sensor.type).charAt(0).toUpperCase() + formatType(sensor.type).slice(1)} Sensor</h4>
+                                            <IconComponent className="h-8 w-8" style={{ color: config.color }} />
+                                        </div>
+                                    </div>
+                                    <p className="text-2xl font-bold mb-2">
+                                        {sensor.value} {sensor.unit}
+                                    </p>
+                                    <div className="h-32">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart data={mockData}>
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis dataKey="time" />
+                                                <YAxis />
+                                                <Tooltip />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="value"
+                                                    stroke={config.color}
+                                                    strokeWidth={2}
+                                                    dot={false}
+                                                />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                        Policy: {sensor.min} {sensor.unit} - {sensor.max} {sensor.unit}
                                     </div>
                                 </div>
-                                <p className="text-2xl font-bold mb-2">
-                                    {sensor.value} {sensor.unit}
-                                </p>
-                                <div className="h-32">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <LineChart data={mockData}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="time" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Line
-                                                type="monotone"
-                                                dataKey="value"
-                                                stroke={config.color}
-                                                strokeWidth={2}
-                                                dot={false}
-                                            />
-                                        </LineChart>
-                                    </ResponsiveContainer>
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                    Policy: {sensor.min} {sensor.unit} - {sensor.max} {sensor.unit}
-                                </div>
-                            </div>
-                        )
-                    })}
-                </div>
+                            )
+                        })}
+                    </div>
+                ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                        <Thermometer className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>No sensors available</p>
+                    </div>
+                )}
             </CardContent>
         </Card>
     )

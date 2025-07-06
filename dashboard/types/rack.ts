@@ -6,5 +6,4 @@ export interface Rack {
   status: "ON" | "OFF"
   rack_type: "air_cooled" | "water_cooled"
   smart_objects: SmartObject[]
-  last_update: string
 }

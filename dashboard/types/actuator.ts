@@ -6,6 +6,8 @@ export interface Actuator {
   max_level?: number
   min_level?: number
   level?: number
-  current_percentage?: number
-  last_updated: string
+  max_speed?: number
+  speed?: number
+  target_speed?: number
+  last_updated: number
 }

@@ -3,7 +3,7 @@ export interface Sensor {
   type: string;                 
   value: number;       
   unit: string;          
-  timestamp: string;       // Timestamp of the last update
+  timestamp: number;        // Timestamp of the last update
   min: number;              // Threshold value for minimum
   max: number;              // Threshold value for maximum
 }

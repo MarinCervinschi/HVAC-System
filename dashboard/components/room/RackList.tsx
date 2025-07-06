@@ -43,12 +43,12 @@ export default function RackList({ roomInfo }: RackListProps) {
                 {rack.status === "ON" ? (
                    <Badge variant="secondary" className="bg-green-100 text-green-700">
                     <Wifi className="h-3 w-3 mr-1" />
-                    Attivo
+                    Active
                   </Badge>
                   ) : (
                     <Badge variant="secondary" className="bg-red-100 text-red-700">
                       <Wifi className="h-3 w-3 mr-1" />
-                      Inattivo
+                      Inactive
                     </Badge>
                   )}
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
@@ -59,9 +59,9 @@ export default function RackList({ roomInfo }: RackListProps) {
               <div className="space-y-5">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex flex-col gap-2">
-                    <span className="text-muted-foreground">Tipo:</span>
+                    <span className="text-muted-foreground">Type:</span>
                     <div className="font-semibold">
-                      {rack.rack_type === "air_cooled" ? "Raffreddamento ad Aria" : "Raffreddamento ad Acqua"}
+                      {rack.rack_type === "air_cooled" ? "Air Cooling" : "Water Cooling"}
                     </div>
                   </div>
                   <div className="flex flex-col gap-2">
@@ -71,7 +71,7 @@ export default function RackList({ roomInfo }: RackListProps) {
                 </div>
 
                 <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground">Dispositivi:</div>
+                  <div className="text-sm text-muted-foreground">Devices:</div>
                   <div className="flex flex-wrap gap-1">
                     {rack.smart_objects.map((obj, index) => (
                       <Badge key={index} variant="outline" className="text-xs">
@@ -82,7 +82,7 @@ export default function RackList({ roomInfo }: RackListProps) {
                 </div>
 
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Ultimo aggiornamento:</span>
+                  <span className="text-muted-foreground">Last update:</span>
                   <span>{rack.last_update}</span>
                 </div>
               </div>
