@@ -34,8 +34,8 @@ class HVACSystemManager:
             collector.connect(self.mqtt_client)
             self.data_collectors.append(collector)
             
-            """ for smart_object in room.smart_objects.values():
-                smart_object.start() """
+            for smart_object in room.smart_objects.values():
+                smart_object.start()
 
     def get_room_by_id(self, room_id: str) -> Room:
         """Retrieve a room by its ID"""
