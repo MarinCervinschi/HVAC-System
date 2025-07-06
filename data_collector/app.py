@@ -58,4 +58,8 @@ def create_app() -> Flask:
         resource_class_kwargs={"system_manager": system_manager},
     )
 
+    @app.errorhandler(404)
+    def not_found(error):
+        return {"message": "Resource not found"}, 404
+
     return app
