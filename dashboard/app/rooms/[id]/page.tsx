@@ -17,9 +17,13 @@ import {
 } from "@/components/ui/dialog"
 import { Settings } from "lucide-react"
 import { Room } from "@/types/room"
+import { SmartObject } from "@/types/smartobject"
+import { Sensor } from "@/types/sensor"
+import { Actuator } from "@/types/actuator"
 import { CoolingSystemHub, RackList } from "@/components/room/smartobject"
 import { formatName } from "@/lib/utils"
 import GraficSensors from "@/components/room/smartobject/sensors/GraficSensors"
+import { convertSmartObjectData } from "@/lib/utils"
 
 export default function RoomDetailPage() {
   const params = useParams()
@@ -127,15 +131,26 @@ export default function RoomDetailPage() {
           return
         }
 
-        const data = await res.json()
-        setRoomInfo(data)
+        const response = await res.json()
+        const roomData = response.room || response
+        
+        // Converti i smart objects dal nuovo formato al vecchio formato
+        const convertedRoomData = {
+          ...roomData,
+          smart_objects: roomData.smart_objects.map(convertSmartObjectData)
+        }
+        
+        setRoomInfo(convertedRoomData)
       } catch (err: any) {
         setError(err.message || "An error occurred while fetching room data")
       } finally {
         setLoading(false)
       }
     }
-    fetchRoom()
+    
+    if (process.env.NODE_ENV !== "development") {
+      fetchRoom()
+    }
   }, [roomId])
 
 

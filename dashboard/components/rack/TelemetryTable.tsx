@@ -23,22 +23,22 @@ export function TelemetryTable({ smartObject, /*getSensorPolicy*/ }: TelemetryTa
     const sensorsWithData = [
         {
             id: "sensor-1",
-            name: "Temperatura",
+            name: "Temperature",
             unit: "°C",
             data: [
                 { time: "10:00", value: 22.5, timestamp: "2024-06-01T10:00:00Z" },
                 { time: "10:05", value: 22.7, timestamp: "2024-06-01T10:05:00Z" },
-                // ...altre letture
+                // ...other readings
             ]
         },
         {
             id: "sensor-2",
-            name: "Umidità",
+            name: "Humidity",
             unit: "%",
             data: [
                 { time: "10:00", value: 45, timestamp: "2024-06-01T10:00:00Z" },
                 { time: "10:05", value: 46, timestamp: "2024-06-01T10:05:00Z" },
-                // ...altre letture
+                // ...other readings
             ]
         }
     ]
@@ -50,9 +50,9 @@ export function TelemetryTable({ smartObject, /*getSensorPolicy*/ }: TelemetryTa
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Activity className="h-5 w-5" />
-                    Dati Telemetrie - {smartObject.name}
+                    Telemetry Data - {smartObject.id}
                 </CardTitle>
-                <CardDescription>Storico delle letture dei sensori</CardDescription>
+                <CardDescription>Sensor readings history</CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="space-y-6">
@@ -67,9 +67,9 @@ export function TelemetryTable({ smartObject, /*getSensorPolicy*/ }: TelemetryTa
                                         <table className="w-full text-sm">
                                             <thead>
                                                 <tr className="border-b bg-muted/50">
-                                                    <th className="h-10 px-4 text-left align-middle font-medium">Ora</th>
-                                                    <th className="h-10 px-4 text-left align-middle font-medium">Valore</th>
-                                                    <th className="h-10 px-4 text-left align-middle font-medium">Stato</th>
+                                                    <th className="h-10 px-4 text-left align-middle font-medium">Time</th>
+                                                    <th className="h-10 px-4 text-left align-middle font-medium">Value</th>
+                                                    <th className="h-10 px-4 text-left align-middle font-medium">Status</th>
                                                     <th className="h-10 px-4 text-left align-middle font-medium">Timestamp</th>
                                                 </tr>
                                             </thead>
@@ -89,12 +89,12 @@ export function TelemetryTable({ smartObject, /*getSensorPolicy*/ }: TelemetryTa
                                                                 {/*isOverThreshold ? (
                                                                     <Badge variant="destructive" className="text-xs">
                                                                         <AlertTriangle className="h-3 w-3 mr-1" />
-                                                                        Fuori soglia
+                                                                        Out of range
                                                                     </Badge>
                                                                 ) : */(
                                                                     <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
                                                                         <CheckCircle className="h-3 w-3 mr-1" />
-                                                                        Normale
+                                                                        Normal
                                                                     </Badge>
                                                                 )}
                                                             </td>

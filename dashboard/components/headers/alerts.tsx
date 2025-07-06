@@ -14,28 +14,28 @@ const AlertsHeader: React.FC = () => (
             <h1 className="text-xl font-semibold">Alerts</h1>
         </div>
         <div className="flex items-center gap-2">
-            <Input placeholder="Cerca alerts..." className="w-64" />
+            <Input placeholder="Search alerts..." className="w-64" />
             <Select>
                 <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Filtra per stato" />
+                    <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="all">Tutti</SelectItem>
-                    <SelectItem value="active">Attivi</SelectItem>
-                    <SelectItem value="acknowledged">Riconosciuti</SelectItem>
-                    <SelectItem value="resolved">Risolti</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="acknowledged">Acknowledged</SelectItem>
+                    <SelectItem value="resolved">Resolved</SelectItem>
                 </SelectContent>
             </Select>
             <Select>
                 <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Filtra per gravità" />
+                    <SelectValue placeholder="Filter by severity" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="all">Tutte</SelectItem>
-                    <SelectItem value="critical">Critica</SelectItem>
-                    <SelectItem value="high">Alta</SelectItem>
-                    <SelectItem value="medium">Media</SelectItem>
-                    <SelectItem value="low">Bassa</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
                 </SelectContent>
             </Select>
         </div>

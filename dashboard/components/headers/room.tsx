@@ -16,12 +16,12 @@ const RoomsHeader: React.FC = () => {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
                     <Building2 className="h-4 w-4" />
                 </div>
-                <h1 className="text-xl font-semibold">{room ? `${room}` : "Stanza non trovata"}</h1>
+                <h1 className="text-xl font-semibold">{room ? `${room}` : "Room not found"}</h1>
             </div>
             <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={() => router.back()}>
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Indietro
+                    Back
                 </Button>
             </div>
         </div>

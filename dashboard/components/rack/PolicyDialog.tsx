@@ -36,7 +36,7 @@ export function PolicyDialog({ smartObject, getSensorPolicy, onPolicyChange }: P
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Policy - {smartObject.name}</DialogTitle>
-                    <DialogDescription>Configura le soglie per i sensori</DialogDescription>
+                    <DialogDescription>Configure thresholds for sensors</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                     {sensorsWithPolicies.map((sensor) => {
@@ -84,7 +84,7 @@ export function PolicyDialog({ smartObject, getSensorPolicy, onPolicyChange }: P
                         )
                     })}
                 </div>
-                <Button>Salva Policy</Button>
+                <Button>Save Policy</Button>
             </DialogContent>
         </Dialog>
     )

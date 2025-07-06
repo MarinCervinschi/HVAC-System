@@ -60,10 +60,10 @@ export function SmartObjectSection({
             
             <div className="grid grid-cols-2 gap-20">
                 <div className="space-y-6">
-                    {/* Sensori */}
+                    {/* Sensors */}
                     {smartObject.sensors && smartObject.sensors.length > 0 && (
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Sensori</h3>
+                            <h3 className="text-lg font-semibold">Sensors</h3>
                             <div className="flex flex-col">
                                 {smartObject.sensors.map((sensor) => (
                                     <SensorCard
@@ -76,10 +76,10 @@ export function SmartObjectSection({
                         </div>
                     )}
 
-                    {/* Attuatori */}
+                    {/* Actuators */}
                     {smartObject.actuators && smartObject.actuators.length > 0 && (
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Attuatori</h3>
+                            <h3 className="text-lg font-semibold">Actuators</h3>
                             <div className="flex flex-col">
                                 {smartObject.actuators.map((actuator) => (
                                     <ActuatorCard
@@ -101,7 +101,7 @@ export function SmartObjectSection({
                     )}
                 </div>
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Telemetrie</h3>
+                    <h3 className="text-lg font-semibold">Telemetry</h3>
                     <TelemetryTable
                         smartObject={smartObject}
                         //getSensorPolicy={getSensorPolicy}

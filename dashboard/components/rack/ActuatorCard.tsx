@@ -49,14 +49,14 @@ export function ActuatorCard({
                     <ActuatorIcon className="h-5 w-5" />
                     {formatName(actuator.resource_id)}
                 </CardTitle>
-                <CardDescription>Controllo attuatore</CardDescription>
+                <CardDescription>Actuator control</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                        <p className="text-sm font-medium">Stato</p>
+                        <p className="text-sm font-medium">Status</p>
                         <p className="text-sm text-muted-foreground">
-                            {actuator.status === "ON" ? "Attivo" : "Spento"}
+                            {actuator.status === "ON" ? "Active" : "Inactive"}
                         </p>
                     </div>
                     <Switch
@@ -69,7 +69,7 @@ export function ActuatorCard({
                 {isToggling && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <RefreshCw className="h-4 w-4 animate-spin" />
-                        Aggiornamento in corso...
+                        Updating...
                     </div>
                 )}
 
@@ -79,10 +79,10 @@ export function ActuatorCard({
                         <div>
                             <Label className="text-sm font-medium">
                                 {actuator.type.includes("fan")
-                                    ? "Velocità Ventole: "
+                                    ? "Fan Speed: "
                                     : actuator.type.includes("pump")
-                                        ? "Velocità Pompa: "
-                                        : "Livello: "}
+                                        ? "Pump Speed: "
+                                        : "Level: "}
                                 {actuator.type.includes("fan") || actuator.type.includes("pump")
                                     ? `${actuatorState.speed || actuator.speed || 0}%`
                                     : actuatorState.level || actuator.level || 3}
@@ -111,7 +111,7 @@ export function ActuatorCard({
                 )}
 
                 <div className="text-xs text-muted-foreground">
-                    Ultimo aggiornamento: {new Date(actuator.last_updated * 1000).toLocaleString()}
+                    Last updated: {new Date(actuator.last_updated * 1000).toLocaleString()}
                 </div>
             </CardContent>
         </Card>

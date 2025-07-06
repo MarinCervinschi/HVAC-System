@@ -44,7 +44,7 @@ export function SensorCard({ sensor, /*policy*/ }: SensorCardProps) {
             </CardHeader>
             <CardContent>
                 <div className="space-y-3">
-                    <CardDescription>Ultimo valore noto:</CardDescription>
+                    <CardDescription>Last known value:</CardDescription>
                     <div className="flex items-center justify-between">
                         <span className="text-2xl font-bold">
                             {sensor.value} {sensor.unit}
@@ -63,7 +63,7 @@ export function SensorCard({ sensor, /*policy*/ }: SensorCardProps) {
                             Thresholds: {sensor.min} {sensor.unit} - {sensor.max} {sensor.unit}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                            Ultimo aggiornamento: {sensor.timestamp}
+                            Last updated: {sensor.timestamp}
                         </div>
                     </div>
                 </div>

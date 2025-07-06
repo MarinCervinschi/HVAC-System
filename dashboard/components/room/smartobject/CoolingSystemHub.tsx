@@ -19,7 +19,7 @@ export default function CoolingSystemHub({
   initialCoolingLevel = 3, 
   initialCoolingStatus = true 
 }: CoolingSystemHubProps) {
-  const coolingActuator = smartObject.actuators.find((a) => a.type === "cooling")
+  const coolingActuator = smartObject.actuators?.find((a) => a.type === "cooling")
   const [coolingLevel, setCoolingLevel] = useState(initialCoolingLevel)
   const [coolingStatus, setCoolingStatus] = useState(initialCoolingStatus)
 
@@ -30,15 +30,15 @@ export default function CoolingSystemHub({
           <Snowflake className="h-5 w-5" />
           Cooling System Hub
         </CardTitle>
-        <CardDescription>Sistema di raffreddamento della sala</CardDescription>
+        <CardDescription>Room cooling system</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-sm font-medium">Stato Sistema</p>
+              <p className="text-sm font-medium">System Status</p>
               <p className="text-sm text-muted-foreground">
-                {coolingStatus ? "Sistema attivo" : "Sistema spento"}
+                {coolingStatus ? "System active" : "System off"}
               </p>
             </div>
             <Switch checked={coolingStatus} onCheckedChange={setCoolingStatus} />
@@ -47,7 +47,7 @@ export default function CoolingSystemHub({
           {coolingStatus && (
             <div className="space-y-4">
               <div>
-                <Label className="text-sm font-medium mb-3">Livello Raffreddamento: {coolingLevel}</Label>
+                <Label className="text-sm font-medium mb-3">Cooling Level: {coolingLevel}</Label>
                 <Slider
                   value={[coolingLevel]}
                   onValueChange={(value) => setCoolingLevel(value[0])}

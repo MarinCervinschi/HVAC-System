@@ -10,12 +10,12 @@ import { AlertTriangle, AlertCircle, CheckCircle, Clock, Thermometer, Droplets, 
 const alerts = [
   {
     id: 1,
-    title: "Temperatura Elevata",
-    device: "Sensore Temperatura - Sala Server",
-    location: "Sala Server",
+    title: "High Temperature",
+    device: "Temperature Sensor - Server Room",
+    location: "Server Room",
     severity: "high",
     status: "active",
-    message: "La temperatura ha superato la soglia di 25°C",
+    message: "Temperature has exceeded the threshold of 25°C",
     currentValue: "26.8°C",
     threshold: "25°C",
     timestamp: "2024-01-15 14:30:25",
@@ -24,12 +24,12 @@ const alerts = [
   },
   {
     id: 2,
-    title: "Umidità Critica",
-    device: "Sensore Umidità - Magazzino",
-    location: "Magazzino",
+    title: "Critical Humidity",
+    device: "Humidity Sensor - Warehouse",
+    location: "Warehouse",
     severity: "critical",
     status: "active",
-    message: "Livello di umidità critico rilevato",
+    message: "Critical humidity level detected",
     currentValue: "85%",
     threshold: "75%",
     timestamp: "2024-01-15 14:25:10",
@@ -38,12 +38,12 @@ const alerts = [
   },
   {
     id: 3,
-    title: "Consumo Energetico Anomalo",
-    device: "Contatore Energia - Produzione",
-    location: "Area Produzione",
+    title: "Abnormal Energy Consumption",
+    device: "Energy Meter - Production",
+    location: "Production Area",
     severity: "medium",
     status: "active",
-    message: "Consumo energetico superiore alla media",
+    message: "Energy consumption above average",
     currentValue: "5.2 kW",
     threshold: "4.5 kW",
     timestamp: "2024-01-15 14:15:45",
@@ -52,26 +52,26 @@ const alerts = [
   },
   {
     id: 4,
-    title: "Temperatura Normalizzata",
-    device: "Sensore Temperatura - Laboratorio",
-    location: "Laboratorio",
+    title: "Temperature Normalized",
+    device: "Temperature Sensor - Laboratory",
+    location: "Laboratory",
     severity: "low",
     status: "resolved",
-    message: "La temperatura è tornata nei parametri normali",
+    message: "Temperature has returned to normal parameters",
     currentValue: "23.2°C",
     threshold: "25°C",
     timestamp: "2024-01-15 13:45:20",
-    duration: "Risolto",
+    duration: "Resolved",
     icon: Thermometer,
   },
   {
     id: 5,
-    title: "Dispositivo Offline",
-    device: "Sensore Temperatura - Laboratorio",
-    location: "Laboratorio",
+    title: "Device Offline",
+    device: "Temperature Sensor - Laboratory",
+    location: "Laboratory",
     severity: "high",
     status: "acknowledged",
-    message: "Il dispositivo non risponde da oltre 2 ore",
+    message: "Device has not responded for over 2 hours",
     currentValue: "N/A",
     threshold: "N/A",
     timestamp: "2024-01-15 12:30:15",
@@ -80,16 +80,16 @@ const alerts = [
   },
   {
     id: 6,
-    title: "Umidità Ottimale",
-    device: "Sensore Umidità - Ufficio",
-    location: "Ufficio",
+    title: "Optimal Humidity",
+    device: "Humidity Sensor - Office",
+    location: "Office",
     severity: "low",
     status: "resolved",
-    message: "Livello di umidità tornato nella norma",
+    message: "Humidity level back to normal",
     currentValue: "62%",
     threshold: "70%",
     timestamp: "2024-01-15 11:20:30",
-    duration: "Risolto",
+    duration: "Resolved",
     icon: Droplets,
   },
 ]
@@ -147,7 +147,7 @@ export default function AlertsPage() {
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Alert Attivi</CardTitle>
+              <CardTitle className="text-sm font-medium">Active Alerts</CardTitle>
               <AlertTriangle className="h-4 w-4 text-red-600" />
             </CardHeader>
             <CardContent>
@@ -156,7 +156,7 @@ export default function AlertsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Riconosciuti</CardTitle>
+              <CardTitle className="text-sm font-medium">Acknowledged</CardTitle>
               <Clock className="h-4 w-4 text-yellow-600" />
             </CardHeader>
             <CardContent>
@@ -165,7 +165,7 @@ export default function AlertsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Risolti Oggi</CardTitle>
+              <CardTitle className="text-sm font-medium">Resolved Today</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
@@ -174,7 +174,7 @@ export default function AlertsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Totale Alert</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Alerts</CardTitle>
               <AlertCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -186,7 +186,7 @@ export default function AlertsPage() {
         {/* Active Alerts */}
         {activeAlerts.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-red-600">Alert Attivi</h2>
+            <h2 className="text-xl font-semibold text-red-600">Active Alerts</h2>
             <div className="space-y-3">
               {activeAlerts.map((alert) => {
                 const IconComponent = alert.icon
@@ -223,15 +223,15 @@ export default function AlertsPage() {
                         <p className="text-sm">{alert.message}</p>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
-                            <span className="text-muted-foreground">Valore Attuale:</span>
+                            <span className="text-muted-foreground">Current Value:</span>
                             <div className="font-semibold">{alert.currentValue}</div>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Soglia:</span>
+                            <span className="text-muted-foreground">Threshold:</span>
                             <div className="font-semibold">{alert.threshold}</div>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Durata:</span>
+                            <span className="text-muted-foreground">Duration:</span>
                             <div className="font-semibold">{alert.duration}</div>
                           </div>
                           <div>
@@ -241,13 +241,13 @@ export default function AlertsPage() {
                         </div>
                         <div className="flex gap-2">
                           <Button size="sm" variant="outline">
-                            Riconosci
+                            Acknowledge
                           </Button>
                           <Button size="sm" variant="outline">
-                            Risolvi
+                            Resolve
                           </Button>
                           <Button size="sm" variant="outline">
-                            Dettagli
+                            Details
                           </Button>
                         </div>
                       </div>
@@ -262,7 +262,7 @@ export default function AlertsPage() {
         {/* Acknowledged Alerts */}
         {acknowledgedAlerts.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-yellow-600">Alert Riconosciuti</h2>
+            <h2 className="text-xl font-semibold text-yellow-600">Acknowledged Alerts</h2>
             <div className="space-y-3">
               {acknowledgedAlerts.map((alert) => {
                 const IconComponent = alert.icon
@@ -296,15 +296,15 @@ export default function AlertsPage() {
                         <p className="text-sm">{alert.message}</p>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
-                            <span className="text-muted-foreground">Valore Attuale:</span>
+                            <span className="text-muted-foreground">Current Value:</span>
                             <div className="font-semibold">{alert.currentValue}</div>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Soglia:</span>
+                            <span className="text-muted-foreground">Threshold:</span>
                             <div className="font-semibold">{alert.threshold}</div>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Durata:</span>
+                            <span className="text-muted-foreground">Duration:</span>
                             <div className="font-semibold">{alert.duration}</div>
                           </div>
                           <div>
@@ -314,10 +314,10 @@ export default function AlertsPage() {
                         </div>
                         <div className="flex gap-2">
                           <Button size="sm" variant="outline">
-                            Risolvi
+                            Resolve
                           </Button>
                           <Button size="sm" variant="outline">
-                            Dettagli
+                            Details
                           </Button>
                         </div>
                       </div>
@@ -332,7 +332,7 @@ export default function AlertsPage() {
         {/* Resolved Alerts */}
         {resolvedAlerts.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-green-600">Alert Risolti</h2>
+            <h2 className="text-xl font-semibold text-green-600">Resolved Alerts</h2>
             <div className="space-y-3">
               {resolvedAlerts.map((alert) => {
                 const IconComponent = alert.icon
@@ -366,15 +366,15 @@ export default function AlertsPage() {
                         <p className="text-sm">{alert.message}</p>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
-                            <span className="text-muted-foreground">Valore Attuale:</span>
+                            <span className="text-muted-foreground">Current Value:</span>
                             <div className="font-semibold">{alert.currentValue}</div>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Soglia:</span>
+                            <span className="text-muted-foreground">Threshold:</span>
                             <div className="font-semibold">{alert.threshold}</div>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Stato:</span>
+                            <span className="text-muted-foreground">Status:</span>
                             <div className="font-semibold">{alert.duration}</div>
                           </div>
                           <div>

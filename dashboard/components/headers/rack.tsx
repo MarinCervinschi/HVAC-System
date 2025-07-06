@@ -19,10 +19,10 @@ export function RackHeader() {
                 <div className="flex items-center gap-2">
                     <Button variant="ghost" size="sm" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4 mr-2" />
-                        Indietro
+                        Back
                     </Button>
                     <Separator orientation="vertical" className="h-4" />
-                    <h1 className="text-xl font-semibold">Rack non trovato</h1>
+                    <h1 className="text-xl font-semibold">Rack not found</h1>
                 </div>
             </div>
         );
@@ -50,11 +50,11 @@ export function RackHeader() {
             <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={() => router.back()}>
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Indietro
+                    Back
                 </Button>
                 <Button variant="outline" size="sm">
                     <Download className="h-4 w-4 mr-2" />
-                    Esporta Dati
+                    Export Data
                 </Button>
                 <Button
                     variant="outline"
@@ -62,7 +62,7 @@ export function RackHeader() {
                     onClick={() => router.refresh()}
                 >
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    Aggiorna
+                    Refresh
                 </Button>
             </div>
         </div>

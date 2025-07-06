@@ -16,7 +16,7 @@ export default function RackList({ roomInfo }: RackListProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-semibold">Rack</h2>
+      <h2 className="text-2xl font-semibold">Racks</h2>
       <div className="grid gap-4 md:grid-cols-2">
         {roomInfo.racks.map((rack) => (
           <Card
