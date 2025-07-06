@@ -23,6 +23,10 @@ class RackDetailAPI(Resource):
             return {"error": f"Rack {rack_id} not found in room {room_id}"}, 404
 
         data: Dict[str, Any] = rack.to_dict()
+        data["room_id"] = room_id
+        data["smart_objects"] = [
+            smart_object.to_dict() for smart_object in rack.smart_objects.values()
+        ]
         return {"status": "success", "rack": data}, 200
 
     def post(self, room_id: str, rack_id: str) -> tuple[Dict[str, Any], int]:
@@ -50,5 +54,5 @@ class RackDetailAPI(Resource):
             return {"error": str(re)}, 500
         except AttributeError:
             return {"error": "Rack object does not support status update."}, 500
-        
+
         return {"status": "success"}, 200
