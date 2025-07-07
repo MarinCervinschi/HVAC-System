@@ -43,7 +43,7 @@ class CoolingSystemHub(SmartObject, CoapControllable):
 
         site.add_resource(
             (".well-known", "core"),
-            resource.WKCResource(site.get_resources_as_linkheader),
+            resource.WKCResource(site.get_resources_as_linkheader, impl_info=None)
         )
 
         resource_path = [

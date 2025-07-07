@@ -55,7 +55,7 @@ class EnergyMeteringUnit(SmartObject, CoapControllable):
 
         site.add_resource(
             (".well-known", "core"),
-            resource.WKCResource(site.get_resources_as_linkheader),
+            resource.WKCResource(site.get_resources_as_linkheader, impl_info=None)
         )
 
         # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/switch/control
