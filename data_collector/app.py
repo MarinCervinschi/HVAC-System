@@ -4,6 +4,7 @@ from data_collector.resources.room import RoomListAPI, RoomDetailAPI
 from data_collector.resources.rack import RackDetailAPI
 from data_collector.resources.device import DeviceControlAPI
 from data_collector.resources.policy import PolicyUpdateAPI
+from data_collector.resources.policy import PolicyRoomAPI
 from flask_cors import CORS
 import json
 
@@ -15,7 +16,7 @@ BASE_URL = "/hvac/api"
 
 def create_app() -> Flask:
     app = Flask(__name__)
-    CORS(app)
+    CORS(app)  # Enable CORS for all domains
     api = Api(app)
 
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -56,6 +57,12 @@ def create_app() -> Flask:
     api.add_resource(
         PolicyUpdateAPI,
         f"{BASE_URL}/policies",
+        resource_class_kwargs={"system_manager": system_manager},
+    )
+
+    api.add_resource(
+        PolicyRoomAPI,
+        f"{BASE_URL}/room/<string:room_id>/policies",
         resource_class_kwargs={"system_manager": system_manager},
     )
 
