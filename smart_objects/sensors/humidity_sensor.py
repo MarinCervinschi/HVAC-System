@@ -13,7 +13,7 @@ class HumiditySensor(Sensor):
     DEFAULT_MIN_HUMIDITY: ClassVar[float] = 0.0
     DEFAULT_MAX_HUMIDITY: ClassVar[float] = 70.0
     MEASUREMENT_PRECISION: ClassVar[int] = 2
-    UPDATE_PERIOD: ClassVar[int] = 60
+    UPDATE_PERIOD: ClassVar[int] = 10
     TASK_DELAY_TIME: ClassVar[int] = 5
 
     def __init__(self, resource_id):
