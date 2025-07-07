@@ -1,14 +1,42 @@
 from aiocoap import resource, Message, Code
 import json
 import traceback
-from typing import Callable
 from smart_objects.models.Actuator import Actuator
+from typing import  Optional, Dict
 
 
 class ActuatorControlResource(resource.Resource):
-    def __init__(self, actuator: Actuator):
+    def __init__(self, actuator: Actuator, attributes: Dict[str, Optional[str]]):
         super().__init__()
         self.actuator = actuator
+        self.attributes = attributes
+
+    def get_link_description(self):
+        """Return CoAP link attributes for this actuator resource"""
+        name = self.actuator.resource_id.replace("_", " ").title()
+        attributes = {
+            "title": f"{name} Control",
+        }
+
+        if hasattr(self.actuator, "rt"):
+            attributes["rt"] = " ".join(self.actuator.rt)
+        else:
+            type = self.actuator.type.split(":")[-1]
+            attributes["rt"] = "core.a hvac.actuator." + type
+
+        if hasattr(self.actuator, "if_"):
+            attributes["if"] = " ".join(self.actuator.if_)
+        else:
+            attributes["if"] = "core.a"
+
+        if hasattr(self.actuator, "ct"):
+            attributes["ct"] = " ".join(str(ct) for ct in self.actuator.ct)
+        else:
+            attributes["ct"] = "0 50"
+
+        attributes.update(self.attributes)
+
+        return attributes
 
     async def render_post(self, request: Message) -> Message:
         try:

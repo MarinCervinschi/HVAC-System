@@ -3,8 +3,8 @@ import logging
 import paho.mqtt.client as mqtt
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar, Any, Dict
+from smart_objects.models.Actuator import Actuator
 from smart_objects.messages.GenericMessage import GenericMessage
-from smart_objects.resources.CoapControllable import CoapControllable
 from smart_objects.resources.SmartObjectResource import SmartObjectResource
 from smart_objects.resources.ResourceDataListener import ResourceDataListener
 
@@ -39,6 +39,9 @@ class SmartObject(ABC, Generic[T]):
                 )
 
                 for resource in self.resource_map.values():
+                    if isinstance(resource, Actuator):
+                        resource.set_operational_status(True)
+                        continue
                     for attr_name in dir(resource):
                         if attr_name.startswith("start_periodic_"):
                             start_method = getattr(resource, attr_name)
@@ -55,8 +58,6 @@ class SmartObject(ABC, Generic[T]):
 
                 self._register_resource_listeners()
 
-                if isinstance(self, CoapControllable):
-                    self.start_coap_server()
         except Exception as e:
             raise RuntimeError(f"Failed to start SmartObject {self.object_id}: {e}")
 
@@ -65,6 +66,10 @@ class SmartObject(ABC, Generic[T]):
         self.logger.info(f"Stopping SmartObject {self.object_id} at {self.room_id}")
         if self.resource_map:
             for resource in self.resource_map.values():
+                if isinstance(resource, Actuator):
+                    resource.set_operational_status(False)
+                    resource.reset()
+                    continue
                 for attr_name in dir(resource):
                     if attr_name.startswith("stop_periodic_"):
                         stop_method = getattr(resource, attr_name)

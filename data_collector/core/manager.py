@@ -1,10 +1,11 @@
-from data_collector.factories.room_factory import RoomFactory
-from data_collector.core.data_collector import DataCollector
-from data_collector.core.policy_manager import PolicyManager
-from data_collector.models.Room import Room
 import paho.mqtt.client as mqtt
 from typing import List, Dict, Any
 from data_collector.models.Room import Room
+from smart_objects.resources.CoapServer import CoapServer
+from data_collector.core.data_collector import DataCollector
+from data_collector.core.policy_manager import PolicyManager
+from data_collector.factories.room_factory import RoomFactory
+from smart_objects.resources.CoapControllable import CoapControllable
 from config.mqtt_conf_params import MqttConfigurationParameters
 
 
@@ -19,10 +20,12 @@ class HVACSystemManager:
             MqttConfigurationParameters.BROKER_ADDRESS,
             MqttConfigurationParameters.BROKER_PORT,
         )
+        self.coap_server = CoapServer()
 
         self.initialize_rooms(room_configs)
-
         self.mqtt_client.loop_start()
+        
+        self.coap_server.start_coap_server()
 
     def initialize_rooms(self, room_configs: List[Dict[str, Any]]) -> None:
         for room_conf in room_configs:
@@ -34,18 +37,28 @@ class HVACSystemManager:
             collector.connect(self.mqtt_client)
             self.data_collectors.append(collector)
             
-            """ for smart_object in room.smart_objects.values():
-                smart_object.start() """
+            for smart_object in room.smart_objects.values():
+                smart_object.start()
+                if isinstance(smart_object, CoapControllable):
+                    self.coap_server.add_smart_object(smart_object)
+            
+            for rack in room.racks.values():
+                for smart_object in rack.smart_objects.values():
+                    if isinstance(smart_object, CoapControllable):
+                        self.coap_server.add_smart_object(smart_object)
 
     def get_room_by_id(self, room_id: str) -> Room:
         """Retrieve a room by its ID"""
         return self.rooms.get(room_id)
 
     def disconnect(self) -> None:
-        """Disconnect MQTT client gracefully"""
+        """Disconnect MQTT client and CoAP server gracefully"""
         if self.mqtt_client:
             self.mqtt_client.loop_stop()
             self.mqtt_client.disconnect()
+        
+        if hasattr(self, 'coap_server'):
+            self.coap_server.stop_coap_server()
 
     def __del__(self) -> None:
         """Ensure MQTT client is disconnected when the manager is deleted"""

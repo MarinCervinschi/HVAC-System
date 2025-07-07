@@ -7,6 +7,9 @@ sys.path.insert(0, project_root)
 from data_collector.app import create_app
 import logging
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+
 if __name__ == "__main__":
     try:
         flask_env = os.getenv("FLASK_ENV")

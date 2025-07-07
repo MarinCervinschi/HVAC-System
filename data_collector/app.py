@@ -50,7 +50,7 @@ def create_app() -> Flask:
     )
     api.add_resource(
         DeviceControlAPI,
-        f"{BASE_URL}/room/<string:room_id>/rack/<string:rack_id>/device/<string:device_id>/fan/control",
+        f"{BASE_URL}/proxy/forward",
         resource_class_kwargs={"system_manager": system_manager},
     )
     api.add_resource(

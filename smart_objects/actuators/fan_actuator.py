@@ -5,13 +5,15 @@ from smart_objects.resources.SwitchActuator import SwitchActuator
 
 
 class FanActuator(SwitchActuator):
-    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:fan🪭"
+    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:fan"
     MIN_SPEED: ClassVar[int] = 0
     MAX_SPEED: ClassVar[int] = 100
 
-    def __init__(self, resource_id: str):
+    def __init__(self, resource_id: str, is_operational: bool = False):
         super().__init__(
-            resource_id=resource_id, type=self.RESOURCE_TYPE, is_operational=True
+            resource_id=resource_id,
+            type=self.RESOURCE_TYPE,
+            is_operational=is_operational,
         )
 
         self.state.update(
@@ -23,7 +25,7 @@ class FanActuator(SwitchActuator):
 
         self.logger = logging.getLogger(f"{resource_id}")
 
-    def _on_status_change(self, old_status: str, new_status: str) -> None:
+    def _on_status_change(self, new_status: str) -> None:
         """Handle fan-specific behavior when status changes."""
         if new_status == "OFF":
             self.state["speed"] = 0
@@ -32,22 +34,14 @@ class FanActuator(SwitchActuator):
         else:
             self.logger.info(f"Fan {self.resource_id} turned on")
 
-    def apply_command(self, command: Dict[str, Any]) -> bool:
-        if not self.is_ready_for_commands():
-            self.logger.warning(
-                f"Fan {self.resource_id} not ready for commands. Operational: {self.is_operational}"
-            )
-            return False
-
-        updated = False
-
+    def _apply_command(self, command: Dict[str, Any]) -> None:
         try:
             old_status = self.state["status"]
 
-            updated = self.apply_switch(command)
+            self.apply_switch(command)
 
-            if updated and self.state["status"] != old_status:
-                self._on_status_change(old_status, self.state["status"])
+            if self.state["status"] != old_status:
+                self._on_status_change(self.state["status"])
 
             if "speed" in command:
                 speed = int(command["speed"])
@@ -56,31 +50,18 @@ class FanActuator(SwitchActuator):
                         f"Speed must be between {self.MIN_SPEED} and {self.MAX_SPEED}, got: {speed}"
                     )
 
-                # Se status è OFF, ignora il comando speed
                 if self.state["status"] == "OFF":
-                    self.logger.warning(f"Cannot set speed while fan is OFF.")
+                    if "status" not in command:
+                        raise ValueError("Cannot set speed while fan is OFF.")
                 else:
                     self.state["target_speed"] = speed
                     self.state["speed"] = speed
-                    if speed > 0:
-                        self.state["status"] = "ON"
-                    updated = True
 
-            if updated:
-                self.state["last_updated"] = int(time.time())
-                self.logger.info(f"Fan {self.resource_id} updated state: {self.state}")
-                return True
-            else:
-                self.logger.warning(
-                    f"No changes applied to fan {self.resource_id}. Command: {command}"
-                )
-                return False
+            self.state["last_updated"] = int(time.time())
+            self.logger.info(f"Fan {self.resource_id} updated state: {self.state}")
 
         except (ValueError, TypeError) as e:
-            self.logger.error(
-                f"Failed to apply command {command} to fan {self.resource_id}: {e}"
-            )
-            return False
+            raise e
 
     def get_current_state(self) -> Dict[str, Any]:
         return {
@@ -91,7 +72,7 @@ class FanActuator(SwitchActuator):
             **self.state,
         }
 
-    def reset(self) -> bool:
+    def reset(self) -> None:
         try:
             old_status = self.state["status"]
             self.state.update(
@@ -102,12 +83,9 @@ class FanActuator(SwitchActuator):
                     "last_updated": int(time.time()),
                 }
             )
-            self.logger.info(f"Fan {self.resource_id} reset to default state.")
 
             if old_status != "OFF":
-                self._on_status_change(old_status, "OFF")
+                self._on_status_change("OFF")
 
-            return True
         except Exception as e:
-            self.logger.error(f"Failed to reset fan {self.resource_id}: {e}")
-            return False
+            raise RuntimeError(f"Failed to reset fan {self.resource_id}: {e}")
