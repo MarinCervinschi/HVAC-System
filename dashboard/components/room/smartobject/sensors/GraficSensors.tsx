@@ -131,7 +131,7 @@ export default function GraficSensors({ smartObject, sensorTypes }: GraficSensor
                                     </p>
                                     <div className="h-32">
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <LineChart data={mockData}>
+                                            <LineChart data={sensor.history || []} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                                                 <CartesianGrid strokeDasharray="3 3" />
                                                 <XAxis dataKey="time" />
                                                 <YAxis />

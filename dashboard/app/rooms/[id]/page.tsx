@@ -24,6 +24,7 @@ import { CoolingSystemHub, RackList } from "@/components/room/smartobject"
 import { formatName } from "@/lib/utils"
 import GraficSensors from "@/components/room/smartobject/sensors/GraficSensors"
 import { convertSmartObjectData } from "@/lib/utils"
+import { useMQTTClient } from "@/hooks/useMqttClient"
 
 export default function RoomDetailPage() {
   const params = useParams()
@@ -32,139 +33,98 @@ export default function RoomDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [roomInfo, setRoomInfo] = useState<Room>()
-
-  // Mock data for local development
-  const mockRoom: Room = {
-    room_id: "room_A1",
-    location: "Building A, Floor 1",
-    last_update: "2 min ago",
-    total_smart_objects: 8,
-    racks: [
-      {
-        rack_id: "rack_A1",
-        rack_type: "air_cooled",
-        last_update: "2 min ago",
-        smart_objects: [
-          "rack_cooling_unit",
-          "energy_metering_unit",
-          "airflow_manager"
-        ],
-        status: "OFF"
-      },
-      {
-        rack_id: "rack_W1",
-        rack_type: "water_cooled",
-        last_update: "2 min ago",
-        smart_objects: [
-          "rack_cooling_unit",
-          "energy_metering_unit",
-          "water_loop_controller"
-        ],
-        status: "OFF"
-      }
-    ],
-    smart_objects: [
-      {
-        id: "environment_monitor",
-        room_id: "room_A1",
-        sensors: [
-          {
-            resource_id: "environment_monitor_temp",
-            type: "iot:sensor:temperature",
-            value: 0.0,
-            unit: "Celsius",
-            timestamp: 0,
-            min: 25.0,
-            max: 45.0
-          },
-          {
-            resource_id: "environment_monitor_humidity",
-            type: "iot:sensor:humidity",
-            value: 0.0,
-            unit: "%",
-            timestamp: 0,
-            min: 0.0,
-            max: 70.0
-          }
-        ],
-        actuators: []
-      },
-      {
-        id: "cooling_system_hub",
-        room_id: "room_A1",
-        sensors: [],
-        actuators: [
-          {
-            resource_id: "cooling_system_hub_cooling_levels",
-            type: "iot:actuator:cooling_levels❄",
-            is_operational: true,
-            max_level: 5,
-            min_level: 0,
-            status: "OFF",
-            level: 0,
-            last_updated: 1751821537
-          }
-        ]
-      }
-    ]
-  }
-
-  /*
-  // Use mock data if in development
-  useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
-      setRoomInfo(mockRoom)
-      setLoading(false)
-      setError(null)
-    }
-  }, [])*/
-
-  useEffect(() => {
-    const fetchRoom = async () => {
-      console.log("Fetching room data for roomId:", roomId)
-      setLoading(true)
-      setError(null)
-      try {
-        const res = await fetch(`http://localhost:7070/hvac/api/room/${roomId}`)
-
-        if (!res.ok) {
-          console.error("Failed to fetch room data:", res.statusText)
-          setError("Failed to fetch room data")
-          return
-        }
-
-        const response = await res.json()
-        const roomData = response.room || response
-        console.log("Fetched room data:", roomData)
-        
-        // Converti i smart objects dal nuovo formato al vecchio formato
-        const convertedRoomData = {
-          ...roomData,
-          smart_objects: roomData.smart_objects.map(convertSmartObjectData)
-        }
-        
-        setRoomInfo(convertedRoomData)
-      } catch (err: any) {
-        console.error("Unexpected error fetching room information:", err)
-        setError(err.message || "An error occurred while fetching room data")
-      } finally {
-        setLoading(false)
-      }
-    }
-    
-    
-    fetchRoom()
-    
-  }, [roomId])
-
-
   const [coolingLevel, setCoolingLevel] = useState(3)
   const [coolingStatus, setCoolingStatus] = useState(true)
   const [tempPolicy, setTempPolicy] = useState({ min: 18, max: 25 })
   const [humidityPolicy, setHumidityPolicy] = useState({ min: 40, max: 60 })
 
-  // Get smart objects data
-  const coolingHub = roomInfo?.smart_objects.find((obj) => obj.id === "cooling_system_hub")
+
+  useEffect(() => {
+    const fetchRoom = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await fetch(`http://localhost:7070/hvac/api/room/${roomId}`)
+        if (!res.ok) {
+          setError("Failed to fetch room data")
+          return
+        }
+        const response = await res.json()
+        const roomData = response.room || response
+        const convertedRoomData = {
+          ...roomData,
+          smart_objects: roomData.smart_objects.map(convertSmartObjectData)
+        }
+        // Carica la history dai dati locali salvati per ogni sensore
+        const updatedSmartObjects = convertedRoomData.smart_objects.map((obj: SmartObject) => ({
+          ...obj,
+          sensors: obj.sensors?.map((sensor: Sensor) => {
+            const cachedHistory = localStorage.getItem(`sensor-history-${sensor.resource_id}`)
+            return cachedHistory ? { ...sensor, history: JSON.parse(cachedHistory) } : sensor
+          }) ?? [],
+        }))
+        setRoomInfo({ ...convertedRoomData, smart_objects: updatedSmartObjects })
+      } catch (err: any) {
+        console.error("Error fetching room:", err)
+        setError(err.message || "An error occurred while fetching room data")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchRoom()
+  }, [roomId])
+
+  const mqttTopics = roomInfo?.smart_objects?.flatMap(obj =>
+    (obj.sensors?.map((sensor: Sensor) => `hvac/room/${roomId}/device/${obj.id}/telemetry/${sensor.resource_id}`) ?? [])
+  ) || []
+
+  
+  useMQTTClient({
+    brokerUrl: "ws://localhost:9001",
+    topics: mqttTopics,
+    onMessage: (topic, message) => {
+      try {
+        let jsonMessage = message
+        if (message.startsWith('{') && !message.includes('"')) {
+          jsonMessage = message
+            .replace(/\{/g, '{"').replace(/:/g, '":"').replace(/,/g, '","').replace(/\}$/g, '"}')
+            .replace(/"(\d+\.?\d*)"}/g, '$1}').replace(/"(\d+\.?\d*)",/g, '$1,"').replace(/":"(\d+\.?\d*)",/g, '":$1,"')
+        }
+        const telemetryData = JSON.parse(jsonMessage)
+        const topicParts = topic.split("/")
+        const resourceId = topicParts[topicParts.length - 1]
+        const value = telemetryData.data_value ?? telemetryData.data__value
+        const timestamp = telemetryData.timestamp || Date.now()
+
+        const newHistoryEntry = { time: new Date(timestamp).toLocaleTimeString(), value }
+        setRoomInfo(prev =>
+          prev ? {
+            ...prev,
+            smart_objects: prev.smart_objects.map(obj => ({
+              ...obj,
+              sensors: obj.sensors?.map(sensor => {
+                if (sensor.resource_id === resourceId) {
+                  const updatedHistory = [
+                    ...(sensor.history ?? []),
+                    newHistoryEntry
+                  ].slice(-5)
+                  localStorage.setItem(`sensor-history-${sensor.resource_id}`, JSON.stringify(updatedHistory))
+                  return { ...sensor, value, timestamp, history: updatedHistory }
+                }
+                return sensor
+              }) ?? [],
+            }))
+          } : prev
+        )
+      } catch (error) {
+        console.error("Error parsing MQTT message:", error)
+      }
+    },
+  })
+
+  const coolingHub = roomInfo?.smart_objects?.find(obj => obj.id === "cooling_system_hub")
+
+
 
   if (!roomInfo) {
     return (

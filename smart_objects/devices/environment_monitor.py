@@ -87,12 +87,10 @@ class EnvironmentMonitor(SmartObject):
             self.logger.error("Humidity sensor resource not found!")
             return
 
-        # /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/telemetry/{humidity_sensor.resource_id}
-        topic = "{0}/{1}/{2}/{3}/{4}/{5}/{6}/{7}".format(
+        # /hvac/room/{room_id}/device/{object_id}/telemetry/{humidity_sensor.resource_id}
+        topic = "{0}/{1}/{2}/{3}/{4}/{5}".format(
             MqttConfigurationParameters.BASIC_TOPIC,
             self.room_id,
-            MqttConfigurationParameters.RACK_TOPIC,
-            self.rack_id,
             MqttConfigurationParameters.DEVICE_TOPIC,
             self.object_id,
             MqttConfigurationParameters.TELEMETRY_TOPIC,

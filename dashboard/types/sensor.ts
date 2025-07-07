@@ -6,4 +6,8 @@ export interface Sensor {
   timestamp: number;        // Timestamp of the last update
   min: number;              // Threshold value for minimum
   max: number;              // Threshold value for maximum
+  history?: Array<{         // Optional field for telemetry history
+    time: string;
+    value: number;
+  }>;
 }
