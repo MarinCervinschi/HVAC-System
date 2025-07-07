@@ -12,7 +12,7 @@ async def start_gateway_coap_server():
     discoverer = DeviceDiscoverer(registry)
 
     print("🚀 Starting CoAP Gateway...")
-    devices = [CoapConfigurationParameters.COAP_SERVER_ADDRESS, "192.168.1.101"]
+    devices = [CoapConfigurationParameters.COAP_SERVER_ADDRESS]
 
     print("🔍 Checking device connectivity...")
     for ip in devices:

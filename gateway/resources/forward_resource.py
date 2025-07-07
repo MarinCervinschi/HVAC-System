@@ -25,6 +25,7 @@ class ForwardResource(Resource):
                     payload=b"Missing required fields: object_id, room_id, or command",
                 )
 
+            print(f"Forwarding command to object_id: {object_id}, room_id: {room_id}, rack_id: {rack_id}, command: {command}")
             uri: Optional[str] = self.registry.get_resource_uri(
                 object_id, room_id, rack_id
             )

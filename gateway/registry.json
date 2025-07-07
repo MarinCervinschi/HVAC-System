@@ -35,19 +35,6 @@
     },
     {
       "port": 5683,
-      "path": "hvac/room/room_A1/rack/rack_A1/device/energy_metering_unit/switch/control",
-      "attributes": {
-        "title": "Energy Metering Unit Switch Control",
-        "rt": "core.a hvac.actuator.switch",
-        "if": "core.a",
-        "ct": "0 50",
-        "room_id": "room_A1",
-        "rack_id": "rack_A1",
-        "object_id": "energy_metering_unit"
-      }
-    },
-    {
-      "port": 5683,
       "path": "hvac/room/room_A1/rack/rack_A1/device/airflow_manager/cooling_levels/control",
       "attributes": {
         "title": "Airflow Manager Cooling Levels Control",
@@ -70,19 +57,6 @@
         "room_id": "room_A1",
         "rack_id": "rack_W1",
         "object_id": "rack_cooling_unit"
-      }
-    },
-    {
-      "port": 5683,
-      "path": "hvac/room/room_A1/rack/rack_W1/device/energy_metering_unit/switch/control",
-      "attributes": {
-        "title": "Energy Metering Unit Switch Control",
-        "rt": "core.a hvac.actuator.switch",
-        "if": "core.a",
-        "ct": "0 50",
-        "room_id": "room_A1",
-        "rack_id": "rack_W1",
-        "object_id": "energy_metering_unit"
       }
     },
     {
@@ -126,19 +100,6 @@
     },
     {
       "port": 5683,
-      "path": "hvac/room/room_B2/rack/rack_A2/device/energy_metering_unit/switch/control",
-      "attributes": {
-        "title": "Energy Metering Unit Switch Control",
-        "rt": "core.a hvac.actuator.switch",
-        "if": "core.a",
-        "ct": "0 50",
-        "room_id": "room_B2",
-        "rack_id": "rack_A2",
-        "object_id": "energy_metering_unit"
-      }
-    },
-    {
-      "port": 5683,
       "path": "hvac/room/room_B2/rack/rack_A2/device/airflow_manager/cooling_levels/control",
       "attributes": {
         "title": "Airflow Manager Cooling Levels Control",
@@ -161,19 +122,6 @@
         "room_id": "room_B2",
         "rack_id": "rack_A3",
         "object_id": "rack_cooling_unit"
-      }
-    },
-    {
-      "port": 5683,
-      "path": "hvac/room/room_B2/rack/rack_A3/device/energy_metering_unit/switch/control",
-      "attributes": {
-        "title": "Energy Metering Unit Switch Control",
-        "rt": "core.a hvac.actuator.switch",
-        "if": "core.a",
-        "ct": "0 50",
-        "room_id": "room_B2",
-        "rack_id": "rack_A3",
-        "object_id": "energy_metering_unit"
       }
     },
     {
