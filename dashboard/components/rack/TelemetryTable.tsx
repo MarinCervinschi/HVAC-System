@@ -8,6 +8,7 @@ import {
     CheckCircle,
 } from "lucide-react"
 import { SmartObject } from "@/types/smartobject"
+import { formatName } from "@/lib/utils"
 
 interface TelemetryTableProps {
     smartObject: SmartObject
@@ -56,54 +57,64 @@ export function TelemetryTable({ smartObject, /*getSensorPolicy*/ }: TelemetryTa
             </CardHeader>
             <CardContent>
                 <div className="space-y-6">
-                    {sensorsWithData.map((sensor) => {
+                    {smartObject.sensors?.map((sensor) => {
                         //const policy = getSensorPolicy(sensor)
 
                         return (
-                            <div key={sensor.id} className="space-y-2">
-                                <h4 className="font-medium">{sensor.name}</h4>
+                            <div key={sensor.resource_id} className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <h4 className="font-medium">{formatName(sensor.resource_id)}</h4>
+                                    <div className="text-sm text-muted-foreground font-semibold">
+                                        Current: <span className="font-medium">{sensor.value} {sensor.unit}</span>
+                                    </div>
+                                </div>
                                 <div className="rounded-md border">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-sm">
                                             <thead>
                                                 <tr className="border-b bg-muted/50">
-                                                    <th className="h-10 px-4 text-left align-middle font-medium">Time</th>
                                                     <th className="h-10 px-4 text-left align-middle font-medium">Value</th>
                                                     <th className="h-10 px-4 text-left align-middle font-medium">Status</th>
                                                     <th className="h-10 px-4 text-left align-middle font-medium">Timestamp</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {sensor.data!.slice(-10).map((dataPoint, index) => {
-                                                    /*const isOverThreshold = 
-                                                        dataPoint.value < policy.min || dataPoint.value > policy.max
-                                                    */
-                                                    return (
-                                                        <tr key={index} className="border-b">
-                                                            <td className="h-10 px-4 align-middle">{dataPoint.time}</td>
-                                                            <td className="h-10 px-4 align-middle font-medium">
-                                                                {dataPoint.value}
-                                                                {sensor.unit}
-                                                            </td>
-                                                            <td className="h-10 px-4 align-middle">
-                                                                {/*isOverThreshold ? (
-                                                                    <Badge variant="destructive" className="text-xs">
-                                                                        <AlertTriangle className="h-3 w-3 mr-1" />
-                                                                        Out of range
-                                                                    </Badge>
-                                                                ) : */(
-                                                                    <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
-                                                                        <CheckCircle className="h-3 w-3 mr-1" />
-                                                                        Normal
-                                                                    </Badge>
-                                                                )}
-                                                            </td>
-                                                            <td className="h-10 px-4 align-middle text-muted-foreground">
-                                                                {dataPoint.timestamp}
-                                                            </td>
-                                                        </tr>
-                                                    )
-                                                })}
+                                                {(sensor.history || []).length > 0 ? (
+                                                    (sensor.history || []).slice(-10).map((dataPoint, index) => {
+                                                        /*const isOverThreshold = 
+                                                            dataPoint.value < policy.min || dataPoint.value > policy.max
+                                                        */
+                                                        return (
+                                                            <tr key={index} className="border-b">
+                                                                <td className="h-10 px-4 align-middle font-medium">
+                                                                    {dataPoint.value} {sensor.unit}
+                                                                </td>
+                                                                <td className="h-10 px-4 align-middle">
+                                                                    {/*isOverThreshold ? (
+                                                                        <Badge variant="destructive" className="text-xs">
+                                                                            <AlertTriangle className="h-3 w-3 mr-1" />
+                                                                            Out of range
+                                                                        </Badge>
+                                                                    ) : */(
+                                                                        <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                                                                            <CheckCircle className="h-3 w-3 mr-1" />
+                                                                            Normal
+                                                                        </Badge>
+                                                                    )}
+                                                                </td>
+                                                                <td className="h-10 px-4 align-middle text-muted-foreground">
+                                                                    {dataPoint.time}
+                                                                </td>
+                                                            </tr>
+                                                        )
+                                                    })
+                                                ) : (
+                                                    <tr>
+                                                        <td colSpan={4} className="h-16 px-4 text-center text-muted-foreground">
+                                                            No telemetry data available yet. Waiting for sensor readings...
+                                                        </td>
+                                                    </tr>
+                                                )}
                                             </tbody>
                                         </table>
                                     </div>
