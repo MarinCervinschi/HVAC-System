@@ -2,9 +2,9 @@
     "rooms": {
         "room_A1": [
             {
-                "id": "rack_cooling_room_A1",
+                "id": "rack_A1_cooling_on_high_temp",
                 "type": "smart_object",
-                "description": "Temperature control for rack A1 cooling unit",
+                "description": "Turn ON rack A1 cooling fan at 65% speed if temperature > 28°C",
                 "room_id": "room_A1",
                 "rack_id": "rack_A1",
                 "object_id": "rack_cooling_unit",
@@ -24,9 +24,9 @@
                 }
             },
             {
-                "id": "rack_cooling_room_A1",
+                "id": "rack_A1_cooling_off_low_temp",
                 "type": "smart_object",
-                "description": "Temperature control for rack A1 cooling unit",
+                "description": "Turn OFF rack A1 cooling fan if temperature < 12°C",
                 "room_id": "room_A1",
                 "rack_id": "rack_A1",
                 "object_id": "rack_cooling_unit",
@@ -45,9 +45,9 @@
                 }
             },
             {
-                "id": "airflow_optimization_room_A1",
+                "id": "airflow_A1_increase_low_speed",
                 "type": "smart_object",
-                "description": "Ottimizzazione del flusso d'aria per la stanza A1 - Velocità aria bassa",
+                "description": "Increase airflow cooling level to 3 if air speed < 3 m/s in room A1",
                 "room_id": "room_A1",
                 "rack_id": "rack_A1",
                 "object_id": "airflow_manager",
@@ -68,9 +68,9 @@
                 }
             },
             {
-                "id": "airflow_optimization_room_A1",
+                "id": "airflow_A1_reduce_high_speed",
                 "type": "smart_object",
-                "description": "Ottimizzazione del flusso d'aria per la stanza A1 - Velocità aria bassa",
+                "description": "Reduce airflow cooling level to 1 if air speed > 12 m/s in room A1",
                 "room_id": "room_A1",
                 "rack_id": "rack_A1",
                 "object_id": "airflow_manager",
@@ -91,9 +91,9 @@
                 }
             },
             {
-                "id": "water_loop_pressure_room_A1",
+                "id": "water_loop_W1_pump_on_low_pressure",
                 "type": "smart_object",
-                "description": "Water loop pressure control for rack W1",
+                "description": "Turn ON water loop pump at 70% speed if pressure < 960 in rack W1",
                 "room_id": "room_A1",
                 "rack_id": "rack_W1",
                 "object_id": "water_loop_controller",
@@ -113,9 +113,9 @@
                 }
             },
             {
-                "id": "environment_temp_room_A1",
+                "id": "env_A1_cooling_on_high_temp",
                 "type": "room",
-                "description": "Environment temperature control for room A1",
+                "description": "Turn ON room A1 cooling to level 4 if environment temperature > 35°C",
                 "room_id": "room_A1",
                 "object_id": "environment_monitor",
                 "resource_id": "environment_monitor_temp",
@@ -135,9 +135,9 @@
                 }
             },
             {
-                "id": "environment_humidity_room_A1",
+                "id": "env_A1_cooling_on_high_humidity",
                 "type": "room",
-                "description": "Environment humidity control for room A1",
+                "description": "Turn ON room A1 cooling to level 3 if environment humidity > 55%",
                 "room_id": "room_A1",
                 "object_id": "environment_monitor",
                 "resource_id": "environment_monitor_humidity",
@@ -149,119 +149,6 @@
                 "action": {
                     "object_id": "cooling_system_hub",
                     "resource_id": "cooling_system_hub_cooling_levels",
-                    "actuator_type": "iot:actuator:cooling_levels",
-                    "command": {
-                        "status": "ON",
-                        "level": 3
-                    }
-                }
-            }
-        ],
-        "room_B2": [
-            {
-                "id": "rack_cooling_room_B2_A2",
-                "type": "smart_object",
-                "description": "Temperature control for rack A2 in room B2",
-                "room_id": "room_B2",
-                "rack_id": "rack_A2",
-                "object_id": "rack_cooling_unit",
-                "resource_id": "rack_cooling_unit_temp",
-                "sensor_type": "iot:sensor:temperature",
-                "condition": {
-                    "operator": ">",
-                    "value": 30.0
-                },
-                "action": {
-                    "resource_id": "rack_cooling_unit_fan",
-                    "actuator_type": "iot:actuator:fan",
-                    "command": {
-                        "status": "ON",
-                        "speed": 75
-                    }
-                }
-            },
-            {
-                "id": "rack_cooling_room_B2_A3",
-                "type": "smart_object",
-                "description": "Temperature control for rack A3 in room B2",
-                "room_id": "room_B2",
-                "rack_id": "rack_A3",
-                "object_id": "rack_cooling_unit",
-                "resource_id": "rack_cooling_unit_temp",
-                "sensor_type": "iot:sensor:temperature",
-                "condition": {
-                    "operator": ">",
-                    "value": 32.0
-                },
-                "action": {
-                    "resource_id": "rack_cooling_unit_fan",
-                    "actuator_type": "iot:actuator:fan",
-                    "command": {
-                        "status": "ON",
-                        "speed": 85
-                    }
-                }
-            },
-            {
-                "id": "environment_temp_room_B2",
-                "type": "room",
-                "description": "Environment temperature control for room B2",
-                "room_id": "room_B2",
-                "object_id": "environment_monitor",
-                "resource_id": "environment_monitor_temp",
-                "sensor_type": "iot:sensor:temperature",
-                "condition": {
-                    "operator": ">",
-                    "value": 38.0
-                },
-                "action": {
-                    "object_id": "cooling_system_hub",
-                    "resource_id": "cooling_system_hub_cooling_levels",
-                    "actuator_type": "iot:actuator:cooling_levels",
-                    "command": {
-                        "status": "ON",
-                        "level": 5
-                    }
-                }
-            },
-            {
-                "id": "environment_humidity_room_B2",
-                "type": "room",
-                "description": "Environment humidity control for room B2",
-                "room_id": "room_B2",
-                "object_id": "environment_monitor",
-                "resource_id": "environment_monitor_humidity",
-                "sensor_type": "iot:sensor:humidity",
-                "condition": {
-                    "operator": ">",
-                    "value": 50.0
-                },
-                "action": {
-                    "object_id": "cooling_system_hub",
-                    "resource_id": "cooling_system_hub_cooling_levels",
-                    "actuator_type": "iot:actuator:cooling_levels",
-                    "command": {
-                        "status": "ON",
-                        "level": 2
-                    }
-                }
-            },
-            {
-                "id": "airflow_control_room_B2",
-                "type": "smart_object",
-                "description": "Airflow management for room B2",
-                "room_id": "room_B2",
-                "rack_id": "rack_B2",
-                "object_id": "airflow_manager",
-                "resource_id": "airflow_manager_air_speed",
-                "sensor_type": "iot:sensor:air_speed",
-                "condition": {
-                    "operator": "<",
-                    "value": 4.0
-                },
-                "action": {
-                    "object_id": "airflow_manager",
-                    "resource_id": "airflow_manager_cooling_levels",
                     "actuator_type": "iot:actuator:cooling_levels",
                     "command": {
                         "status": "ON",
