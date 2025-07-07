@@ -13,7 +13,9 @@ class SwitchActuator(Actuator, ABC):
 
     VALID_STATUSES: ClassVar[List[str]] = ["ON", "OFF"]
 
-    def __init__(self, resource_id: str, type: str, is_operational: bool = True):
+    def __init__(
+        self, resource_id: str, type: str, is_operational: bool = False
+    ) -> None:
         """
         Initialize the switch actuator.
 
@@ -32,7 +34,7 @@ class SwitchActuator(Actuator, ABC):
         self.logger = logging.getLogger(f"{resource_id}")
 
     @abstractmethod
-    def _on_status_change(self, old_status: str, new_status: str) -> None:
+    def _on_status_change(self, new_status: str) -> None:
         """
         Hook method called when the status changes.
         Subclasses should implement this to handle specific behavior.
@@ -44,7 +46,7 @@ class SwitchActuator(Actuator, ABC):
         pass
 
     @abstractmethod
-    def apply_command(self, command: Dict[str, Any]) -> bool:
+    def _apply_command(self, command: Dict[str, Any]) -> bool:
         """
         Apply a command to the switch actuator.
 
@@ -57,11 +59,11 @@ class SwitchActuator(Actuator, ABC):
         pass
 
     @abstractmethod
-    def reset(self) -> bool:
+    def reset(self) -> None:
         """Reset the switch actuator to its default state."""
         pass
 
-    def apply_switch(self, command: Dict[str, Any]) -> bool:
+    def apply_switch(self, command: Dict[str, Any]) -> None:
         """
         Check and apply a command to the switch actuator.
         This method handles the common switch logic and can be extended by subclasses.
@@ -71,17 +73,13 @@ class SwitchActuator(Actuator, ABC):
 
         Returns:
             bool: True if the command was applied successfully, False otherwise
+        Raises:
+            ValueError: If the command is invalid or contains unsupported keys
         """
 
         try:
             if "status" in command:
-                status = command["status"]
-
-                # Ensure status is a string
-                if not isinstance(status, str):
-                    raise ValueError(
-                        f"Status must be a string, got: {type(status).__name__}"
-                    )
+                status: str = command["status"]
 
                 status = status.upper()
                 if status not in self.VALID_STATUSES:
@@ -90,15 +88,8 @@ class SwitchActuator(Actuator, ABC):
                     )
 
                 self.state["status"] = status
-                return True
-
-            return False
-
         except (ValueError, TypeError) as e:
-            self.logger.error(
-                f"Failed to apply command {command} to switch {self.resource_id}: {e}"
-            )
-            return False
+            raise e
 
     def get_current_state(self) -> Dict[str, Any]:
         """Get the current state of the switch actuator."""
@@ -108,10 +99,6 @@ class SwitchActuator(Actuator, ABC):
             "is_operational": self.is_operational,
             **self.state,
         }
-
-    def is_ready_for_commands(self) -> bool:
-        """Check if the switch actuator is ready to accept commands."""
-        return self.is_operational
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert the switch actuator to a dictionary representation."""

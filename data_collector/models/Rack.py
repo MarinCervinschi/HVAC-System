@@ -18,11 +18,6 @@ class Rack(AbstractSmartEntity, ABC):
 
     def start_all_smart_objects(self):
         """Start all smart objects in the rack."""
-        if not self._is_ready_for_commands():
-            self.logger.warning(
-                f"Rack {self.rack_id} is not ready for commands. Status: {self.status}"
-            )
-            return
         for smart_object in self.smart_objects.values():
             try:
                 smart_object.start()
@@ -31,13 +26,9 @@ class Rack(AbstractSmartEntity, ABC):
                     f"Failed to start smart object {smart_object}: {e}"
                 ) from e
 
-    def stop_all_smart_objects(self):
+    def stop_all_smart_objects(self) -> None:
         """Stop all smart objects in the rack."""
         try:
-            if not self._is_ready_for_commands():
-                raise RuntimeError(
-                    f"Rack {self.rack_id} is not ready for commands. Status: {self.status}"
-                )
             for smart_object in self.smart_objects.values():
                 try:
                     smart_object.stop()
@@ -59,9 +50,9 @@ class Rack(AbstractSmartEntity, ABC):
                 self.logger.info(
                     f"Rack {self.rack_id} status changed from {old_status} to {command}"
                 )
-                if command == "ON":
+                if command == "ON" and old_status == "OFF":
                     self.start_all_smart_objects()
-                elif command == "OFF":
+                elif command == "OFF" and old_status == "ON":
                     self.stop_all_smart_objects()
             else:
                 raise ValueError("Invalid status value")
@@ -69,10 +60,6 @@ class Rack(AbstractSmartEntity, ABC):
             raise RuntimeError(
                 f"Failed to apply command '{command}' to rack {self.rack_id}: {e}"
             )
-
-    def _is_ready_for_commands(self):
-        """Check if the rack is ready for commands based on its status."""
-        return self.status == "ON"
 
     def to_full_dict(self) -> Dict:
         """Return a full dictionary representation of the rack."""

@@ -56,7 +56,7 @@ class WaterLoopController(SmartObject, CoapControllable):
 
         site.add_resource(
             (".well-known", "core"),
-            resource.WKCResource(site.get_resources_as_linkheader),
+            resource.WKCResource(site.get_resources_as_linkheader, impl_info=None)
         )
 
         # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/pump/control
@@ -71,10 +71,16 @@ class WaterLoopController(SmartObject, CoapControllable):
         self.logger.info(
             f"📢 Registered CoAP pump control resource for {pump_actuator.resource_id} at path: {'/'.join(resource_path)}"
         )
+        
+        attributes = {
+            "room_id": self.room_id,
+            "rack_id": self.rack_id,
+            "object_id": self.object_id,
+        }
 
         site.add_resource(
             resource_path,
-            ActuatorControlResource(pump_actuator),
+            ActuatorControlResource(pump_actuator, attributes),
         )
 
         return site

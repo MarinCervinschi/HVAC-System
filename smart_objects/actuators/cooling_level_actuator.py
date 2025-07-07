@@ -5,13 +5,15 @@ from smart_objects.resources.SwitchActuator import SwitchActuator
 
 
 class CoolingLevelsActuator(SwitchActuator):
-    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:cooling_levels❄️"
+    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:cooling_levels"
     MIN_LEV: ClassVar[int] = 0
     MAX_LEV: ClassVar[int] = 5
 
-    def __init__(self, resource_id: str):
+    def __init__(self, resource_id: str, is_operational: bool = True):
         super().__init__(
-            resource_id=resource_id, type=self.RESOURCE_TYPE, is_operational=True
+            resource_id=resource_id,
+            type=self.RESOURCE_TYPE,
+            is_operational=is_operational,
         )
 
         self.state.update(
@@ -22,7 +24,7 @@ class CoolingLevelsActuator(SwitchActuator):
 
         self.logger = logging.getLogger(f"{resource_id}")
 
-    def _on_status_change(self, old_status: str, new_status: str) -> None:
+    def _on_status_change(self, new_status: str) -> None:
         """Handle cooling-specific behavior when status changes."""
         if new_status == "OFF":
             self.state["level"] = 0
@@ -30,22 +32,14 @@ class CoolingLevelsActuator(SwitchActuator):
         else:
             self.logger.info(f"Cooling {self.resource_id} turned on")
 
-    def apply_command(self, command: Dict[str, Any]) -> bool:
-        if not self.is_ready_for_commands():
-            self.logger.warning(
-                f"CoolingLevelsActuator {self.resource_id} not ready for commands. Operational: {self.is_operational}"
-            )
-            return False
-
-        updated = False
-
+    def _apply_command(self, command: Dict[str, Any]) -> None:
         try:
             old_status = self.state["status"]
 
-            updated = self.apply_switch(command)
+            self.apply_switch(command)
 
-            if updated and self.state["status"] != old_status:
-                self._on_status_change(old_status, self.state["status"])
+            if self.state["status"] != old_status:
+                self._on_status_change(self.state["status"])
 
             if "level" in command:
                 level = int(command["level"])
@@ -55,30 +49,16 @@ class CoolingLevelsActuator(SwitchActuator):
                     )
 
                 if self.state["status"] == "OFF":
-                    self.logger.warning(f"Cannot set level while cooling is OFF.")
+                    if "status" not in command:
+                        raise ValueError("Cannot set level while cooling is OFF.")
                 else:
                     self.state["level"] = level
-                    if level > 0:
-                        self.state["status"] = "ON"
-                    updated = True
 
-            if updated:
-                self.state["last_updated"] = int(time.time())
-                self.logger.info(
-                    f"Cooling {self.resource_id} updated state: {self.state}"
-                )
-                return True
-            else:
-                self.logger.warning(
-                    f"No changes applied to cooling {self.resource_id}. Command: {command}"
-                )
-                return False
+            self.state["last_updated"] = int(time.time())
+            self.logger.info(f"Cooling {self.resource_id} updated state: {self.state}")
 
         except (ValueError, TypeError) as e:
-            self.logger.error(
-                f"Failed to apply command {command} to cooling {self.resource_id}: {e}"
-            )
-            return False
+            raise e
 
     def get_current_state(self) -> Dict[str, Any]:
         return {
@@ -103,7 +83,7 @@ class CoolingLevelsActuator(SwitchActuator):
             self.logger.info(f"Cooling {self.resource_id} reset to default state.")
 
             if old_status != "OFF":
-                self._on_status_change(old_status, "OFF")
+                self._on_status_change("OFF")
 
             return True
         except Exception as e:

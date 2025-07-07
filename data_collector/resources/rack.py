@@ -55,4 +55,5 @@ class RackDetailAPI(Resource):
         except AttributeError:
             return {"error": "Rack object does not support status update."}, 500
 
-        return {"status": "success"}, 200
+        message = f"Rack {rack_id} in room {room_id} has been turned {status}."
+        return {"status": "success", "message": message}, 200

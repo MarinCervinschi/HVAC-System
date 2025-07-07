@@ -7,7 +7,7 @@ from typing import Dict, Any, ClassVar
 
 
 class EnergySensor(Sensor):
-    RESOURCE_TYPE: ClassVar[str] = "iot:sensor:energy⚡"
+    RESOURCE_TYPE: ClassVar[str] = "iot:sensor:energy"
     UNIT: ClassVar[str] = "kWh"
     DATA_TYPE: ClassVar[type] = float
     DEFAULT_MIN_ENERGY: ClassVar[float] = 0.0

@@ -8,7 +8,7 @@ from smart_objects.models.Sensor import Sensor
 
 class TemperatureSensor(Sensor):
 
-    RESOURCE_TYPE: ClassVar[str] = "iot:sensor:temperature🌡️"
+    RESOURCE_TYPE: ClassVar[str] = "iot:sensor:temperature"
     UNIT: ClassVar[str] = "Celsius"
     DATA_TYPE: ClassVar[type] = float
     DEFAULT_MIN_TEMP: ClassVar[float] = 25.0

@@ -56,7 +56,7 @@ class RackCoolingUnit(SmartObject, CoapControllable):
 
         site.add_resource(
             (".well-known", "core"),
-            resource.WKCResource(site.get_resources_as_linkheader),
+            resource.WKCResource(site.get_resources_as_linkheader, impl_info=None)
         )
 
         # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/fan/control
@@ -64,7 +64,7 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             "hvac",
             "room", self.room_id,
             "rack", self.rack_id,
-            "device", self.OBJECT_ID,
+            "device", self.object_id,
             "fan", "control",
         ]
 
@@ -72,9 +72,14 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             f"📢 Registered CoAP fan control resource for {fan_actuator.resource_id} at path: {'/'.join(resource_path)}"
         )
 
+        attributes = {
+            "room_id": self.room_id,
+            "rack_id": self.rack_id,
+            "object_id": self.object_id,
+        }
         site.add_resource(
             resource_path,
-            ActuatorControlResource(fan_actuator),
+            ActuatorControlResource(fan_actuator, attributes),
         )
 
         return site
@@ -103,7 +108,7 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             MqttConfigurationParameters.RACK_TOPIC,
             self.rack_id,
             MqttConfigurationParameters.DEVICE_TOPIC,
-            self.OBJECT_ID,
+            self.object_id,
             MqttConfigurationParameters.TELEMETRY_TOPIC,
             temperature_sensor.resource_id,
         )

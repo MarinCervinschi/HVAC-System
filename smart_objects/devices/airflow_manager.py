@@ -55,7 +55,7 @@ class AirflowManager(SmartObject, CoapControllable):
 
         site.add_resource(
             (".well-known", "core"),
-            resource.WKCResource(site.get_resources_as_linkheader),
+            resource.WKCResource(site.get_resources_as_linkheader, impl_info=None)
         )
 
         # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/cooling_levels/control
@@ -71,9 +71,15 @@ class AirflowManager(SmartObject, CoapControllable):
             f"📢 Registered CoAP cooling levels control resource for {cooling_levels_actuator.resource_id} at path: {'/'.join(resource_path)}"
         )
 
+        attributes = {
+            "room_id": self.room_id,
+            "rack_id": self.rack_id,
+            "object_id": self.object_id,
+        }
+
         site.add_resource(
             resource_path,
-            ActuatorControlResource(cooling_levels_actuator),
+            ActuatorControlResource(cooling_levels_actuator, attributes),
         )
 
         return site
