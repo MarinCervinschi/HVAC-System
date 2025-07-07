@@ -1,17 +1,13 @@
 import logging
-from aiocoap import resource
-from typing import ClassVar, Dict, Any
+from typing import ClassVar
 import paho.mqtt.client as mqtt
 from .SmartObject import SmartObject
 from ..messages.telemetry_message import TelemetryMessage
-from smart_objects.actuators.switch_actuator import SwitchActuatorConcrete
-from config.mqtt_conf_params import MqttConfigurationParameters
-from smart_objects.resources.CoapControllable import CoapControllable
 from smart_objects.sensors.energy_sensor import EnergySensor
-from smart_objects.resources.actuator_control_resource import ActuatorControlResource
+from config.mqtt_conf_params import MqttConfigurationParameters
 
 
-class EnergyMeteringUnit(SmartObject, CoapControllable):
+class EnergyMeteringUnit(SmartObject):
     OBJECT_ID: ClassVar[str] = "energy_metering_unit"
 
     def __init__(
@@ -20,11 +16,8 @@ class EnergyMeteringUnit(SmartObject, CoapControllable):
         rack_id: str,
         mqtt_client: mqtt.Client = None,
     ):
-        SmartObject.__init__(self, self.OBJECT_ID, room_id, rack_id, mqtt_client)
-        CoapControllable.__init__(self)
-
+        super.__init__(self, self.OBJECT_ID, room_id, rack_id, mqtt_client)
         self.resource_map["energy"] = EnergySensor(f"{self.OBJECT_ID}_energy")
-        self.resource_map["switch"] = SwitchActuatorConcrete(f"{self.OBJECT_ID}_switch")
 
         self.logger = logging.getLogger(f"{self.OBJECT_ID}")
 
@@ -35,53 +28,6 @@ class EnergyMeteringUnit(SmartObject, CoapControllable):
         except Exception as e:
             self.logger.error(f"Error reading energy: {e}")
             return 0.0
-
-    def get_switch_status(self) -> Dict[str, Any]:
-        try:
-            switch: SwitchActuatorConcrete = self.get_resource("switch")
-            return switch.get_current_state()
-        except Exception as e:
-            self.logger.error(f"Error getting switch status: {e}")
-            return {}
-
-    def get_coap_resource_tree(self) -> resource.Site:
-        """Return the CoAP resource tree for this smart object."""
-        site = resource.Site()
-        switch_actuator = self.get_resource("switch")
-
-        if switch_actuator is None:
-            self.logger.error("Switch actuator resource not found!")
-            return None
-
-        site.add_resource(
-            (".well-known", "core"),
-            resource.WKCResource(site.get_resources_as_linkheader, impl_info=None)
-        )
-
-        # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/switch/control
-        resource_path = [
-            "hvac",
-            "room", self.room_id,
-            "rack", self.rack_id,
-            "device", self.object_id,
-            "switch", "control",
-        ]
-
-        self.logger.info(
-            f"📢 Registered CoAP switch control resource for {switch_actuator.resource_id} at path: {'/'.join(resource_path)}"
-        )
-        attributes = {
-            "room_id": self.room_id,
-            "rack_id": self.rack_id,
-            "object_id": self.object_id,
-        }
-
-        site.add_resource(
-            resource_path,
-            ActuatorControlResource(switch_actuator, attributes),
-        )
-
-        return site
 
     def _register_resource_listeners(self) -> None:
         """Register listeners for resource data changes."""
