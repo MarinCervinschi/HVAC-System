@@ -124,7 +124,7 @@ export default function RoomDetailPage() {
     if (error) {
       return notFound()
     }
-    return notFound()
+    return <Loader />
   }
 
   return (

@@ -9,6 +9,7 @@ import { SmartObject } from "@/types/smartobject"
 import { convertSmartObjectData } from "@/lib/utils"
 import { useMQTTClient } from "@/hooks/useMqttClient"
 import Loader from "@/components/loader"
+import { toast } from "sonner"
 
 // Mock data per un rack con smartObjects, sensori e attuatori
 
@@ -261,7 +262,6 @@ export default function RackDetailPage() {
                 body: JSON.stringify({
                     command: { 
                         status: checked ? 'ON' : 'OFF',
-                        speed: 3,
                     },
                     object_id: smartObjectId,
                     room_id: roomId,
@@ -284,36 +284,6 @@ export default function RackDetailPage() {
         }
     }
 
-    const handleLevelChange = (smartObjectId: string) => async (actuatorId: string, level: number) => {
-        setIsToggling((prev) => ({ ...prev, [actuatorId]: true }))
-
-        try {
-            const response = await fetch(`${API_URL}/room/${roomId}/rack/${rackId}/actuator/${actuatorId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    level: level,
-                    smart_object_id: smartObjectId
-                })
-            })
-
-            if (!response.ok) {
-                console.error('Failed to change actuator level:', response.statusText)
-                setError('Failed to change actuator level')
-                return
-            }
-
-            // Ricarica i dati del rack per ottenere lo stato aggiornato
-            await fetchRackData()
-        } catch (err: any) {
-            setError(err.message || 'An error occurred while changing actuator level')
-        } finally {
-            setIsToggling((prev) => ({ ...prev, [actuatorId]: false }))
-        }
-    }
-
     const handleRackToggle = async (checked: boolean) => {
         setIsToggling((prev) => ({ ...prev, rack: true }))
 
@@ -329,7 +299,7 @@ export default function RackDetailPage() {
             })
 
             if (!response.ok) {
-                console.error('Failed to toggle rack:', response.statusText)
+                toast.error('Failed to toggle rack: ' + response.statusText)
                 setError('Failed to toggle rack')
                 return
             }
@@ -373,7 +343,11 @@ export default function RackDetailPage() {
                         rackActive={rackInfo.status === "ON"}
                         isToggling={isToggling}
                         onActuatorToggle={handleActuatorToggle(smartObject.id)}
-                        onLevelChange={handleLevelChange(smartObject.id)}
+                        roomId={roomId}
+                        rackId={rackId}
+                        setIsToggling={setIsToggling}
+                        setError={setError}
+                        fetchRackData={fetchRackData}
                     />
                 ))}
             </div>

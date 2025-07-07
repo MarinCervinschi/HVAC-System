@@ -26,17 +26,23 @@ interface SmartObjectSectionProps {
     rackActive: boolean
     isToggling: Record<string, boolean>
     onActuatorToggle: (actuatorId: string, checked: boolean) => Promise<void>
-    onLevelChange: (actuatorId: string, level: number) => Promise<void>
+    roomId: string
+    rackId: string
+    setIsToggling: React.Dispatch<React.SetStateAction<Record<string, boolean>>>
+    setError: (error: string) => void
+    fetchRackData: () => Promise<void>
 }
 
 export function SmartObjectSection({
     smartObject,
     rackActive,
     isToggling,
-    //getSensorPolicy,
     onActuatorToggle,
-    onLevelChange,
-    //onPolicyChange,
+    roomId,
+    rackId,
+    setIsToggling,
+    setError,
+    fetchRackData,
 }: SmartObjectSectionProps) {
     const SmartObjectIcon = smartObjectIcons[smartObject.id as keyof typeof smartObjectIcons] || Server
 
@@ -51,8 +57,6 @@ export function SmartObjectSection({
                 
                 <PolicyDialog
                     smartObject={smartObject}
-                    //getSensorPolicy={getSensorPolicy}
-                    //onPolicyChange={onPolicyChange}
                 />
                 
             </div>
@@ -68,7 +72,6 @@ export function SmartObjectSection({
                                     <SensorCard
                                         key={sensor.resource_id}
                                         sensor={sensor}
-                                        //policy={getSensorPolicy(sensor)}
                                     />
                                 ))}
                             </div>
@@ -92,7 +95,12 @@ export function SmartObjectSection({
                                         }}
                                         isToggling={isToggling[actuator.resource_id] || false}
                                         onToggle={onActuatorToggle}
-                                        onLevelChange={onLevelChange}
+                                        smartObjectId={smartObject.id}
+                                        roomId={roomId}
+                                        rackId={rackId}
+                                        setIsToggling={setIsToggling}
+                                        setError={setError}
+                                        fetchRackData={fetchRackData}
                                     />
                                 ))}
                             </div>
@@ -103,7 +111,6 @@ export function SmartObjectSection({
                     <h3 className="text-lg font-semibold">Telemetry</h3>
                     <TelemetryTable
                         smartObject={smartObject}
-                        //getSensorPolicy={getSensorPolicy}
                     />
                 </div>
             </div>
