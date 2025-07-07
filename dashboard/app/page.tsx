@@ -8,6 +8,8 @@ import { Rooms } from "@/types/rooms"
 import { useEffect, useState } from "react"
 import { formatName } from "@/lib/utils"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.1:5000/hvac/api"
+
 export default function Dashboard() {
   const router = useRouter()
   const [roomsInfo, setRoomsInfo] = useState<Rooms[]>([])
@@ -17,35 +19,35 @@ export default function Dashboard() {
   const totalRooms = roomsInfo.length
   const totalRacks = roomsInfo.reduce((acc, room) => acc + (room.racks ? room.racks.length : 0), 0)
   const totalDevices = roomsInfo.reduce((acc, room) => acc + (room.total_smart_objects ? room.total_smart_objects : 0), 0)
- /*  // Sample data for local development
-  useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
-      setRoomsInfo([
-        {
-          room_id: "room_A1",
-          location: "Building A, Floor 1",
-          racks: ["Rack A1", "Rack W1"],
-          total_smart_objects: 8,
-          smart_objects: ["Environment Monitor", "Cooling System Hub"],
-          last_update: "2 min ago",
-        },
-        {
-          room_id: "room_B2",
-          location: "Building B, Floor 2",
-          racks: ["Rack A2", "Rack A3"],
-          total_smart_objects: 8,
-          smart_objects: ["Environment Monitor", "Cooling System Hub"],
-          last_update: "2 min ago",
-        },
-      ])
-      setLoading(false)
-    }
-  }, [])*/
+  /*  // Sample data for local development
+   useEffect(() => {
+     if (process.env.NODE_ENV === "development") {
+       setRoomsInfo([
+         {
+           room_id: "room_A1",
+           location: "Building A, Floor 1",
+           racks: ["Rack A1", "Rack W1"],
+           total_smart_objects: 8,
+           smart_objects: ["Environment Monitor", "Cooling System Hub"],
+           last_update: "2 min ago",
+         },
+         {
+           room_id: "room_B2",
+           location: "Building B, Floor 2",
+           racks: ["Rack A2", "Rack A3"],
+           total_smart_objects: 8,
+           smart_objects: ["Environment Monitor", "Cooling System Hub"],
+           last_update: "2 min ago",
+         },
+       ])
+       setLoading(false)
+     }
+   }, [])*/
 
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const res = await fetch("http://localhost:7070/hvac/api/rooms")
+        const res = await fetch(`${API_URL}/rooms`)
 
         if (!res.ok) {
           console.error("Failed to fetch rooms data:", res.statusText)
@@ -68,7 +70,7 @@ export default function Dashboard() {
   if (loading) return <div>Loading rooms...</div>
 
   return (
-    <div className="flex flex-col min-h-full">  
+    <div className="flex flex-col min-h-full">
       <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">

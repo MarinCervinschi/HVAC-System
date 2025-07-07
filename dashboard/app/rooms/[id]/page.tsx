@@ -27,6 +27,8 @@ import { convertSmartObjectData } from "@/lib/utils"
 import { useMQTTClient } from "@/hooks/useMqttClient"
 import { PolicyDialog } from "@/components/room/PolicyDialog"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.1:5000/hvac/api"
+
 export default function RoomDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -45,7 +47,7 @@ export default function RoomDetailPage() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(`http://localhost:7070/hvac/api/room/${roomId}`)
+        const res = await fetch(`${API_URL}/room/${roomId}`)
         if (!res.ok) {
           setError("Failed to fetch room data")
           return
@@ -79,7 +81,7 @@ export default function RoomDetailPage() {
     (obj.sensors?.map((sensor: Sensor) => `hvac/room/${roomId}/device/${obj.id}/telemetry/${sensor.resource_id}`) ?? [])
   ) || []
 
-  
+
   useMQTTClient({
     brokerUrl: "ws://localhost:9001",
     topics: mqttTopics,

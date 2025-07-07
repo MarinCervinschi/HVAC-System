@@ -11,6 +11,10 @@ import { useMQTTClient } from "@/hooks/useMqttClient"
 
 // Mock data per un rack con smartObjects, sensori e attuatori
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.1:5000/hvac/api"
+
+
+
 const mockRack: Rack = {
     rack_id: "rack_A1",
     room_id: "room_A1",
@@ -30,10 +34,10 @@ const mockRack: Rack = {
                     timestamp: 0,
                     min: 25.0,
                     max: 45.0
-                } 
+                }
             ],
             actuators: [
-                 {
+                {
                     resource_id: "rack_cooling_unit_fan",
                     type: "iot:actuator:fan",
                     is_operational: true,
@@ -51,13 +55,13 @@ const mockRack: Rack = {
             rack_id: "rack_A1",
             sensors: [
                 {
-                   resource_id: "energy_metering_unit_energy",
-                   type: "iot:sensor:energy",
-                   value: 0.0,
-                   unit: "kWh",
-                   timestamp: 0,
-                   min: 0.0,
-                   max: 1000.0
+                    resource_id: "energy_metering_unit_energy",
+                    type: "iot:sensor:energy",
+                    value: 0.0,
+                    unit: "kWh",
+                    timestamp: 0,
+                    min: 0.0,
+                    max: 1000.0
 
                 }
             ],
@@ -117,7 +121,7 @@ export default function RackDetailPage() {
         setLoading(true)
         setError(null)
         try {
-            const res = await fetch(`http://localhost:7070/hvac/api/room/${roomId}/rack/${rackId}`)
+            const res = await fetch(`${API_URL}/room/${roomId}/rack/${rackId}`)
 
             if (!res.ok) {
                 console.error("Failed to fetch rack data:", res.statusText)
@@ -127,13 +131,13 @@ export default function RackDetailPage() {
 
             const response = await res.json()
             const rackData = response.rack || response
-            
+
             // Converti i smart objects dal nuovo formato al vecchio formato
             const convertedRackData = {
                 ...rackData,
                 smart_objects: rackData.smart_objects.map(convertSmartObjectData)
             }
-            
+
             // Carica la history dai dati locali salvati per ogni sensore
             const updatedSmartObjects = convertedRackData.smart_objects.map((obj: SmartObject) => ({
                 ...obj,
@@ -142,7 +146,7 @@ export default function RackDetailPage() {
                     return cachedHistory ? { ...sensor, history: JSON.parse(cachedHistory) } : sensor
                 }) ?? [],
             }))
-            
+
             setRackInfo({ ...convertedRackData, smart_objects: updatedSmartObjects })
         } catch (err: any) {
             setError(err.message || "An error occurred while fetching rack data")
@@ -160,9 +164,9 @@ export default function RackDetailPage() {
 
     // Genera i topic MQTT per i sensori del rack
     const mqttTopics = rackInfo?.smart_objects?.flatMap(obj =>
-        (obj.sensors?.map((sensor: Sensor) => 
-            `hvac/room/${roomId}/rack/${rackId}/device/${obj.id}/telemetry/${sensor.resource_id}`
-        ) ?? [])
+    (obj.sensors?.map((sensor: Sensor) =>
+        `hvac/room/${roomId}/rack/${rackId}/device/${obj.id}/telemetry/${sensor.resource_id}`
+    ) ?? [])
     ) || []
 
     // Gestione MQTT per le telemetrie dei sensori
@@ -171,7 +175,7 @@ export default function RackDetailPage() {
         topics: mqttTopics,
         onMessage: (topic, message) => {
             console.log("📥 MQTT message received for rack:", { topic, message });
-            
+
             try {
                 // Converti il messaggio dal formato backend al JSON valido
                 let jsonMessage = message
@@ -185,7 +189,7 @@ export default function RackDetailPage() {
                         .replace(/"(\d+\.?\d*)",/g, '$1,"')
                         .replace(/":"(\d+\.?\d*)",/g, '":$1,"')
                 }
-                
+
                 const telemetryData = JSON.parse(jsonMessage)
                 const topicParts = topic.split("/")
                 const resourceId = topicParts[topicParts.length - 1]
@@ -199,9 +203,9 @@ export default function RackDetailPage() {
 
                 console.log("🔍 Processing rack message for resourceId:", resourceId, "with value:", value)
 
-                const newHistoryEntry = { 
-                    time: new Date(timestamp).toLocaleTimeString(), 
-                    value 
+                const newHistoryEntry = {
+                    time: new Date(timestamp).toLocaleTimeString(),
+                    value
                 }
 
                 setRackInfo(prev =>
@@ -212,20 +216,20 @@ export default function RackDetailPage() {
                             sensors: obj.sensors?.map(sensor => {
                                 if (sensor.resource_id === resourceId) {
                                     console.log("✅ Updating rack sensor:", sensor.resource_id, "with new value:", value)
-                                    
+
                                     const updatedHistory = [
                                         ...(sensor.history ?? []),
                                         newHistoryEntry
                                     ].slice(-10) // Mantieni solo le ultime 10 telemetrie
-                                    
+
                                     // Salva la history in localStorage
                                     localStorage.setItem(`sensor-history-${sensor.resource_id}`, JSON.stringify(updatedHistory))
-                                    
-                                    return { 
-                                        ...sensor, 
-                                        value, 
-                                        timestamp, 
-                                        history: updatedHistory 
+
+                                    return {
+                                        ...sensor,
+                                        value,
+                                        timestamp,
+                                        history: updatedHistory
                                     }
                                 }
                                 return sensor
@@ -258,9 +262,9 @@ export default function RackDetailPage() {
 
     const handleActuatorToggle = async (actuatorId: string, checked: boolean) => {
         setIsToggling((prev) => ({ ...prev, [actuatorId]: true }))
-        
+
         try {
-            const response = await fetch(`http://localhost:7070/hvac/api/room/${roomId}/rack/${rackId}/actuator/${actuatorId}`, {
+            const response = await fetch(`${API_URL}/hvac/api/room/${roomId}/rack/${rackId}/actuator/${actuatorId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -287,9 +291,9 @@ export default function RackDetailPage() {
 
     const handleLevelChange = async (actuatorId: string, level: number) => {
         setIsToggling((prev) => ({ ...prev, [actuatorId]: true }))
-        
+
         try {
-            const response = await fetch(`http://localhost:7070/hvac/api/room/${roomId}/rack/${rackId}/actuator/${actuatorId}`, {
+            const response = await fetch(`${API_URL}/room/${roomId}/rack/${rackId}/actuator/${actuatorId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -318,7 +322,7 @@ export default function RackDetailPage() {
         setIsToggling((prev) => ({ ...prev, rack: true }))
 
         try {
-            const response = await fetch(`http://localhost:7070/hvac/api/room/${roomId}/rack/${rackId}`, {
+            const response = await fetch(`${API_URL}/room/${roomId}/rack/${rackId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
