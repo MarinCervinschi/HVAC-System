@@ -3,24 +3,27 @@ import json
 import logging
 from data_collector.models.Room import Room
 from data_collector.core.policy_manager import PolicyManager
-from config.mqtt_conf_params import MqttConfigurationParameters
 
 
 class DataCollector:
-    def __init__(self, room: Room, policy_manager: PolicyManager):
-        self.room = room
-        self.policy_manager = policy_manager
+    def __init__(self, room_id: str, policy_file: str):
+        self.room_id = room_id
+        self.policy_manager = PolicyManager(room_id, policy_file)
         self.logger = logging.getLogger(__name__)
 
     def connect(self, mqtt_client: mqtt.Client):
         """Connect using an existing MQTT client"""
-        mqtt_client.on_message = self.on_message
-        mqtt_client.subscribe("/hvac/room/+/rack/+/device/+/telemetry/+")
+        topics = [
+            (f"hvac/room/{self.room_id}/device/+/telemetry/+", 0),
+            (f"hvac/room/{self.room_id}/rack/+/device/+/telemetry/+", 1),
+            # ("/other/topic/#", 2),
+        ]
+        mqtt_client.subscribe(topics)
 
-    def on_message(self, client, userdata, msg):
+    def handle_message(self, msg):
+        """Handle message for this specific room"""
         try:
             telemetry = json.loads(msg.payload.decode())
-            self.logger.info(f"[DataCollector] Received telemetry: {telemetry}")
             self.policy_manager.evaluate(telemetry)
         except Exception as e:
-            self.logger.error(f"Error handling telemetry: {e}")
+            self.logger.error(f"Error handling telemetry for room {self.room_id}: {e}")
