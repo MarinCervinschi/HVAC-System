@@ -3,6 +3,7 @@ import logging
 import paho.mqtt.client as mqtt
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar, Any, Dict
+from smart_objects.models.Sensor import Sensor
 from smart_objects.models.Actuator import Actuator
 from smart_objects.messages.GenericMessage import GenericMessage
 from smart_objects.resources.SmartObjectResource import SmartObjectResource
@@ -100,10 +101,21 @@ class SmartObject(ABC, Generic[T]):
         """Create a listener for resource data changes and publish to MQTT topic."""
         publish_data = self._publish_data
 
+        resource_id = topic.split("/")[-1]
+
+        metadata = {
+            "object_id": self.object_id,
+            "resource_id": resource_id,
+            "room_id": self.room_id,
+            "rack_id": self.rack_id,
+        }
+
         class Listener(ResourceDataListener[data_type]):
             def on_data_changed(self, resource, updated_value):
                 try:
-                    payload = message_type(resource.type, updated_value)
+                    payload = message_type(
+                        resource.type, updated_value, metadata=metadata
+                    )
 
                     publish_data(topic, payload, qos, retain)
                 except Exception as e:
