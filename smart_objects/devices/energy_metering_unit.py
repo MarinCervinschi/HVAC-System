@@ -16,7 +16,7 @@ class EnergyMeteringUnit(SmartObject):
         rack_id: str,
         mqtt_client: mqtt.Client = None,
     ):
-        super.__init__(self, self.OBJECT_ID, room_id, rack_id, mqtt_client)
+        super().__init__(self.OBJECT_ID, room_id, rack_id, mqtt_client)
         self.resource_map["energy"] = EnergySensor(f"{self.OBJECT_ID}_energy")
 
         self.logger = logging.getLogger(f"{self.OBJECT_ID}")
