@@ -12,9 +12,8 @@ async def start_gateway_coap_server():
     discoverer = DeviceDiscoverer(registry)
 
     print("🚀 Starting CoAP Gateway...")
-    
     devices = [CoapConfigurationParameters.COAP_SERVER_ADDRESS, "192.168.1.101"]
-    
+
     print("🔍 Checking device connectivity...")
     for ip in devices:
         is_reachable = await discoverer.check_connectivity(ip)
@@ -31,14 +30,14 @@ async def start_gateway_coap_server():
     site.add_resource(
         (".well-known", "core"), WKCResource(site.get_resources_as_linkheader)
     )
-    site.add_resource(("forward",), ForwardResource(registry))
+    site.add_resource(("proxy", "forward",), ForwardResource(registry))
 
-    print(f"🌐 CoAP Proxy Gateway running at {CoapConfigurationParameters.BASIC_URI}")
+    print(f"🌐 CoAP Proxy Gateway running at {CoapConfigurationParameters.GATEWAY_URI}")
     await Context.create_server_context(
         site,
         bind=(
             CoapConfigurationParameters.COAP_SERVER_ADDRESS,
-            CoapConfigurationParameters.COAP_SERVER_PORT,
+            CoapConfigurationParameters.COAP_GATEWAY_PORT,
         ),
     )
     await asyncio.get_running_loop().create_future()

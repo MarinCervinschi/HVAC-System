@@ -1,7 +1,7 @@
-from aiocoap import Context, Message, Code
-from link_header import parse
-from gateway.device_registry import DeviceRegistry
 from typing import Any
+from link_header import parse
+from aiocoap import Context, Message, Code
+from gateway.device_registry import DeviceRegistry
 
 
 class DeviceDiscoverer:
@@ -18,12 +18,14 @@ class DeviceDiscoverer:
 
             payload: str = response.payload.decode()
             links: Any = parse(payload)
-            print(f"🔍 Discovered resources at {host}:{port}:\n{links}")
 
             for link in links.links:
                 path: str = link.href.strip("/")
-                self.registry.add_resource(host, port, path, link.attr_dict)
+                attr_dict = {key: value for key, value in link.attr_pairs}
+                self.registry.add_resource(host, port, path, attr_dict)
 
+            num_resources = len(links.links)
+            print(f"🔍 Discovered {num_resources} resources on {host}:{port}")
         except Exception as e:
             print(f"❌ Failed to discover {host}: {e}")
 
