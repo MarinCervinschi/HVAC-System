@@ -5,6 +5,7 @@ from data_collector.resources.rack import RackDetailAPI
 from data_collector.resources.device import DeviceControlAPI
 from data_collector.resources.policy import PolicyUpdateAPI
 from data_collector.resources.policy import PolicyRoomAPI
+from data_collector.resources.policy import PolicyRackAPI
 from flask_cors import CORS
 import json
 
@@ -63,6 +64,12 @@ def create_app() -> Flask:
     api.add_resource(
         PolicyRoomAPI,
         f"{BASE_URL}/room/<string:room_id>/policies",
+        resource_class_kwargs={"system_manager": system_manager},
+    )
+
+    api.add_resource(
+        PolicyRackAPI,
+        f"{BASE_URL}/room/<string:room_id>/rack/<string:rack_id>/device/<string:object_id>/policies",
         resource_class_kwargs={"system_manager": system_manager},
     )
 

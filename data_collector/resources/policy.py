@@ -45,3 +45,38 @@ class PolicyRoomAPI(Resource):
             return {"status": "success", "policies": data}, 200
         except Exception as e:
             return {"status": "error", "message": str(e)}, 500
+
+
+class PolicyRackAPI(Resource):
+    def __init__(self, **kwargs):
+        self.system_manager: HVACSystemManager = kwargs.get("system_manager")
+
+    def get(self, room_id: str, rack_id: str, object_id: str):
+        try:
+            if not self.system_manager:
+                return {"error": "System manager not available"}, 500
+
+            room = self.system_manager.get_room_by_id(room_id)
+            if not room:
+                return {"error": f"Room {room_id} not found"}, 404
+
+            rack = room.get_rack(rack_id)
+            if not rack:
+                return {"error": f"Rack {rack_id} not found in room {room_id}"}, 404
+
+            policies = self.system_manager.data_collectors.get(
+                room_id
+            ).policy_manager.policies
+
+            data = []
+            for policy in policies:
+                if (
+                    policy["type"] == "smart_object"
+                    and policy["rack_id"] == rack_id
+                    and policy["object_id"] == object_id
+                ):
+                    data.append(policy)
+
+            return {"status": "success", "policies": data}, 200
+        except Exception as e:
+            return {"status": "error", "message": str(e)}, 500
