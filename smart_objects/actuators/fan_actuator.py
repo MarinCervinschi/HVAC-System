@@ -23,7 +23,7 @@ class FanActuator(SwitchActuator):
 
         self.logger = logging.getLogger(f"{resource_id}")
 
-    def _on_status_change(self, old_status: str, new_status: str) -> None:
+    def _on_status_change(self, new_status: str) -> None:
         """Handle fan-specific behavior when status changes."""
         if new_status == "OFF":
             self.state["speed"] = 0
@@ -47,7 +47,7 @@ class FanActuator(SwitchActuator):
             updated = self.apply_switch(command)
 
             if updated and self.state["status"] != old_status:
-                self._on_status_change(old_status, self.state["status"])
+                self._on_status_change(self.state["status"])
 
             if "speed" in command:
                 speed = int(command["speed"])
@@ -56,7 +56,6 @@ class FanActuator(SwitchActuator):
                         f"Speed must be between {self.MIN_SPEED} and {self.MAX_SPEED}, got: {speed}"
                     )
 
-                # Se status è OFF, ignora il comando speed
                 if self.state["status"] == "OFF":
                     self.logger.warning(f"Cannot set speed while fan is OFF.")
                 else:
@@ -105,7 +104,7 @@ class FanActuator(SwitchActuator):
             self.logger.info(f"Fan {self.resource_id} reset to default state.")
 
             if old_status != "OFF":
-                self._on_status_change(old_status, "OFF")
+                self._on_status_change("OFF")
 
             return True
         except Exception as e:

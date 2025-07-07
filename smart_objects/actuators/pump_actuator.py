@@ -23,7 +23,7 @@ class PumpActuator(SwitchActuator):
 
         self.logger = logging.getLogger(f"{resource_id}")
 
-    def _on_status_change(self, old_status: str, new_status: str) -> None:
+    def _on_status_change(self, new_status: str) -> None:
         """Handle pump-specific behavior when status changes."""
         if new_status == "OFF":
             self.state["speed"] = 0
@@ -47,7 +47,7 @@ class PumpActuator(SwitchActuator):
             updated = self.apply_switch(command)
 
             if updated and self.state["status"] != old_status:
-                self._on_status_change(old_status, self.state["status"])
+                self._on_status_change(self.state["status"])
 
             if "speed" in command:
                 speed = int(command["speed"])
@@ -105,7 +105,7 @@ class PumpActuator(SwitchActuator):
             self.logger.info(f"Pump {self.resource_id} reset to default state.")
 
             if old_status != "OFF":
-                self._on_status_change(old_status, "OFF")
+                self._on_status_change("OFF")
 
             return True
         except Exception as e:

@@ -32,7 +32,7 @@ class SwitchActuator(Actuator, ABC):
         self.logger = logging.getLogger(f"{resource_id}")
 
     @abstractmethod
-    def _on_status_change(self, old_status: str, new_status: str) -> None:
+    def _on_status_change(self, new_status: str) -> None:
         """
         Hook method called when the status changes.
         Subclasses should implement this to handle specific behavior.
