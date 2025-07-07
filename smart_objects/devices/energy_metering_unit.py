@@ -70,10 +70,15 @@ class EnergyMeteringUnit(SmartObject, CoapControllable):
         self.logger.info(
             f"📢 Registered CoAP switch control resource for {switch_actuator.resource_id} at path: {'/'.join(resource_path)}"
         )
+        attributes = {
+            "room_id": self.room_id,
+            "rack_id": self.rack_id,
+            "object_id": self.object_id,
+        }
 
         site.add_resource(
             resource_path,
-            ActuatorControlResource(switch_actuator),
+            ActuatorControlResource(switch_actuator, attributes),
         )
 
         return site

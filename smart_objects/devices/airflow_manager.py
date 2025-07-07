@@ -71,9 +71,15 @@ class AirflowManager(SmartObject, CoapControllable):
             f"📢 Registered CoAP cooling levels control resource for {cooling_levels_actuator.resource_id} at path: {'/'.join(resource_path)}"
         )
 
+        attributes = {
+            "room_id": self.room_id,
+            "rack_id": self.rack_id,
+            "object_id": self.object_id,
+        }
+
         site.add_resource(
             resource_path,
-            ActuatorControlResource(cooling_levels_actuator),
+            ActuatorControlResource(cooling_levels_actuator, attributes),
         )
 
         return site

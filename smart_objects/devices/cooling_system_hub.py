@@ -20,7 +20,9 @@ class CoolingSystemHub(SmartObject, CoapControllable):
         SmartObject.__init__(self, self.OBJECT_ID, room_id, rack_id, mqtt_client)
         CoapControllable.__init__(self)
 
-        self.resource_map["cooling_levels"] = CoolingLevelsActuator(f"{self.OBJECT_ID}_cooling_levels")
+        self.resource_map["cooling_levels"] = CoolingLevelsActuator(
+            f"{self.OBJECT_ID}_cooling_levels"
+        )
 
         self.logger = logging.getLogger(f"{self.OBJECT_ID}")
 
@@ -56,10 +58,15 @@ class CoolingSystemHub(SmartObject, CoapControllable):
         self.logger.info(
             f"📢 Registered CoAP cooling levels control resource for {cooling_levels_actuator.resource_id} at path: {'/'.join(resource_path)}"
         )
+        attributes = {
+            "room_id": self.room_id,
+            "rack_id": self.rack_id,
+            "object_id": self.object_id,
+        }
 
         site.add_resource(
             resource_path,
-            ActuatorControlResource(cooling_levels_actuator),
+            ActuatorControlResource(cooling_levels_actuator, attributes),
         )
 
         return site
@@ -67,5 +74,7 @@ class CoolingSystemHub(SmartObject, CoapControllable):
     def _register_resource_listeners(self) -> None:
         """Register listeners for resource data changes."""
         # No sensors to register listeners for, only cooling level actuator
-        self.logger.info("No sensor listeners to register - only cooling level actuator present")
+        self.logger.info(
+            "No sensor listeners to register - only cooling level actuator present"
+        )
         pass

@@ -72,9 +72,14 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             f"📢 Registered CoAP fan control resource for {fan_actuator.resource_id} at path: {'/'.join(resource_path)}"
         )
 
+        attributes = {
+            "room_id": self.room_id,
+            "rack_id": self.rack_id,
+            "object_id": self.object_id,
+        }
         site.add_resource(
             resource_path,
-            ActuatorControlResource(fan_actuator),
+            ActuatorControlResource(fan_actuator, attributes),
         )
 
         return site
