@@ -13,15 +13,25 @@ export interface PolicyAction {
     }
   }
 }
-
 export interface Policy {
   id: string
   description: string
   room_id: string
   rack_id?: string | null
+  object_id: string
+  sensor_type: string
   resource_id: string
   condition: PolicyCondition
-  action: PolicyAction
+  action: PolicyAction & {
+    resource_id: string
+    actuator_type: string
+    command: {
+      status?: "ON" | "OFF"
+      speed?: number
+      level?: number
+      [key: string]: any
+    }
+  }
   created_at?: string
   updated_at?: string
 }
