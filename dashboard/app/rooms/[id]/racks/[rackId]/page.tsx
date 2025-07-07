@@ -139,9 +139,9 @@ export default function RackDetailPage() {
             setLoading(false)
         }
     }
-
     useEffect(() => {
-        fetchRackData()  
+        // Usa i mock data invece della fetch
+        setRackInfo(mockRack)
     }, [rackId, roomId])
 
     if (!rackInfo) {

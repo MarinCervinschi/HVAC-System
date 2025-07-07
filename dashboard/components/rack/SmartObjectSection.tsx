@@ -49,13 +49,12 @@ export function SmartObjectSection({
                     {formatName(smartObject.id)}
                 </h2>
                 
-                {/* 
-                    <PolicyDialog
-                        smartObject={smartObject}
-                        //getSensorPolicy={getSensorPolicy}
-                        onPolicyChange={onPolicyChange}
-                    />
-                */}
+                <PolicyDialog
+                    smartObject={smartObject}
+                    //getSensorPolicy={getSensorPolicy}
+                    //onPolicyChange={onPolicyChange}
+                />
+                
             </div>
             
             <div className="grid grid-cols-2 gap-20">
