@@ -7,4 +7,4 @@ class CoapConfigurationParameters(object):
     COAP_GATEWAY_PORT: ClassVar[int] = 5684
 
     BASIC_URI: ClassVar[str] = f"coap://{COAP_SERVER_ADDRESS}:{COAP_SERVER_PORT}"
-    GATEWAY_URI: ClassVar[str] = f"coap://{COAP_SERVER_ADDRESS}:{COAP_GATEWAY_PORT}"
+    GATEWAY_URI: ClassVar[str] = f"coap://{COAP_SERVER_ADDRESS}:{COAP_GATEWAY_PORT}/proxy/forward"
