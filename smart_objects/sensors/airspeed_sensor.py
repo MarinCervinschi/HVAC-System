@@ -10,8 +10,8 @@ class AirSpeedSensor(Sensor):
     RESOURCE_TYPE: ClassVar[str] = "iot:sensor:air_speed"
     UNIT: ClassVar[str] = "m/s"
     DATA_TYPE: ClassVar[type] = float
-    DEFAULT_MIN_AIR_SPEED: ClassVar[float] = 0.0
-    DEFAULT_MAX_AIR_SPEED: ClassVar[float] = 100.0
+    DEFAULT_MIN_AIR_SPEED: ClassVar[float] = 0.1
+    DEFAULT_MAX_AIR_SPEED: ClassVar[float] = 15.0
     MEASUREMENT_PRECISION: ClassVar[int] = 2
     UPDATE_PERIOD: ClassVar[int] = 60
     TASK_DELAY_TIME: ClassVar[int] = 5
