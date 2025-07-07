@@ -260,17 +260,23 @@ export default function RackDetailPage() {
         )
     }
 
-    const handleActuatorToggle = async (actuatorId: string, checked: boolean) => {
+    const handleActuatorToggle = (smartObjectId: string) => async (actuatorId: string, checked: boolean) => {
         setIsToggling((prev) => ({ ...prev, [actuatorId]: true }))
 
         try {
-            const response = await fetch(`${API_URL}/hvac/api/room/${roomId}/rack/${rackId}/actuator/${actuatorId}`, {
+            const response = await fetch(`${API_URL}/proxy/forward`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    status: checked ? 'ON' : 'OFF'
+                    command: { 
+                        status: checked ? 'ON' : 'OFF',
+                        speed: 3,
+                    },
+                    object_id: smartObjectId,
+                    room_id: roomId,
+                    rack_id: rackId,
                 })
             })
 
@@ -289,7 +295,7 @@ export default function RackDetailPage() {
         }
     }
 
-    const handleLevelChange = async (actuatorId: string, level: number) => {
+    const handleLevelChange = (smartObjectId: string) => async (actuatorId: string, level: number) => {
         setIsToggling((prev) => ({ ...prev, [actuatorId]: true }))
 
         try {
@@ -299,7 +305,8 @@ export default function RackDetailPage() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    level: level
+                    level: level,
+                    smart_object_id: smartObjectId
                 })
             })
 
@@ -365,8 +372,8 @@ export default function RackDetailPage() {
                         smartObject={smartObject}
                         rackActive={rackInfo.status === "ON"}
                         isToggling={isToggling}
-                        onActuatorToggle={handleActuatorToggle}
-                        onLevelChange={handleLevelChange}
+                        onActuatorToggle={handleActuatorToggle(smartObject.id)}
+                        onLevelChange={handleLevelChange(smartObject.id)}
                     />
                 ))}
             </div>

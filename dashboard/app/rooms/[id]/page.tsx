@@ -3,23 +3,10 @@
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Settings } from "lucide-react"
 import { Room } from "@/types/room"
 import { SmartObject } from "@/types/smartobject"
 import { Sensor } from "@/types/sensor"
-import { Actuator } from "@/types/actuator"
 import { CoolingSystemHub, RackList } from "@/components/room/smartobject"
 import { formatName } from "@/lib/utils"
 import GraficSensors from "@/components/room/smartobject/sensors/GraficSensors"
