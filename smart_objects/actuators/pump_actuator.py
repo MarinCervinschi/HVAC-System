@@ -5,7 +5,7 @@ from smart_objects.resources.SwitchActuator import SwitchActuator
 
 
 class PumpActuator(SwitchActuator):
-    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:pump🛠️"
+    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:pump"
     MIN_SPEED: ClassVar[int] = 0
     MAX_SPEED: ClassVar[int] = 100
 

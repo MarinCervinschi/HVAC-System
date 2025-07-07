@@ -7,7 +7,7 @@ from typing import Dict, Any, ClassVar
 
 
 class AirSpeedSensor(Sensor):
-    RESOURCE_TYPE: ClassVar[str] = "iot:sensor:air_speed💨"
+    RESOURCE_TYPE: ClassVar[str] = "iot:sensor:air_speed"
     UNIT: ClassVar[str] = "m/s"
     DATA_TYPE: ClassVar[type] = float
     DEFAULT_MIN_AIR_SPEED: ClassVar[float] = 0.0

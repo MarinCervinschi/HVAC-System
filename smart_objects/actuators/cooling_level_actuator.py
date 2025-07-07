@@ -5,7 +5,7 @@ from smart_objects.resources.SwitchActuator import SwitchActuator
 
 
 class CoolingLevelsActuator(SwitchActuator):
-    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:cooling_levels❄️"
+    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:cooling_levels"
     MIN_LEV: ClassVar[int] = 0
     MAX_LEV: ClassVar[int] = 5
 

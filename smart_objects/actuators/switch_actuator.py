@@ -5,7 +5,7 @@ from smart_objects.resources.SwitchActuator import SwitchActuator as BaseSwitchA
 
 
 class SwitchActuatorConcrete(BaseSwitchActuator):
-    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:switch🔌"
+    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:switch"
 
     def __init__(self, resource_id: str):
         super().__init__(

@@ -7,7 +7,7 @@ from typing import Dict, Any, ClassVar
 
 
 class HumiditySensor(Sensor):
-    RESOURCE_TYPE: ClassVar[str] = "iot:sensor:humidity💧"
+    RESOURCE_TYPE: ClassVar[str] = "iot:sensor:humidity"
     UNIT: ClassVar[str] = "%"
     DATA_TYPE: ClassVar[type] = float
     DEFAULT_MIN_HUMIDITY: ClassVar[float] = 0.0

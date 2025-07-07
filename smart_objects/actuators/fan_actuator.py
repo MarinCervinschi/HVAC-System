@@ -5,7 +5,7 @@ from smart_objects.resources.SwitchActuator import SwitchActuator
 
 
 class FanActuator(SwitchActuator):
-    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:fan🪭"
+    RESOURCE_TYPE: ClassVar[str] = "iot:actuator:fan"
     MIN_SPEED: ClassVar[int] = 0
     MAX_SPEED: ClassVar[int] = 100
 

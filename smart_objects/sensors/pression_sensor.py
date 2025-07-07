@@ -7,7 +7,7 @@ from typing import Dict, Any, ClassVar
 
 
 class PressureSensor(Sensor):
-    RESOURCE_TYPE: ClassVar[str] = "iot:sensor:pressure💨"
+    RESOURCE_TYPE: ClassVar[str] = "iot:sensor:pressure"
     UNIT: ClassVar[str] = "hPa"
     DATA_TYPE: ClassVar[type] = float
     DEFAULT_MIN_PRESSURE: ClassVar[float] = 950.0
