@@ -52,6 +52,8 @@ interface PolicyDialogProps {
   roomId: string;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.1:5000/hvac/api"
+
 export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState<Policy | null>(null);
@@ -116,74 +118,17 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
         // Per ora assumiamo di caricare policy per il primo smart object
         // In futuro, potresti voler caricare policy per tutta la room
         const firstSmartObject = smartObjects[0];
-        const response = await fetch(
-          `/api/room/${roomId}/rack/${
-            firstSmartObject.rack_id || "default"
-          }/device/${firstSmartObject.id}/policy`
-        );
+        const response = await fetch(`${API_URL}/room/${roomId}/policies`);
         if (response.ok) {
           const data = await response.json();
-          setPolicies(data);
+          setPolicies(data.policies);
         } else {
           console.error("Errore nel caricamento delle policy");
-          // Fallback con policy di esempio per testing
-          setPolicies([
-            {
-              id: "temp_control_room_002_low",
-              description:
-                "Temperature control for room 002 - Low temperature threshold",
-              room_id: roomId,
-              rack_id: firstSmartObject.rack_id,
-              object_id: firstSmartObject.id,
-              sensor_type: "iot:sensor:temperature",
-              resource_id: "rack_cooling_unit_temp",
-              condition: {
-                operator: "<",
-                value: 20.0,
-              },
-              action: {
-                resource_id: "rack_cooling_unit_fan",
-                actuator_type: "iot:actuator:fan",
-                command: {
-                  value: {
-                    status: "OFF",
-                    speed: 80,
-                  },
-                },
-              },
-            },
-          ]);
+          setPolicies([]);
         }
       } catch (error) {
         console.error("Errore nella richiesta:", error);
-        // Fallback con policy di esempio per testing
-        const firstSmartObject = smartObjects[0];
-        setPolicies([
-          {
-            id: "temp_control_room_002_low",
-            description:
-              "Temperature control for room 002 - Low temperature threshold",
-            room_id: roomId,
-            rack_id: firstSmartObject.rack_id,
-            object_id: firstSmartObject.id,
-            sensor_type: "iot:sensor:temperature",
-            resource_id: "rack_cooling_unit_temp",
-            condition: {
-              operator: "<",
-              value: 20.0,
-            },
-            action: {
-              resource_id: "rack_cooling_unit_fan",
-              actuator_type: "iot:actuator:fan",
-              command: {
-                value: {
-                  status: "OFF",
-                  speed: 0,
-                },
-              },
-            },
-          },
-        ]);
+        setPolicies([]);
       } finally {
         setIsLoading(false);
       }
@@ -206,7 +151,8 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
   };
 
   const getActionText = (action: PolicyAction) => {
-    const commands = Object.entries(action.command.value)
+   
+    const commands = Object.entries(action.command)
       .map(
         ([key, value]) =>
           `${

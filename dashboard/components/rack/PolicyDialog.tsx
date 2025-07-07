@@ -46,10 +46,13 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
+import { toast } from "sonner";
 
 interface PolicyDialogProps {
   smartObject: SmartObject;
 }
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.1:5000/hvac/api"
 
 export function PolicyDialog({ smartObject }: PolicyDialogProps) {
   const [isCreating, setIsCreating] = useState(false);
@@ -81,16 +84,13 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
     },
   });
 
-  // Sensori e attuatori disponibili per la selezione
   const availableSensors = smartObject.sensors || [];
   const availableActuators = smartObject.actuators || [];
 
-  // richiesta policy a /room/:roomId/rack/:rackId/device/:deviceId/policy
   const [policies, setPolicies] = useState<Policy[]>([]);
 
-  // Carica le policy solo quando il dialogo viene aperto
   useEffect(() => {
-    if (!dialogOpen) return; // Non caricare se il dialogo non è aperto
+    if (!dialogOpen) return; 
     
     const loadPolicies = async () => {
       if (!smartObject.room_id || !smartObject.id) return;
@@ -98,72 +98,19 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `/api/room/${smartObject.room_id}/rack/${
-            smartObject.rack_id || "default"
-          }/device/${smartObject.id}/policy`
+          `${API_URL}/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policies`
         );
         if (response.ok) {
           const data = await response.json();
-          setPolicies(data);
+          setPolicies(data.policies);
+          toast.success("Policy caricate con successo");
         } else {
-          console.error("Errore nel caricamento delle policy");
-          // Fallback con policy di esempio per testing
-          setPolicies([
-            {
-              id: "temp_control_room_002_low",
-              description:
-                "Temperature control for room 002 - Low temperature threshold",
-              room_id: smartObject.room_id,
-              rack_id: smartObject.rack_id,
-              object_id: smartObject.id,
-              sensor_type: "iot:sensor:temperature",
-              resource_id: "rack_cooling_unit_temp",
-              condition: {
-                operator: "<",
-                value: 20.0,
-              },
-              action: {
-                resource_id: "rack_cooling_unit_fan",
-                actuator_type: "iot:actuator:fan",
-                command: {
-                  value: {
-                    status: "OFF",
-                    speed: 80,
-                  },
-                },
-              },
-            },
-          ]);
+          toast.error("Errore nel caricamento delle policy");
+          setPolicies([]);
         }
       } catch (error) {
-        console.error("Errore nella richiesta:", error);
-        // Fallback con policy di esempio per testing
-        setPolicies([
-          {
-            id: "temp_control_room_002_low",
-            description:
-              "Temperature control for room 002 - Low temperature threshold",
-            room_id: smartObject.room_id,
-            rack_id: smartObject.rack_id,
-            object_id: smartObject.id,
-            sensor_type: "iot:sensor:temperature",
-            resource_id: "rack_cooling_unit_temp",
-            condition: {
-              operator: "<",
-              value: 20.0,
-            },
-            action: {
-              resource_id: "rack_cooling_unit_fan",
-              actuator_type: "iot:actuator:fan",
-              command: {
-                value: {
-                  status: "OFF",
-                  speed: 0,
-                },
-              },
-            },
-          },
-        ]);
+          toast.error("Errore nella richiesta: " + error);
+          setPolicies([]);
       } finally {
         setIsLoading(false);
       }
@@ -177,7 +124,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
   };
 
   const getActionText = (action: PolicyAction) => {
-    const commands = Object.entries(action.command.value)
+    const commands = Object.entries(action.command)
       .map(
         ([key, value]) =>
           `${
@@ -199,7 +146,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
 
     try {
       const response = await fetch(
-        `/api/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policy/${editingPolicy.id}`,
+        `${API_URL}/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policy/${editingPolicy.id}`,
         {
           method: "PUT",
           headers: {
@@ -214,12 +161,13 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
         setPolicies((prev) =>
           prev.map((p) => (p.id === editingPolicy.id ? updatedPolicy : p))
         );
+        toast.success("Policy aggiornata con successo");
         setEditingPolicy(null);
       } else {
-        console.error("Errore nel salvataggio della policy");
+        toast.error("Errore nel salvataggio della policy");
       }
     } catch (error) {
-      console.error("Errore nella richiesta:", error);
+      toast.error("Errore nella richiesta: " + error);
     }
   };
 
@@ -231,7 +179,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
 
     try {
       const response = await fetch(
-        `/api/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policy/${policyId}`,
+        `${API_URL}/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policy/${policyId}`,
         {
           method: "DELETE",
         }
@@ -240,10 +188,10 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
       if (response.ok) {
         setPolicies((prev) => prev.filter((p) => p.id !== policyId));
       } else {
-        console.error("Errore nell'eliminazione della policy");
+        toast.error("Errore nell'eliminazione della policy");
       }
     } catch (error) {
-      console.error("Errore nella richiesta:", error);
+      toast.error("Errore nella richiesta: " + error);
     }
   };
 
