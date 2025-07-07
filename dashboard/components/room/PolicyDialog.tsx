@@ -57,6 +57,7 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
   const [editingPolicy, setEditingPolicy] = useState<Policy | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedSmartObject, setSelectedSmartObject] = useState<SmartObject | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // Stato per la nuova policy
   const [newPolicy, setNewPolicy] = useState<Omit<Policy, "id">>({
@@ -103,8 +104,10 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
   // richiesta policy a /room/:roomId/rack/:rackId/device/:deviceId/policy
   const [policies, setPolicies] = useState<Policy[]>([]);
 
-  // Carica le policy all'apertura del dialogo
+  // Carica le policy solo quando il dialogo viene aperto
   useEffect(() => {
+    if (!dialogOpen) return; // Non caricare se il dialogo non è aperto
+    
     const loadPolicies = async () => {
       if (!roomId || smartObjects.length === 0) return;
 
@@ -187,7 +190,7 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
     };
 
     loadPolicies();
-  }, [roomId, smartObjects]);
+  }, [dialogOpen, roomId, smartObjects]);
 
   // Helper function to find sensor across all smart objects
   const findSensorByIdInRoom = (resourceId: string) => {
@@ -374,7 +377,7 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
   };
 
   return (
-    <Dialog>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Settings className="h-4 w-4 mr-2" />

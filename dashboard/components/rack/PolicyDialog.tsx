@@ -55,6 +55,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState<Policy | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // Stato per la nuova policy
   const [newPolicy, setNewPolicy] = useState<Omit<Policy, "id">>({
@@ -87,8 +88,10 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
   // richiesta policy a /room/:roomId/rack/:rackId/device/:deviceId/policy
   const [policies, setPolicies] = useState<Policy[]>([]);
 
-  // Carica le policy all'apertura del dialogo
+  // Carica le policy solo quando il dialogo viene aperto
   useEffect(() => {
+    if (!dialogOpen) return; // Non caricare se il dialogo non è aperto
+    
     const loadPolicies = async () => {
       if (!smartObject.room_id || !smartObject.id) return;
 
@@ -167,7 +170,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
     };
 
     loadPolicies();
-  }, [smartObject.room_id, smartObject.rack_id, smartObject.id]);
+  }, [dialogOpen, smartObject.room_id, smartObject.rack_id, smartObject.id]);
 
   const getConditionText = (condition: PolicyCondition) => {
     return `${OPERATOR_LABELS[condition.operator]}: ${condition.value}`;
@@ -330,7 +333,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
   };
 
   return (
-    <Dialog>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Settings className="h-4 w-4 mr-2" />
