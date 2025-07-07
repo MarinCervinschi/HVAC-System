@@ -55,8 +55,6 @@ class SmartObject(ABC, Generic[T]):
 
                 self._register_resource_listeners()
 
-                if isinstance(self, CoapControllable):
-                    self.start_coap_server()
         except Exception as e:
             raise RuntimeError(f"Failed to start SmartObject {self.object_id}: {e}")
 
