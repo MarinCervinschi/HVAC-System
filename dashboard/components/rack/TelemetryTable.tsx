@@ -80,7 +80,7 @@ export function TelemetryTable({ smartObject, /*getSensorPolicy*/ }: TelemetryTa
                                             </thead>
                                             <tbody>
                                                 {(sensor.history || []).length > 0 ? (
-                                                    (sensor.history || []).slice(-10).map((dataPoint, index) => {
+                                                    (sensor.history || []).slice(-9).map((dataPoint, index) => {
                                                         /*const isOverThreshold = 
                                                             dataPoint.value < policy.min || dataPoint.value > policy.max
                                                         */

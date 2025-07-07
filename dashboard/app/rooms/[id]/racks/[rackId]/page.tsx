@@ -1,13 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { notFound, useParams } from "next/navigation"
 import { RackStatusCard, SmartObjectSection } from "@/components/rack"
 import { Rack } from "@/types/rack"
 import { Sensor } from "@/types/sensor"
 import { SmartObject } from "@/types/smartobject"
 import { convertSmartObjectData } from "@/lib/utils"
 import { useMQTTClient } from "@/hooks/useMqttClient"
+import Loader from "@/components/loader"
 
 // Mock data per un rack con smartObjects, sensori e attuatori
 
@@ -247,18 +248,6 @@ export default function RackDetailPage() {
     console.log("🔍 Rack Info:", rackInfo)
     console.log("🔍 Rack MQTT Topics to subscribe:", mqttTopics)
 
-    if (!rackInfo) {
-        return (
-            <div className="flex flex-col min-h-full">
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                        <h1 className="text-2xl font-bold mb-2">Rack non trovato</h1>
-                        <p className="text-muted-foreground">Il rack richiesto non esiste.</p>
-                    </div>
-                </div>
-            </div>
-        )
-    }
 
     const handleActuatorToggle = (smartObjectId: string) => async (actuatorId: string, checked: boolean) => {
         setIsToggling((prev) => ({ ...prev, [actuatorId]: true }))
@@ -353,6 +342,17 @@ export default function RackDetailPage() {
             setIsToggling((prev) => ({ ...prev, rack: false }))
         }
     }
+
+    if (loading) {
+        return <Loader />
+    }
+
+   if (!rackInfo) {
+    if (error) {
+      return notFound()
+    }
+    return <Loader />
+  }
 
     return (
         <div className="flex flex-col min-h-full">

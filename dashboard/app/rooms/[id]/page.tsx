@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { notFound, useParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { Room } from "@/types/room"
@@ -13,6 +13,8 @@ import GraficSensors from "@/components/room/smartobject/sensors/GraficSensors"
 import { convertSmartObjectData } from "@/lib/utils"
 import { useMQTTClient } from "@/hooks/useMqttClient"
 import { PolicyDialog } from "@/components/room/PolicyDialog"
+import { toast } from "sonner"
+import Loader from "@/components/loader"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.1:5000/hvac/api"
 
@@ -36,7 +38,7 @@ export default function RoomDetailPage() {
       try {
         const res = await fetch(`${API_URL}/room/${roomId}`)
         if (!res.ok) {
-          setError("Failed to fetch room data")
+          toast.error("Failed to fetch room data")
           return
         }
         const response = await res.json()
@@ -114,17 +116,15 @@ export default function RoomDetailPage() {
 
   const coolingHub = roomInfo?.smart_objects?.find(obj => obj.id === "cooling_system_hub")
 
+  if (loading) {
+    return <Loader />
+  }
+
   if (!roomInfo) {
-    return (
-      <div className="flex flex-col min-h-full">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-2">Room not found</h1>
-            <p className="text-muted-foreground">The requested room does not exist.</p>
-          </div>
-        </div>
-      </div>
-    )
+    if (error) {
+      return notFound()
+    }
+    return notFound()
   }
 
   return (
