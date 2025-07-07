@@ -1,6 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from data_collector.core.policy_manager import PolicyManager
+from data_collector.models.Room import Room
 from data_collector.core.manager import HVACSystemManager
 
 POLICY_PATH = "data_collector/conf/policy.json"
@@ -36,7 +37,11 @@ class PolicyRoomAPI(Resource):
             policies = self.system_manager.data_collectors.get(
                 room_id
             ).policy_manager.policies
+            data = []
+            for policy in policies:
+                if policy["type"] == "room":
+                    data.append(policy)
 
-            return {"status": "success", "policies": policies}, 200
+            return {"status": "success", "policies": data}, 200
         except Exception as e:
             return {"status": "error", "message": str(e)}, 500
