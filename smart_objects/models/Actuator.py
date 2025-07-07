@@ -1,9 +1,7 @@
-from ..resources.SmartObjectResource import SmartObjectResource
-from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
 import logging
-from typing import Generic, TypeVar, List
-import json
+from abc import ABC, abstractmethod
+from typing import Any, Dict, TypeVar
+from ..resources.SmartObjectResource import SmartObjectResource
 
 T = TypeVar("T")
 
