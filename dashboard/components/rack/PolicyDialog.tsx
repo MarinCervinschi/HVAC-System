@@ -46,10 +46,13 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
+import { toast } from "sonner";
 
 interface PolicyDialogProps {
   smartObject: SmartObject;
 }
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.1:5000/hvac/api"
 
 export function PolicyDialog({ smartObject }: PolicyDialogProps) {
   const [isCreating, setIsCreating] = useState(false);
@@ -73,24 +76,19 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
       resource_id: "",
       actuator_type: "",
       command: {
-        value: {
-          status: "OFF",
-          speed: 0,
-        },
+        status: "OFF",
+        speed: 0,
       },
     },
   });
 
-  // Sensori e attuatori disponibili per la selezione
   const availableSensors = smartObject.sensors || [];
   const availableActuators = smartObject.actuators || [];
 
-  // richiesta policy a /room/:roomId/rack/:rackId/device/:deviceId/policy
   const [policies, setPolicies] = useState<Policy[]>([]);
 
-  // Carica le policy solo quando il dialogo viene aperto
   useEffect(() => {
-    if (!dialogOpen) return; // Non caricare se il dialogo non è aperto
+    if (!dialogOpen) return; 
     
     const loadPolicies = async () => {
       if (!smartObject.room_id || !smartObject.id) return;
@@ -98,72 +96,19 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `/api/room/${smartObject.room_id}/rack/${
-            smartObject.rack_id || "default"
-          }/device/${smartObject.id}/policy`
+          `${API_URL}/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policies`
         );
         if (response.ok) {
           const data = await response.json();
-          setPolicies(data);
+          setPolicies(data.policies);
+          toast.success("Policy caricate con successo");
         } else {
-          console.error("Errore nel caricamento delle policy");
-          // Fallback con policy di esempio per testing
-          setPolicies([
-            {
-              id: "temp_control_room_002_low",
-              description:
-                "Temperature control for room 002 - Low temperature threshold",
-              room_id: smartObject.room_id,
-              rack_id: smartObject.rack_id,
-              object_id: smartObject.id,
-              sensor_type: "iot:sensor:temperature",
-              resource_id: "rack_cooling_unit_temp",
-              condition: {
-                operator: "<",
-                value: 20.0,
-              },
-              action: {
-                resource_id: "rack_cooling_unit_fan",
-                actuator_type: "iot:actuator:fan",
-                command: {
-                  value: {
-                    status: "OFF",
-                    speed: 80,
-                  },
-                },
-              },
-            },
-          ]);
+          toast.error("Errore nel caricamento delle policy");
+          setPolicies([]);
         }
       } catch (error) {
-        console.error("Errore nella richiesta:", error);
-        // Fallback con policy di esempio per testing
-        setPolicies([
-          {
-            id: "temp_control_room_002_low",
-            description:
-              "Temperature control for room 002 - Low temperature threshold",
-            room_id: smartObject.room_id,
-            rack_id: smartObject.rack_id,
-            object_id: smartObject.id,
-            sensor_type: "iot:sensor:temperature",
-            resource_id: "rack_cooling_unit_temp",
-            condition: {
-              operator: "<",
-              value: 20.0,
-            },
-            action: {
-              resource_id: "rack_cooling_unit_fan",
-              actuator_type: "iot:actuator:fan",
-              command: {
-                value: {
-                  status: "OFF",
-                  speed: 0,
-                },
-              },
-            },
-          },
-        ]);
+          toast.error("Errore nella richiesta: " + error);
+          setPolicies([]);
       } finally {
         setIsLoading(false);
       }
@@ -177,7 +122,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
   };
 
   const getActionText = (action: PolicyAction) => {
-    const commands = Object.entries(action.command.value)
+    const commands = Object.entries(action.command)
       .map(
         ([key, value]) =>
           `${
@@ -199,7 +144,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
 
     try {
       const response = await fetch(
-        `/api/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policy/${editingPolicy.id}`,
+        `${API_URL}/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policies`,
         {
           method: "PUT",
           headers: {
@@ -210,16 +155,18 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
       );
 
       if (response.ok) {
-        const updatedPolicy = await response.json();
+        const result = await response.json();
         setPolicies((prev) =>
-          prev.map((p) => (p.id === editingPolicy.id ? updatedPolicy : p))
+          prev.map((p) => (p.id === editingPolicy.id ? result.policy : p))
         );
+        toast.success("Policy aggiornata con successo");
         setEditingPolicy(null);
       } else {
-        console.error("Errore nel salvataggio della policy");
+        const errorData = await response.json();
+        toast.error(`Errore nel salvataggio della policy: ${errorData.message || 'Errore sconosciuto'}`);
       }
     } catch (error) {
-      console.error("Errore nella richiesta:", error);
+      toast.error("Errore nella richiesta: " + error);
     }
   };
 
@@ -231,7 +178,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
 
     try {
       const response = await fetch(
-        `/api/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policy/${policyId}`,
+        `${API_URL}/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policies?id=${policyId}`,
         {
           method: "DELETE",
         }
@@ -239,11 +186,13 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
 
       if (response.ok) {
         setPolicies((prev) => prev.filter((p) => p.id !== policyId));
+        toast.success("Policy eliminata con successo");
       } else {
-        console.error("Errore nell'eliminazione della policy");
+        const errorData = await response.json();
+        toast.error(`Errore nell'eliminazione della policy: ${errorData.message || 'Errore sconosciuto'}`);
       }
     } catch (error) {
-      console.error("Errore nella richiesta:", error);
+      toast.error("Errore nella richiesta: " + error);
     }
   };
 
@@ -251,7 +200,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
   const handleCreatePolicy = async () => {
     try {
       const response = await fetch(
-        `/api/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policy`,
+        `http://localhost:5000/hvac/api/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policies`,
         {
           method: "POST",
           headers: {
@@ -281,10 +230,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
             resource_id: "",
             actuator_type: "",
             command: {
-              value: {
-                status: "OFF",
-                speed: 0,
-              },
+              status: "OFF",
+              speed: 0,
             },
           },
         });
@@ -313,7 +260,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
       action: {
         ...prev.action,
         command: {
-          value: { ...prev.action.command.value, [field]: value },
+          ...prev.action.command,
+          [field]: value,
         },
       },
     }));
@@ -392,10 +340,10 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                         </div>
                         <div>
                           <CardTitle className="text-base">
-                            {formatType(policy.sensor_type)
+                            {formatType(policy.sensor_type || "")
                               .charAt(0)
                               .toUpperCase() +
-                              formatType(policy.sensor_type).slice(1)}{" "}
+                              formatType(policy.sensor_type || "").slice(1)}{" "}
                             Sensor
                           </CardTitle>
                           <CardDescription>
@@ -437,10 +385,10 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                             </div>
                             <div className="flex-1">
                               <div className="text-sm font-semibold text-blue-900">
-                                {formatType(policy.sensor_type)
+                                {formatType(policy.sensor_type || "")
                                   .charAt(0)
                                   .toUpperCase() +
-                                  formatType(policy.sensor_type).slice(1)}
+                                  formatType(policy.sensor_type || "").slice(1)}
                               </div>
                               <div className="text-lg font-bold text-blue-700">
                                 {getConditionText(policy.condition)}{" "}
@@ -469,10 +417,10 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                             </div>
                             <div className="flex-1">
                               <div className="text-sm font-semibold text-orange-900">
-                                {formatType(policy.action.actuator_type)
+                                {formatType(policy.action.actuator_type || "")
                                   .charAt(0)
                                   .toUpperCase() +
-                                  formatType(policy.action.actuator_type).slice(
+                                  formatType(policy.action.actuator_type || "").slice(
                                     1
                                   )}{" "}
                                 Actuator
@@ -541,8 +489,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                           value={sensor.resource_id}
                         >
                           {formatName(sensor.resource_id)} -{" "}
-                          {formatType(sensor.type).charAt(0).toUpperCase() +
-                            formatType(sensor.type).slice(1)}{" "}
+                          {formatType(sensor.type || "").charAt(0).toUpperCase() +
+                            formatType(sensor.type || "").slice(1)}{" "}
                           Sensor
                         </SelectItem>
                       ))}
@@ -556,7 +504,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                       id="edit-threshold-value"
                       type="number"
                       step="0.1"
-                      value={editingPolicy.condition.value}
+                      value={editingPolicy.condition.value || ""}
                       min={
                         findSensorById(smartObject, editingPolicy.resource_id)
                           ?.min || 0
@@ -565,19 +513,20 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                         findSensorById(smartObject, editingPolicy.resource_id)
                           ?.max || 100
                       }
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const value = e.target.value;
                         setEditingPolicy((prev) =>
                           prev
                             ? {
                                 ...prev,
                                 condition: {
                                   ...prev.condition,
-                                  value: Number.parseFloat(e.target.value),
+                                  value: value === "" ? 0 : Number.parseFloat(value) || 0,
                                 },
                               }
                             : null
-                        )
-                      }
+                        );
+                      }}
                     ></Input>
                     <div className="text-xs text-muted-foreground">
                       Thresholds Sensor:{" "}
@@ -672,8 +621,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                             value={actuator.resource_id}
                           >
                             {formatName(actuator.resource_id)} -{" "}
-                            {formatType(actuator.type).charAt(0).toUpperCase() +
-                              formatType(actuator.type).slice(1)}{" "}
+                            {formatType(actuator.type || "").charAt(0).toUpperCase() +
+                              formatType(actuator.type || "").slice(1)}{" "}
                             Actuator
                           </SelectItem>
                         ))}
@@ -683,11 +632,11 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-3">
                     <div className="space-y-2">
                       <Label>Stato</Label>
                       <Select
-                        value={editingPolicy.action.command.value.status || ""}
+                        value={editingPolicy.action.command.status || ""}
                         onValueChange={(value) =>
                           setEditingPolicy((prev) =>
                             prev
@@ -696,10 +645,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                                   action: {
                                     ...prev.action,
                                     command: {
-                                      value: {
-                                        ...prev.action.command.value,
-                                        status: value as any,
-                                      },
+                                      ...prev.action.command,
+                                      status: value as any,
                                     },
                                   },
                                 }
@@ -717,38 +664,46 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>Velocità/Livello</Label>
+                     <div className="space-y-2">
+                      <Label>Velocità</Label>
                       <Input
                         type="number"
                         min="0"
                         max="5"
-                        value={
-                          editingPolicy.action.command.value.speed ||
-                          editingPolicy.action.command.value.level ||
-                          ""
-                        }
+                        value={editingPolicy.action.command.speed || ""}
+                        disabled={editingPolicy.action.actuator_type === "iot:actuator:cooling_levels"}
                         onChange={(e) => {
-                          const value = Number.parseInt(e.target.value);
-                          setEditingPolicy((prev) =>
-                            prev
-                              ? {
-                                  ...prev,
-                                  action: {
-                                    ...prev.action,
-                                    command: {
-                                      value: {
-                                        ...prev.action.command.value,
-                                        speed: value,
-                                        level: value,
-                                      },
-                                    },
-                                  },
-                                }
-                              : null
-                          );
+                          const value = e.target.value;
+                          const numValue = value === "" ? 0 : Number.parseInt(value) || 0;
+                          updateNewPolicyAction("speed", numValue);
                         }}
                       />
+                      {newPolicy.action.actuator_type === "iot:actuator:cooling_levels" && (
+                        <p className="text-xs text-muted-foreground">
+                          Not available for this type of actuator
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Livello</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="5"
+                        value={editingPolicy.action.command.level || ""}
+                        disabled={editingPolicy.action.actuator_type === "iot:actuator:fan" || editingPolicy.action.actuator_type === "iot:actuator:pump"}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const numValue = value === "" ? 0 : Number.parseInt(value) || 0;
+                          updateNewPolicyAction("level", numValue);
+                        }}
+                      />
+                      {(newPolicy.action.actuator_type === "iot:actuator:fan" || newPolicy.action.actuator_type === "iot:actuator:pump") && (
+                        <p className="text-xs text-muted-foreground">
+                          Not available for this type of actuator
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -820,8 +775,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                           value={sensor.resource_id}
                         >
                           {formatName(sensor.resource_id)} -{" "}
-                          {formatType(sensor.type).charAt(0).toUpperCase() +
-                            formatType(sensor.type).slice(1)}{" "}
+                          {formatType(sensor.type || "").charAt(0).toUpperCase() +
+                            formatType(sensor.type || "").slice(1)}{" "}
                           Sensor
                         </SelectItem>
                       ))}
@@ -835,7 +790,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                       id="threshold-value"
                       type="number"
                       step="0.1"
-                      value={newPolicy.condition.value}
+                      value={newPolicy.condition.value || ""}
                       min={
                         availableSensors.find(s => s.resource_id === newPolicy.resource_id)
                           ?.min || 0
@@ -844,12 +799,13 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                         availableSensors.find(s => s.resource_id === newPolicy.resource_id)
                           ?.max || 100
                       }
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const value = e.target.value;
                         updateNewPolicyCondition(
                           "value",
-                          Number.parseFloat(e.target.value)
-                        )
-                      }
+                          value === "" ? 0 : Number.parseFloat(value) || 0
+                        );
+                      }}
                     />
                     <div className="text-xs text-muted-foreground">
                       Thresholds Sensor:{" "}
@@ -929,8 +885,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                             value={actuator.resource_id}
                           >
                             {formatName(actuator.resource_id)} -{" "}
-                            {formatType(actuator.type).charAt(0).toUpperCase() +
-                              formatType(actuator.type).slice(1)}{" "}
+                            {formatType(actuator.type || "").charAt(0).toUpperCase() +
+                              formatType(actuator.type || "").slice(1)}{" "}
                             Actuator
                           </SelectItem>
                         ))}
@@ -939,13 +895,13 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-4">{" "}
 
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-3">
                     <div className="space-y-2">
                       <Label>Stato</Label>
                       <Select
-                        value={newPolicy.action.command.value.status || ""}
+                        value={newPolicy.action.command.status || ""}
                         onValueChange={(value) =>
                           updateNewPolicyAction("status", value)
                         }
@@ -960,23 +916,46 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>Velocità/Livello</Label>
+                     <div className="space-y-2">
+                      <Label>Velocità</Label>
                       <Input
                         type="number"
                         min="0"
                         max="5"
-                        value={
-                          newPolicy.action.command.value.speed ||
-                          newPolicy.action.command.value.level ||
-                          ""
-                        }
+                        value={newPolicy.action.command.speed || ""}
+                        disabled={newPolicy.action.actuator_type === "iot:actuator:cooling_levels"}
                         onChange={(e) => {
-                          const value = Number.parseInt(e.target.value);
-                          updateNewPolicyAction("speed", value);
-                          updateNewPolicyAction("level", value);
+                          const value = e.target.value;
+                          const numValue = value === "" ? 0 : Number.parseInt(value) || 0;
+                          updateNewPolicyAction("speed", numValue);
                         }}
                       />
+                      {newPolicy.action.actuator_type === "iot:actuator:cooling_levels" && (
+                        <p className="text-xs text-muted-foreground">
+                          Not available for this type of actuator
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Livello</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="5"
+                        value={newPolicy.action.command.level || ""}
+                        disabled={newPolicy.action.actuator_type === "iot:actuator:fan" || newPolicy.action.actuator_type === "iot:actuator:pump"}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const numValue = value === "" ? 0 : Number.parseInt(value) || 0;
+                          updateNewPolicyAction("level", numValue);
+                        }}
+                      />
+                      {(newPolicy.action.actuator_type === "iot:actuator:fan" || newPolicy.action.actuator_type === "iot:actuator:pump") && (
+                        <p className="text-xs text-muted-foreground">
+                          Not available for this type of actuator
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
