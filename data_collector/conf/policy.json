@@ -24,6 +24,28 @@
                 }
             },
             {
+                "id": "rack_A1_cooling_on_high_temp",
+                "type": "smart_object",
+                "description": "Turn ON rack A1 cooling fan at 65% speed if temperature > 28°C",
+                "room_id": "room_A1",
+                "rack_id": "rack_A1",
+                "object_id": "rack_cooling_unit",
+                "resource_id": "rack_cooling_unit_temp",
+                "sensor_type": "iot:sensor:temperature",
+                "condition": {
+                    "operator": ">",
+                    "value": 35.0
+                },
+                "action": {
+                    "resource_id": "rack_cooling_unit_fan",
+                    "actuator_type": "iot:actuator:fan",
+                    "command": {
+                        "status": "ON",
+                        "speed": 65
+                    }
+                }
+            },
+            {
                 "id": "rack_A1_cooling_off_low_temp",
                 "type": "smart_object",
                 "description": "Turn OFF rack A1 cooling fan if temperature < 12°C",
@@ -58,7 +80,6 @@
                     "value": 3.0
                 },
                 "action": {
-                    "object_id": "airflow_manager",
                     "resource_id": "airflow_manager_cooling_levels",
                     "actuator_type": "iot:actuator:cooling_levels",
                     "command": {
@@ -81,7 +102,6 @@
                     "value": 12.0
                 },
                 "action": {
-                    "object_id": "airflow_manager",
                     "resource_id": "airflow_manager_cooling_levels",
                     "actuator_type": "iot:actuator:cooling_levels",
                     "command": {

@@ -26,7 +26,9 @@ class Actuator(SmartObjectResource[Dict[str, Any]], ABC):
 
         self.logger = logging.getLogger(f"{resource_id}")
 
-    def apply_command(self, command: Dict[str, Any]) -> bool:
+    def apply_command(
+        self, command: Dict[str, Any], event_type: str, event_data: Dict[str, Any]
+    ) -> bool:
         try:
             self._validate_command(command)
             if not self._is_ready_for_commands():
@@ -34,7 +36,17 @@ class Actuator(SmartObjectResource[Dict[str, Any]], ABC):
                     f"Actuator {self.resource_id} is not operational. Cannot apply command."
                 )
 
+            old_state = self.state.copy()
             self._apply_command(command)
+
+            if old_state != self.state:
+                event_data["old_state"] = old_state
+                event_data["new_state"] = self.state
+                self.notify_update(
+                    self.get_current_state(),
+                    **{"event_type": event_type, "event_data": event_data},
+                )
+
             return True
         except (ValueError, TypeError) as e:
             raise e

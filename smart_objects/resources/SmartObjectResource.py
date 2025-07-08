@@ -6,6 +6,7 @@ import logging
 
 T = TypeVar("T")
 
+
 class SmartObjectResource(ABC, Generic[T]):
     def __init__(self, resource_id: str):
         self.type: str = None
@@ -19,7 +20,9 @@ class SmartObjectResource(ABC, Generic[T]):
     def load_updated_value(self) -> T:
         pass
 
-    def add_data_listener(self, resource_data_listener: ResourceDataListener[T]) -> None:
+    def add_data_listener(
+        self, resource_data_listener: ResourceDataListener[T]
+    ) -> None:
         """Add a new listener to be notified of changes"""
         if resource_data_listener not in self.resource_listener_list:
             self.resource_listener_list.append(resource_data_listener)
@@ -35,7 +38,7 @@ class SmartObjectResource(ABC, Generic[T]):
         else:
             self.logger.debug(f"Listener not found: {resource_data_listener}")
 
-    def notify_update(self, updated_value: T) -> None:
+    def notify_update(self, updated_value: T, **kwargs) -> None:
         """Notify all registered listeners of a value change"""
         if not self.resource_listener_list:
             self.logger.info("No active listeners - nothing to notify")
@@ -43,7 +46,7 @@ class SmartObjectResource(ABC, Generic[T]):
 
         for listener in self.resource_listener_list:
             if listener is not None:
-                listener.on_data_changed(self, updated_value)
+                listener.on_data_changed(self, updated_value, **kwargs)
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)

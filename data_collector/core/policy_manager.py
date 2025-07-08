@@ -8,6 +8,8 @@ import asyncio
 from aiocoap import Message, Context, POST
 from config.coap_conf_params import CoapConfigurationParameters
 
+EVENT_TYPE = "POLICY_APPLIED"
+
 
 class PolicyManager:
 
@@ -115,23 +117,42 @@ class PolicyManager:
 
     def _get_payload(self, policy: Dict[str, Any]) -> Dict[str, Any]:
         policy_type = policy.get("type", "unknown")
+        threshold = policy.get("condition", {}).get("value", "unknown")
+        policy_description = policy.get("description", "No description provided")
+        event_data = {
+            "description": policy_description,
+            "threshold": threshold,
+        }
+        command = policy.get("action", {}).get("command", {})
+        command.update(
+            {
+                "event_type": EVENT_TYPE,
+                "event_data": event_data,
+            }
+        )
+        payload = {
+            "room_id": policy.get("room_id"),
+            "command": command,
+        }
+
         if policy_type == "room":
-            return {
-                "object_id": policy.get("action").get("object_id"),
-                "room_id": policy.get("room_id"),
-                "command": policy["action"]["command"],
-            }
+            payload.update(
+                {
+                    "object_id": policy.get("action").get("object_id"),
+                }
+            )
         elif policy_type == "smart_object":
-            return {
-                "object_id": policy.get("object_id"),
-                "rack_id": policy.get("rack_id"),
-                "room_id": policy.get("room_id"),
-                "command": policy["action"]["command"],
-            }
+            payload.update(
+                {
+                    "object_id": policy.get("object_id"),
+                    "rack_id": policy.get("rack_id"),
+                }
+            )
         else:
             raise ValueError(
                 f"Unknown policy type: {policy_type}. Cannot create payload."
             )
+        return payload
 
     def _execute_policy_action_safely(self, payload: Dict[str, Any]):
         """
