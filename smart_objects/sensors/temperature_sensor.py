@@ -8,13 +8,13 @@ from smart_objects.models.Sensor import Sensor
 
 class TemperatureSensor(Sensor):
 
-    RESOURCE_TYPE: ClassVar[str] = "iot:sensor:temperature🌡️"
-    UNIT: ClassVar[str] = "Celsius"
+    RESOURCE_TYPE: ClassVar[str] = "iot:sensor:temperature"
+    UNIT: ClassVar[str] = "°C"
     DATA_TYPE: ClassVar[type] = float
-    DEFAULT_MIN_TEMP: ClassVar[float] = 25.0
-    DEFAULT_MAX_TEMP: ClassVar[float] = 45.0
+    DEFAULT_MIN_TEMP: ClassVar[float] = 0.0
+    DEFAULT_MAX_TEMP: ClassVar[float] = 60.0
     MEASUREMENT_PRECISION: ClassVar[int] = 2
-    UPDATE_PERIOD: ClassVar[int] = 60
+    UPDATE_PERIOD: ClassVar[int] = 10
     TASK_DELAY_TIME: ClassVar[int] = 5
 
     def __init__(self, resource_id: str):
@@ -32,8 +32,6 @@ class TemperatureSensor(Sensor):
 
         self.logger = logging.getLogger(f"{resource_id}")
         self._timer = None
-
-        self.start_periodic_event_value_update_task()
 
     def measure(self) -> None:
         try:

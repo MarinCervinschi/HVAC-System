@@ -3,6 +3,10 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Telemetry log files
+telemetry_logs/
+*.log
+
 # C extensions
 *.so
 
@@ -25,6 +29,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+!dashboard/lib
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -143,6 +149,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.flaskenv
+
 
 # Spyder project settings
 .spyderproject
@@ -251,3 +259,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+!.env.example

@@ -1,0 +1,204 @@
+{
+    "rooms": {
+        "room_A1": [
+            {
+                "id": "rack_A1_cooling_on_high_temp",
+                "type": "smart_object",
+                "description": "Turn ON rack A1 cooling fan at 65% speed if temperature > 28°C",
+                "room_id": "room_A1",
+                "rack_id": "rack_A1",
+                "object_id": "rack_cooling_unit",
+                "resource_id": "rack_cooling_unit_temp",
+                "sensor_type": "iot:sensor:temperature",
+                "condition": {
+                    "operator": ">",
+                    "value": 28.0
+                },
+                "action": {
+                    "resource_id": "rack_cooling_unit_fan",
+                    "actuator_type": "iot:actuator:fan",
+                    "command": {
+                        "status": "ON",
+                        "speed": 65
+                    }
+                }
+            },
+            {
+                "id": "rack_A1_cooling_off_low_temp",
+                "type": "smart_object",
+                "room_id": "room_A1",
+                "rack_id": "rack_A1",
+                "object_id": "rack_cooling_unit",
+                "resource_id": "rack_cooling_unit_temp",
+                "sensor_type": "iot:sensor:temperature",
+                "condition": {
+                    "operator": "<",
+                    "value": 12.0
+                },
+                "action": {
+                    "resource_id": "rack_cooling_unit_fan",
+                    "actuator_type": "iot:actuator:fan",
+                    "command": {
+                        "status": "OFF"
+                    }
+                },
+                "description": "Turn OFF rack A1 cooling fan if temperature < 12°C"
+            },
+            {
+                "id": "airflow_A1_increase_low_speed",
+                "type": "smart_object",
+                "description": "Increase airflow cooling level to 3 if air speed < 3 m/s in room A1",
+                "room_id": "room_A1",
+                "rack_id": "rack_A1",
+                "object_id": "airflow_manager",
+                "resource_id": "airflow_manager_air_speed",
+                "sensor_type": "iot:sensor:air_speed",
+                "condition": {
+                    "operator": "<",
+                    "value": 3.0
+                },
+                "action": {
+                    "object_id": "airflow_manager",
+                    "resource_id": "airflow_manager_cooling_levels",
+                    "actuator_type": "iot:actuator:cooling_levels",
+                    "command": {
+                        "status": "ON",
+                        "level": 3
+                    }
+                }
+            },
+            {
+                "id": "airflow_A1_reduce_high_speed",
+                "type": "smart_object",
+                "description": "Reduce airflow cooling level to 1 if air speed > 12 m/s in room A1",
+                "room_id": "room_A1",
+                "rack_id": "rack_A1",
+                "object_id": "airflow_manager",
+                "resource_id": "airflow_manager_air_speed",
+                "sensor_type": "iot:sensor:air_speed",
+                "condition": {
+                    "operator": ">",
+                    "value": 12.0
+                },
+                "action": {
+                    "object_id": "airflow_manager",
+                    "resource_id": "airflow_manager_cooling_levels",
+                    "actuator_type": "iot:actuator:cooling_levels",
+                    "command": {
+                        "status": "ON",
+                        "level": 1
+                    }
+                }
+            },
+            {
+                "id": "water_loop_W1_pump_on_low_pressure",
+                "type": "smart_object",
+                "description": "Turn ON water loop pump at 70% speed if pressure < 960 in rack W1",
+                "room_id": "room_A1",
+                "rack_id": "rack_W1",
+                "object_id": "water_loop_controller",
+                "resource_id": "water_loop_controller_pressure",
+                "sensor_type": "iot:sensor:pressure",
+                "condition": {
+                    "operator": "<",
+                    "value": 980.0
+                },
+                "action": {
+                    "resource_id": "water_loop_controller_pump",
+                    "actuator_type": "iot:actuator:pump",
+                    "command": {
+                        "status": "ON",
+                        "speed": 70
+                    }
+                }
+            },
+            {
+                "id": "env_A1_cooling_on_high_temp",
+                "type": "room",
+                "description": "Turn ON room A1 cooling to level 4 if environment temperature > 35°C",
+                "room_id": "room_A1",
+                "object_id": "environment_monitor",
+                "resource_id": "environment_monitor_temp",
+                "sensor_type": "iot:sensor:temperature",
+                "condition": {
+                    "operator": ">",
+                    "value": 33.0
+                },
+                "action": {
+                    "object_id": "cooling_system_hub",
+                    "resource_id": "cooling_system_hub_cooling_levels",
+                    "actuator_type": "iot:actuator:cooling_levels",
+                    "command": {
+                        "status": "ON",
+                        "level": 4
+                    }
+                }
+            },
+            {
+                "id": "env_A1_cooling_on_high_temp",
+                "type": "room",
+                "description": "Turn ON room A1 cooling to level 4 if environment temperature > 35°C",
+                "room_id": "room_A1",
+                "object_id": "environment_monitor",
+                "resource_id": "environment_monitor_temp",
+                "sensor_type": "iot:sensor:temperature",
+                "condition": {
+                    "operator": "<",
+                    "value": 15.0
+                },
+                "action": {
+                    "object_id": "cooling_system_hub",
+                    "resource_id": "cooling_system_hub_cooling_levels",
+                    "actuator_type": "iot:actuator:cooling_levels",
+                    "command": {
+                        "status": "ON",
+                        "level": 1
+                    }
+                }
+            },
+            {
+                "id": "env_A1_cooling_on_high_temp",
+                "type": "room",
+                "description": "Turn ON room A1 cooling to level 4 if environment temperature > 35°C",
+                "room_id": "room_A1",
+                "object_id": "environment_monitor",
+                "resource_id": "environment_monitor_temp",
+                "sensor_type": "iot:sensor:temperature",
+                "condition": {
+                    "operator": "<",
+                    "value": 5.0
+                },
+                "action": {
+                    "object_id": "cooling_system_hub",
+                    "resource_id": "cooling_system_hub_cooling_levels",
+                    "actuator_type": "iot:actuator:cooling_levels",
+                    "command": {
+                        "status": "OFF"
+                    }
+                }
+            },
+            {
+                "id": "env_A1_cooling_on_high_humidity",
+                "type": "room",
+                "description": "Turn ON room A1 cooling to level 3 if environment humidity > 55%",
+                "room_id": "room_A1",
+                "object_id": "environment_monitor",
+                "resource_id": "environment_monitor_humidity",
+                "sensor_type": "iot:sensor:humidity",
+                "condition": {
+                    "operator": ">",
+                    "value": 35.0
+                },
+                "action": {
+                    "object_id": "cooling_system_hub",
+                    "resource_id": "cooling_system_hub_cooling_levels",
+                    "actuator_type": "iot:actuator:cooling_levels",
+                    "command": {
+                        "status": "ON",
+                        "level": 3
+                    }
+                }
+            }
+        ]
+    }
+}

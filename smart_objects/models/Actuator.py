@@ -1,9 +1,8 @@
-from ..resources.SmartObjectResource import SmartObjectResource
-from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+import time
 import logging
-from typing import Generic, TypeVar, List
-import json
+from abc import ABC, abstractmethod
+from typing import Any, Dict, TypeVar
+from ..resources.SmartObjectResource import SmartObjectResource
 
 T = TypeVar("T")
 
@@ -16,18 +15,56 @@ class Actuator(SmartObjectResource[Dict[str, Any]], ABC):
         self,
         resource_id: str,
         type: str,
-        is_operational: bool = True,
+        is_operational: bool = False,
     ):
 
         super().__init__(resource_id)
         self.type = type
         self.data_type = self.DATA_TYPE
         self.is_operational = is_operational
+        self.state: Dict[str, Any] = {}
 
         self.logger = logging.getLogger(f"{resource_id}")
 
+    def apply_command(
+        self, command: Dict[str, Any], event_type: str, event_data: Dict[str, Any]
+    ) -> bool:
+        try:
+            self._validate_command(command)
+            if not self._is_ready_for_commands():
+                raise ValueError(
+                    f"Actuator {self.resource_id} is not operational. Cannot apply command."
+                )
+
+            old_state = self.state.copy()
+            self._apply_command(command)
+
+            if old_state != self.state:
+                event_data["old_state"] = old_state
+                event_data["new_state"] = self.state
+                self.notify_update(
+                    self.get_current_state(),
+                    **{"event_type": event_type, "event_data": event_data},
+                )
+
+            return True
+        except (ValueError, TypeError) as e:
+            raise e
+
     @abstractmethod
-    def apply_command(self, command: Dict[str, Any]) -> bool:
+    def _apply_command(self, command: Dict[str, Any]) -> None:
+        """
+        Apply the command to the actuator.
+        This method should be implemented by subclasses to handle specific command logic.
+
+        Args:
+            command: Dictionary containing the command parameters
+
+        Returns:
+            None
+        Raises:
+            ValueError: If the command is invalid or contains unsupported keys
+        """
         pass
 
     @abstractmethod
@@ -35,8 +72,31 @@ class Actuator(SmartObjectResource[Dict[str, Any]], ABC):
         pass
 
     @abstractmethod
-    def reset(self) -> bool:
+    def reset(self) -> None:
         pass
+
+    def _validate_command(self, command: Dict[str, Any]) -> bool:
+        """
+        Validate the command keys against the actuator's state.
+        Raises ValueError if any key is invalid.
+        Args:
+            command: Dictionary containing the command parameters
+        Returns:
+            bool: True if the command is valid, False otherwise
+        Raises:
+            ValueError: If any key in the command is not part of the actuator's state
+        """
+
+        for key in command:
+            if key not in self.state:
+                raise ValueError(
+                    f"Invalid command key '{key}'. Must be one of {list(self.state.keys())}"
+                )
+        return True
+
+    def _is_ready_for_commands(self) -> bool:
+        """Check if the switch actuator is ready to accept commands."""
+        return self.is_operational
 
     def load_updated_value(self) -> Dict[str, Any]:
         return self.get_current_state()

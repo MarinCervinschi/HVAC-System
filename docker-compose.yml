@@ -1,0 +1,50 @@
+services:
+
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+      - DOCKER_INFLUXDB_INIT_ORG=hvac-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=hvac_data
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-secret-token
+
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - influxdb
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-clock-panel
+
+  cloud-api:
+    build: ./cloud_simulator
+    image: cloud_api
+    container_name: cloud_api
+    ports:
+      - "5002:5002"
+    depends_on:
+      - influxdb
+    environment:
+      - INFLUX_URL=http://influxdb:8086
+      - INFLUX_TOKEN=my-secret-token
+      - INFLUX_ORG=hvac-org
+      - INFLUX_BUCKET=hvac_data
+    volumes:
+      - ./cloud_simulator/telemetry_logs:/app/telemetry_logs
+
+volumes:
+  influxdb_data:
+  grafana_data:

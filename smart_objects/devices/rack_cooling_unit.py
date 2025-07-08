@@ -1,11 +1,13 @@
 import logging
 from aiocoap import resource
-from typing import Dict, Any
 import paho.mqtt.client as mqtt
 from .SmartObject import SmartObject
+from typing import Dict, Any, ClassVar
 from ..messages.telemetry_message import TelemetryMessage
+from smart_objects.messages.control_message import ControlMessage
 from smart_objects.actuators.fan_actuator import FanActuator
 from config.mqtt_conf_params import MqttConfigurationParameters
+from config.coap_conf_params import CoapConfigurationParameters
 from smart_objects.resources.CoapControllable import CoapControllable
 from smart_objects.sensors.temperature_sensor import TemperatureSensor
 from smart_objects.resources.actuator_control_resource import ActuatorControlResource
@@ -13,20 +15,21 @@ from smart_objects.resources.actuator_control_resource import ActuatorControlRes
 
 class RackCoolingUnit(SmartObject, CoapControllable):
 
+    OBJECT_ID: ClassVar[str] = "rack_cooling_unit"
+
     def __init__(
         self,
-        object_id: str,
         room_id: str,
         rack_id: str,
         mqtt_client: mqtt.Client = None,
     ):
-        SmartObject.__init__(self, object_id, room_id, rack_id, mqtt_client)
+        SmartObject.__init__(self, self.OBJECT_ID, room_id, rack_id, mqtt_client)
         CoapControllable.__init__(self)
 
-        self.resource_map["temperature"] = TemperatureSensor(f"{object_id}_temp")
-        self.resource_map["fan"] = FanActuator(f"{object_id}_fan")
+        self.resource_map["temperature"] = TemperatureSensor(f"{self.OBJECT_ID}_temp")
+        self.resource_map["fan"] = FanActuator(f"{self.OBJECT_ID}_fan")
 
-        self.logger = logging.getLogger(f"{object_id}")
+        self.logger = logging.getLogger(f"{self.OBJECT_ID}")
 
     def get_temperature(self) -> float:
         try:
@@ -55,25 +58,28 @@ class RackCoolingUnit(SmartObject, CoapControllable):
 
         site.add_resource(
             (".well-known", "core"),
-            resource.WKCResource(site.get_resources_as_linkheader),
+            resource.WKCResource(site.get_resources_as_linkheader, impl_info=None),
         )
 
-        # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/fan/control
-        resource_path = [
-            "hvac",
-            "room", self.room_id,
-            "rack", self.rack_id,
-            "device", self.object_id,
-            "fan", "control",
-        ]
+        resource_path = CoapConfigurationParameters.build_coap_rack_path(
+            room_id=self.room_id,
+            rack_id=self.rack_id,
+            device_id=self.object_id,
+            resource_id="fan",
+        )
 
         self.logger.info(
             f"📢 Registered CoAP fan control resource for {fan_actuator.resource_id} at path: {'/'.join(resource_path)}"
         )
 
+        attributes = {
+            "room_id": self.room_id,
+            "rack_id": self.rack_id,
+            "object_id": self.object_id,
+        }
         site.add_resource(
             resource_path,
-            ActuatorControlResource(fan_actuator),
+            ActuatorControlResource(fan_actuator, attributes),
         )
 
         return site
@@ -84,6 +90,8 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             for resource in self.resource_map.values():
                 if isinstance(resource, TemperatureSensor):
                     self._register_temperature_sensor_listener()
+                elif isinstance(resource, FanActuator):
+                    self._register_fan_actuator_listener()
 
         except Exception as e:
             self.logger.error(f"Error registering resources: {e}")
@@ -95,16 +103,11 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             self.logger.error("Temperature sensor resource not found!")
             return
 
-        # /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/telemetry/{temperature_sensor.resource_id}
-        topic = "{0}/{1}/{2}/{3}/{4}/{5}/{6}/{7}".format(
-            MqttConfigurationParameters.BASIC_TOPIC,
-            self.room_id,
-            MqttConfigurationParameters.RACK_TOPIC,
-            self.rack_id,
-            MqttConfigurationParameters.DEVICE_TOPIC,
-            self.object_id,
-            MqttConfigurationParameters.TELEMETRY_TOPIC,
-            temperature_sensor.resource_id,
+        topic = MqttConfigurationParameters.build_telemetry_rack_topic(
+            room_id=self.room_id,
+            rack_id=self.rack_id,
+            device_id=self.object_id,
+            resource_id=temperature_sensor.resource_id,
         )
 
         listener = self._get_listener(
@@ -117,4 +120,32 @@ class RackCoolingUnit(SmartObject, CoapControllable):
 
         self.logger.info(
             f"📢 Registered temperature sensor listener for {temperature_sensor.resource_id} on topic {topic}"
+        )
+
+    def _register_fan_actuator_listener(self) -> None:
+        """Register listener for fan actuator state changes."""
+        fan_actuator = self.get_resource("fan")
+        if fan_actuator is None:
+            self.logger.error("Fan actuator resource not found!")
+            print("Fan actuator resource not found!")
+            return
+
+        topic = MqttConfigurationParameters.build_control_rack_topic(
+            room_id=self.room_id,
+            rack_id=self.rack_id,
+            device_id=self.object_id,
+            resource_id=fan_actuator.resource_id,
+        )
+
+        listener = self._get_listener(
+            data_type=fan_actuator.data_type,
+            message_type=ControlMessage,
+            topic=topic,
+            qos=1,
+        )
+
+        fan_actuator.add_data_listener(listener)
+
+        self.logger.info(
+            f"📢 Registered fan actuator listener for {fan_actuator.resource_id} on topic {topic}"
         )
