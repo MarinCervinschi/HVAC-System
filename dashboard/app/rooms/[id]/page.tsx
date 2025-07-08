@@ -16,7 +16,7 @@ import { PolicyDialog } from "@/components/room/PolicyDialog"
 import { toast } from "sonner"
 import Loader from "@/components/loader"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.1:5000/hvac/api"
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:7070/hvac/api"
 
 export default function RoomDetailPage() {
   const params = useParams()

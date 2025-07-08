@@ -52,7 +52,7 @@ interface PolicyDialogProps {
   smartObject: SmartObject;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.1:5000/hvac/api"
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:7070/hvac/api"
 
 export function PolicyDialog({ smartObject }: PolicyDialogProps) {
   const [isCreating, setIsCreating] = useState(false);
@@ -200,7 +200,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
   const handleCreatePolicy = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/hvac/api/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policies`,
+        `${API_URL}/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policies`,
         {
           method: "POST",
           headers: {

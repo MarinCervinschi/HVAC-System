@@ -6,19 +6,27 @@ from data_collector.resources.device import DeviceControlAPI
 from data_collector.resources.policy import PolicyUpdateAPI
 from data_collector.resources.policy import PolicyRoomAPI
 from data_collector.resources.policy import PolicyRackAPI
+from data_collector.core.manager import HVACSystemManager
 from flask_cors import CORS
 import json
+import logging
 
-from data_collector.core.manager import HVACSystemManager
 import os
+import sys
+
+project_root = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, project_root)
+
+# Configure logging
+#logging.basicConfig(level=logging.INFO)
 
 BASE_URL = "/hvac/api"
-CLOUD_URL = "http://127.0.0.1:5002/api"
+CLOUD_URL = "http://cloud-simulator:7171/api"
 
 
 def create_app() -> Flask:
     app = Flask(__name__)
-    CORS(app)  # Enable CORS for all domains
+    CORS(app, origins="*")  # Enable CORS for all domains
     api = Api(app)
 
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -79,3 +87,15 @@ def create_app() -> Flask:
         return {"message": "Resource not found"}, 404
 
     return app
+
+if __name__ == "__main__":
+    try:
+        flask_env = os.getenv("FLASK_ENV")
+        print(f"FLASK_ENV: {flask_env}")
+    except Exception as e:
+        logging.info(f"Error retrieving FLASK_ENV: {e}")
+    
+    app = create_app()
+    app.logger.setLevel(logging.INFO)
+    app.logger.info("Starting HVAC System Manager...")
+    app.run(host="0.0.0.0", port=7070)

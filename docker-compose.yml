@@ -1,5 +1,92 @@
 services:
+  data-collector:
+    build: 
+      context: .
+      dockerfile: ./data_collector/Dockerfile
+    image: data_collector
+    container_name: data_collector
+    restart: always
+    ports:
+      - "7070:7070"
+      - "5683:5683/udp" # CoAP
+    depends_on:
+      - mqtt-broker
+      - influxdb
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:7070/hvac/api/rooms')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - hvac-net
 
+  gateway:
+    build: 
+      context: .
+      dockerfile: ./gateway/Dockerfile
+    image: gateway
+    container_name: gateway
+    restart: always
+    ports:
+      - "5684:5684/udp" # CoAP
+    depends_on:
+      data-collector:
+        condition: service_healthy
+    env_file:
+      - .env
+    volumes:
+      - ./gateway/logs:/app/gateway/logs
+    networks:
+      - hvac-net
+
+  dashboard:
+    build: ./dashboard
+    image: dashboard
+    container_name: dashboard
+    restart: always
+    ports:
+      - "80:80" # HTTP
+    depends_on:
+      - data-collector
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:7070/hvac/api
+    env_file:
+      - .env
+    networks:
+      - hvac-net
+
+  cloud-simulator:
+    build: ./cloud_simulator
+    image: cloud_simulator
+    container_name: cloud_simulator
+    restart: always
+    ports:
+      - "7171:7171" # Cloud API
+    depends_on:
+      - data-collector
+      - influxdb
+    env_file:
+      - .env
+    volumes:
+      - ./cloud_simulator:/app
+    networks:
+      - hvac-net
+
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0
+    container_name: mqtt-broker
+    ports:
+      - "7883:1883" # MQTT TCP
+      - "9001:9001" # MQTT WebSocket
+    volumes:
+      - ./mqtt_broker/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mqtt_broker/mosquitto/log:/mosquitto/log
+    restart: always
+    networks:
+      - hvac-net
   influxdb:
     image: influxdb:2.7
     container_name: influxdb
@@ -14,6 +101,10 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=hvac-org
       - DOCKER_INFLUXDB_INIT_BUCKET=hvac_data
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-secret-token
+    env_file:
+      - .env
+    networks:
+      - hvac-net
 
   grafana:
     image: grafana/grafana:10.2.2
@@ -29,21 +120,13 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_INSTALL_PLUGINS=grafana-clock-panel
 
-  cloud-api:
-    build: ./cloud_simulator
-    image: cloud_api
-    container_name: cloud_api
-    ports:
-      - "5002:5002"
-    depends_on:
-      - influxdb
-    environment:
-      - INFLUX_URL=http://influxdb:8086
-      - INFLUX_TOKEN=my-secret-token
-      - INFLUX_ORG=hvac-org
-      - INFLUX_BUCKET=hvac_data
-    volumes:
-      - ./cloud_api:/app
+    env_file:
+      - .env
+    networks:
+      - hvac-net
+
+networks:
+  hvac-net:
 
 volumes:
   influxdb_data:

@@ -2,8 +2,8 @@ from typing import ClassVar
 
 
 class MqttConfigurationParameters(object):
-    BROKER_ADDRESS: ClassVar[str] = "127.0.0.1"
-    BROKER_PORT: ClassVar[int] = 7883
+    BROKER_ADDRESS: ClassVar[str] = "mqtt-broker"
+    BROKER_PORT: ClassVar[int] = 1883
     BASIC_TOPIC: ClassVar[str] = "hvac/room"
     RACK_TOPIC: ClassVar[str] = "rack"
     DEVICE_TOPIC: ClassVar[str] = "device"

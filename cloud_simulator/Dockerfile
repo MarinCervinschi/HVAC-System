@@ -6,6 +6,6 @@ COPY app.py .
 
 RUN pip install flask influxdb-client
 
-EXPOSE 5002
+EXPOSE 7171
 
 CMD ["python", "app.py"]

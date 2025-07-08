@@ -57,5 +57,10 @@ def receive_sync():
     return {"status": "success"}, 200
 
 
+@app.errorhandler(404)
+def not_found(error):
+    return {"message": "Cloud Simulator resourece not found"}, 404
+
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5002)
+    app.run(host="0.0.0.0", port=7171)
