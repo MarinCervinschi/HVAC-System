@@ -13,6 +13,7 @@ from data_collector.core.manager import HVACSystemManager
 import os
 
 BASE_URL = "/hvac/api"
+CLOUD_URL = "http://127.0.0.1:5002/api"
 
 
 def create_app() -> Flask:
@@ -31,7 +32,7 @@ def create_app() -> Flask:
         room_configs = json.load(f).get("rooms", [])
 
     system_manager = HVACSystemManager(
-        room_configs=room_configs, policy_file=policy_file_path
+        room_configs=room_configs, policy_file=policy_file_path, cloud_url=CLOUD_URL
     )
 
     # Room endpoints

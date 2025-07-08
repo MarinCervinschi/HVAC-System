@@ -11,10 +11,13 @@ from config.mqtt_conf_params import MqttConfigurationParameters
 
 
 class HVACSystemManager:
-    def __init__(self, room_configs: List[Dict[str, Any]], policy_file: str) -> None:
+    def __init__(
+        self, room_configs: List[Dict[str, Any]], policy_file: str, cloud_url: str
+    ) -> None:
         self.rooms: Dict[str, Room] = {}
         self.data_collectors: Dict[str, DataCollector] = {}
         self.policy_file: str = policy_file
+        self.cloud_url = cloud_url
         self.logger = logging.getLogger("HVACSystemManager")
 
         self.mqtt_client: mqtt.Client = mqtt.Client("hvac_system_manager")
@@ -50,7 +53,12 @@ class HVACSystemManager:
             room = RoomFactory.create_room(room_conf, self.mqtt_client)
             self.rooms[room.room_id] = room
 
-            collector = DataCollector(room.room_id, self.policy_file)
+            collector = DataCollector(
+                room.room_id,
+                self.policy_file,
+                cloud_url=self.cloud_url,
+                sync_interval=30,
+            )
             collector.connect(self.mqtt_client)
             self.data_collectors[room.room_id] = collector
 
