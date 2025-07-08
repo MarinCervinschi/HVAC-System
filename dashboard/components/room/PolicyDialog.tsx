@@ -116,7 +116,11 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
         const response = await fetch(`${API_URL}/room/${roomId}/policies`);
         if (response.ok) {
           const data = await response.json();
-          setPolicies(data.policies || []);
+          // Rimuovi duplicati basandoti sull'ID per evitare errori di chiavi duplicate
+          const uniquePolicies = (data.policies || []).filter((policy: Policy, index: number, array: Policy[]) => 
+            array.findIndex(p => p.id === policy.id) === index
+          );
+          setPolicies(uniquePolicies);
         } else {
           console.error("Errore nel caricamento delle policy");
           setPolicies([]);
@@ -147,8 +151,8 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
   };
 
   const getActionText = (action: PolicyAction) => {
-
     const commands = Object.entries(action.command)
+      .filter(([key]) => key !== "event_type" && key !== "event_data")
       .map(
         ([key, value]) =>
           `${ACTION_TYPE_LABELS[key as keyof typeof ACTION_TYPE_LABELS] || key
@@ -353,9 +357,9 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
             </Card>
           ) : (
             <div className="space-y-3">
-              {policies.map((policy) => (
+              {policies.map((policy, index) => (
                 <Card
-                  key={policy.id}
+                  key={`${policy.id}-${index}`}
                   className="transition-all duration-200 hover:shadow-md border-l-4 border-l-blue-400 bg-blue-50/70 opacity-75"
                 >
                   <CardHeader className="pb-3">
