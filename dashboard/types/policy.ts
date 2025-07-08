@@ -1,16 +1,16 @@
 export interface PolicyCondition {
-  operator: "<" | ">" | "=" | "<=" | ">=" | "!="
+  operator: "<" | ">" | "==" | "<=" | ">=" | "!="
   value: number
 }
 
 export interface PolicyAction {
+  resource_id: string
+  actuator_type: string
   command: {
-    value: {
-      status?: "ON" | "OFF"
-      speed?: number
-      level?: number
-      [key: string]: any
-    }
+    status?: "ON" | "OFF"
+    speed?: number
+    level?: number
+    [key: string]: any
   }
 }
 export interface Policy {
@@ -22,16 +22,7 @@ export interface Policy {
   sensor_type: string
   resource_id: string
   condition: PolicyCondition
-  action: PolicyAction & {
-    resource_id: string
-    actuator_type: string
-    command: {
-      status?: "ON" | "OFF"
-      speed?: number
-      level?: number
-      [key: string]: any
-    }
-  }
+  action: PolicyAction
   created_at?: string
   updated_at?: string
 }
@@ -39,7 +30,7 @@ export interface Policy {
 export const OPERATOR_LABELS = {
     "<": "Less than",
     ">": "Greater than",
-    "=": "Equal to",
+    "==": "Equal to",
     "<=": "Less than or equal to",
     ">=": "Greater than or equal to",
     "!=": "Not equal to",

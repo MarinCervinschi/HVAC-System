@@ -76,10 +76,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
       resource_id: "",
       actuator_type: "",
       command: {
-        value: {
-          status: "OFF",
-          speed: 0,
-        },
+        status: "OFF",
+        speed: 0,
       },
     },
   });
@@ -146,7 +144,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
 
     try {
       const response = await fetch(
-        `${API_URL}/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policy/${editingPolicy.id}`,
+        `${API_URL}/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policies`,
         {
           method: "PUT",
           headers: {
@@ -157,14 +155,15 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
       );
 
       if (response.ok) {
-        const updatedPolicy = await response.json();
+        const result = await response.json();
         setPolicies((prev) =>
-          prev.map((p) => (p.id === editingPolicy.id ? updatedPolicy : p))
+          prev.map((p) => (p.id === editingPolicy.id ? result.policy : p))
         );
         toast.success("Policy aggiornata con successo");
         setEditingPolicy(null);
       } else {
-        toast.error("Errore nel salvataggio della policy");
+        const errorData = await response.json();
+        toast.error(`Errore nel salvataggio della policy: ${errorData.message || 'Errore sconosciuto'}`);
       }
     } catch (error) {
       toast.error("Errore nella richiesta: " + error);
@@ -179,7 +178,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
 
     try {
       const response = await fetch(
-        `${API_URL}/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policy/${policyId}`,
+        `${API_URL}/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policies?id=${policyId}`,
         {
           method: "DELETE",
         }
@@ -187,8 +186,10 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
 
       if (response.ok) {
         setPolicies((prev) => prev.filter((p) => p.id !== policyId));
+        toast.success("Policy eliminata con successo");
       } else {
-        toast.error("Errore nell'eliminazione della policy");
+        const errorData = await response.json();
+        toast.error(`Errore nell'eliminazione della policy: ${errorData.message || 'Errore sconosciuto'}`);
       }
     } catch (error) {
       toast.error("Errore nella richiesta: " + error);
@@ -199,7 +200,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
   const handleCreatePolicy = async () => {
     try {
       const response = await fetch(
-        `/api/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policy`,
+        `http://localhost:5000/hvac/api/room/${smartObject.room_id}/rack/${smartObject.rack_id}/device/${smartObject.id}/policies`,
         {
           method: "POST",
           headers: {
@@ -229,10 +230,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
             resource_id: "",
             actuator_type: "",
             command: {
-              value: {
-                status: "OFF",
-                speed: 0,
-              },
+              status: "OFF",
+              speed: 0,
             },
           },
         });
@@ -261,7 +260,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
       action: {
         ...prev.action,
         command: {
-          value: { ...prev.action.command.value, [field]: value },
+          ...prev.action.command,
+          [field]: value,
         },
       },
     }));
@@ -504,7 +504,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                       id="edit-threshold-value"
                       type="number"
                       step="0.1"
-                      value={editingPolicy.condition.value}
+                      value={editingPolicy.condition.value || ""}
                       min={
                         findSensorById(smartObject, editingPolicy.resource_id)
                           ?.min || 0
@@ -513,19 +513,20 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                         findSensorById(smartObject, editingPolicy.resource_id)
                           ?.max || 100
                       }
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const value = e.target.value;
                         setEditingPolicy((prev) =>
                           prev
                             ? {
                                 ...prev,
                                 condition: {
                                   ...prev.condition,
-                                  value: Number.parseFloat(e.target.value),
+                                  value: value === "" ? 0 : Number.parseFloat(value) || 0,
                                 },
                               }
                             : null
-                        )
-                      }
+                        );
+                      }}
                     ></Input>
                     <div className="text-xs text-muted-foreground">
                       Thresholds Sensor:{" "}
@@ -635,7 +636,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                     <div className="space-y-2">
                       <Label>Stato</Label>
                       <Select
-                        value={editingPolicy.action.command.value.status || ""}
+                        value={editingPolicy.action.command.status || ""}
                         onValueChange={(value) =>
                           setEditingPolicy((prev) =>
                             prev
@@ -644,10 +645,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                                   action: {
                                     ...prev.action,
                                     command: {
-                                      value: {
-                                        ...prev.action.command.value,
-                                        status: value as any,
-                                      },
+                                      ...prev.action.command,
+                                      status: value as any,
                                     },
                                   },
                                 }
@@ -672,12 +671,13 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                         min="0"
                         max="5"
                         value={
-                          editingPolicy.action.command.value.speed ||
-                          editingPolicy.action.command.value.level ||
+                          editingPolicy.action.command.speed ||
+                          editingPolicy.action.command.level ||
                           ""
                         }
                         onChange={(e) => {
-                          const value = Number.parseInt(e.target.value);
+                          const value = e.target.value;
+                          const numValue = value === "" ? 0 : Number.parseInt(value) || 0;
                           setEditingPolicy((prev) =>
                             prev
                               ? {
@@ -685,11 +685,9 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                                   action: {
                                     ...prev.action,
                                     command: {
-                                      value: {
-                                        ...prev.action.command.value,
-                                        speed: value,
-                                        level: value,
-                                      },
+                                      ...prev.action.command,
+                                      speed: numValue,
+                                      level: numValue,
                                     },
                                   },
                                 }
@@ -783,7 +781,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                       id="threshold-value"
                       type="number"
                       step="0.1"
-                      value={newPolicy.condition.value}
+                      value={newPolicy.condition.value || ""}
                       min={
                         availableSensors.find(s => s.resource_id === newPolicy.resource_id)
                           ?.min || 0
@@ -792,12 +790,13 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                         availableSensors.find(s => s.resource_id === newPolicy.resource_id)
                           ?.max || 100
                       }
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const value = e.target.value;
                         updateNewPolicyCondition(
                           "value",
-                          Number.parseFloat(e.target.value)
-                        )
-                      }
+                          value === "" ? 0 : Number.parseFloat(value) || 0
+                        );
+                      }}
                     />
                     <div className="text-xs text-muted-foreground">
                       Thresholds Sensor:{" "}
@@ -893,7 +892,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                     <div className="space-y-2">
                       <Label>Stato</Label>
                       <Select
-                        value={newPolicy.action.command.value.status || ""}
+                        value={newPolicy.action.command.status || ""}
                         onValueChange={(value) =>
                           updateNewPolicyAction("status", value)
                         }
@@ -915,14 +914,15 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                         min="0"
                         max="5"
                         value={
-                          newPolicy.action.command.value.speed ||
-                          newPolicy.action.command.value.level ||
+                          newPolicy.action.command.speed ||
+                          newPolicy.action.command.level ||
                           ""
                         }
                         onChange={(e) => {
-                          const value = Number.parseInt(e.target.value);
-                          updateNewPolicyAction("speed", value);
-                          updateNewPolicyAction("level", value);
+                          const value = e.target.value;
+                          const numValue = value === "" ? 0 : Number.parseInt(value) || 0;
+                          updateNewPolicyAction("speed", numValue);
+                          updateNewPolicyAction("level", numValue);
                         }}
                       />
                     </div>
