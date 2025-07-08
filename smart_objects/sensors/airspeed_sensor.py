@@ -13,7 +13,7 @@ class AirSpeedSensor(Sensor):
     DEFAULT_MIN_AIR_SPEED: ClassVar[float] = 0.1
     DEFAULT_MAX_AIR_SPEED: ClassVar[float] = 15.0
     MEASUREMENT_PRECISION: ClassVar[int] = 2
-    UPDATE_PERIOD: ClassVar[int] = 60
+    UPDATE_PERIOD: ClassVar[int] = 10
     TASK_DELAY_TIME: ClassVar[int] = 5
 
     def __init__(self, resource_id):
