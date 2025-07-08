@@ -43,7 +43,7 @@ services:
       - INFLUX_ORG=hvac-org
       - INFLUX_BUCKET=hvac_data
     volumes:
-      - ./cloud_api:/app
+      - ./cloud_simulator/telemetry_logs:/app/telemetry_logs
 
 volumes:
   influxdb_data:

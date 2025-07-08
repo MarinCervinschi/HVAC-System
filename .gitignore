@@ -3,6 +3,10 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Telemetry log files
+telemetry_logs/
+*.log
+
 # C extensions
 *.so
 
