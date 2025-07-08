@@ -1,0 +1,47 @@
+{
+  "id": null,
+  "uid": "hvac-telemetry-dashboard",
+  "title": "HVAC System Telemetry",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Room Temperature (°C)",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "query": "from(bucket: \"hvac_data\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"iot:sensor:temperature\")",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Room Humidity (%)",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "query": "from(bucket: \"hvac_data\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"iot:sensor:humidity\")",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Cooling Levels (Actuator)",
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "query": "from(bucket: \"hvac_data\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"iot:actuator:cooling_levels\") |> filter(fn: (r) => r._field == \"level\")",
+          "refId": "C"
+        }
+      ]
+    }
+  ]
+}
