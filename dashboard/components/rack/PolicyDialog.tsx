@@ -340,10 +340,10 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                         </div>
                         <div>
                           <CardTitle className="text-base">
-                            {formatType(policy.sensor_type)
+                            {formatType(policy.sensor_type || "")
                               .charAt(0)
                               .toUpperCase() +
-                              formatType(policy.sensor_type).slice(1)}{" "}
+                              formatType(policy.sensor_type || "").slice(1)}{" "}
                             Sensor
                           </CardTitle>
                           <CardDescription>
@@ -385,10 +385,10 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                             </div>
                             <div className="flex-1">
                               <div className="text-sm font-semibold text-blue-900">
-                                {formatType(policy.sensor_type)
+                                {formatType(policy.sensor_type || "")
                                   .charAt(0)
                                   .toUpperCase() +
-                                  formatType(policy.sensor_type).slice(1)}
+                                  formatType(policy.sensor_type || "").slice(1)}
                               </div>
                               <div className="text-lg font-bold text-blue-700">
                                 {getConditionText(policy.condition)}{" "}
@@ -417,10 +417,10 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                             </div>
                             <div className="flex-1">
                               <div className="text-sm font-semibold text-orange-900">
-                                {formatType(policy.action.actuator_type)
+                                {formatType(policy.action.actuator_type || "")
                                   .charAt(0)
                                   .toUpperCase() +
-                                  formatType(policy.action.actuator_type).slice(
+                                  formatType(policy.action.actuator_type || "").slice(
                                     1
                                   )}{" "}
                                 Actuator
@@ -489,8 +489,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                           value={sensor.resource_id}
                         >
                           {formatName(sensor.resource_id)} -{" "}
-                          {formatType(sensor.type).charAt(0).toUpperCase() +
-                            formatType(sensor.type).slice(1)}{" "}
+                          {formatType(sensor.type || "").charAt(0).toUpperCase() +
+                            formatType(sensor.type || "").slice(1)}{" "}
                           Sensor
                         </SelectItem>
                       ))}
@@ -621,8 +621,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                             value={actuator.resource_id}
                           >
                             {formatName(actuator.resource_id)} -{" "}
-                            {formatType(actuator.type).charAt(0).toUpperCase() +
-                              formatType(actuator.type).slice(1)}{" "}
+                            {formatType(actuator.type || "").charAt(0).toUpperCase() +
+                              formatType(actuator.type || "").slice(1)}{" "}
                             Actuator
                           </SelectItem>
                         ))}
@@ -632,7 +632,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-3">
                     <div className="space-y-2">
                       <Label>Stato</Label>
                       <Select
@@ -664,37 +664,46 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>Velocità/Livello</Label>
+                     <div className="space-y-2">
+                      <Label>Velocità</Label>
                       <Input
                         type="number"
                         min="0"
                         max="5"
-                        value={
-                          editingPolicy.action.command.speed ||
-                          editingPolicy.action.command.level ||
-                          ""
-                        }
+                        value={editingPolicy.action.command.speed || ""}
+                        disabled={editingPolicy.action.actuator_type === "iot:actuator:cooling_levels"}
                         onChange={(e) => {
                           const value = e.target.value;
                           const numValue = value === "" ? 0 : Number.parseInt(value) || 0;
-                          setEditingPolicy((prev) =>
-                            prev
-                              ? {
-                                  ...prev,
-                                  action: {
-                                    ...prev.action,
-                                    command: {
-                                      ...prev.action.command,
-                                      speed: numValue,
-                                      level: numValue,
-                                    },
-                                  },
-                                }
-                              : null
-                          );
+                          updateNewPolicyAction("speed", numValue);
                         }}
                       />
+                      {newPolicy.action.actuator_type === "iot:actuator:cooling_levels" && (
+                        <p className="text-xs text-muted-foreground">
+                          Not available for this type of actuator
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Livello</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="5"
+                        value={editingPolicy.action.command.level || ""}
+                        disabled={editingPolicy.action.actuator_type === "iot:actuator:fan" || editingPolicy.action.actuator_type === "iot:actuator:pump"}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const numValue = value === "" ? 0 : Number.parseInt(value) || 0;
+                          updateNewPolicyAction("level", numValue);
+                        }}
+                      />
+                      {(newPolicy.action.actuator_type === "iot:actuator:fan" || newPolicy.action.actuator_type === "iot:actuator:pump") && (
+                        <p className="text-xs text-muted-foreground">
+                          Not available for this type of actuator
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -766,8 +775,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                           value={sensor.resource_id}
                         >
                           {formatName(sensor.resource_id)} -{" "}
-                          {formatType(sensor.type).charAt(0).toUpperCase() +
-                            formatType(sensor.type).slice(1)}{" "}
+                          {formatType(sensor.type || "").charAt(0).toUpperCase() +
+                            formatType(sensor.type || "").slice(1)}{" "}
                           Sensor
                         </SelectItem>
                       ))}
@@ -876,8 +885,8 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                             value={actuator.resource_id}
                           >
                             {formatName(actuator.resource_id)} -{" "}
-                            {formatType(actuator.type).charAt(0).toUpperCase() +
-                              formatType(actuator.type).slice(1)}{" "}
+                            {formatType(actuator.type || "").charAt(0).toUpperCase() +
+                              formatType(actuator.type || "").slice(1)}{" "}
                             Actuator
                           </SelectItem>
                         ))}
@@ -886,9 +895,9 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-4">{" "}
 
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-3">
                     <div className="space-y-2">
                       <Label>Stato</Label>
                       <Select
@@ -907,24 +916,46 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>Velocità/Livello</Label>
+                     <div className="space-y-2">
+                      <Label>Velocità</Label>
                       <Input
                         type="number"
                         min="0"
                         max="5"
-                        value={
-                          newPolicy.action.command.speed ||
-                          newPolicy.action.command.level ||
-                          ""
-                        }
+                        value={newPolicy.action.command.speed || ""}
+                        disabled={newPolicy.action.actuator_type === "iot:actuator:cooling_levels"}
                         onChange={(e) => {
                           const value = e.target.value;
                           const numValue = value === "" ? 0 : Number.parseInt(value) || 0;
                           updateNewPolicyAction("speed", numValue);
+                        }}
+                      />
+                      {newPolicy.action.actuator_type === "iot:actuator:cooling_levels" && (
+                        <p className="text-xs text-muted-foreground">
+                          Not available for this type of actuator
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Livello</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="5"
+                        value={newPolicy.action.command.level || ""}
+                        disabled={newPolicy.action.actuator_type === "iot:actuator:fan" || newPolicy.action.actuator_type === "iot:actuator:pump"}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const numValue = value === "" ? 0 : Number.parseInt(value) || 0;
                           updateNewPolicyAction("level", numValue);
                         }}
                       />
+                      {(newPolicy.action.actuator_type === "iot:actuator:fan" || newPolicy.action.actuator_type === "iot:actuator:pump") && (
+                        <p className="text-xs text-muted-foreground">
+                          Not available for this type of actuator
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
