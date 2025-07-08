@@ -4,6 +4,7 @@ import paho.mqtt.client as mqtt
 from .SmartObject import SmartObject
 from typing import Dict, Any, ClassVar
 from ..messages.telemetry_message import TelemetryMessage
+from smart_objects.messages.control_message import ControlMessage
 from smart_objects.actuators.fan_actuator import FanActuator
 from config.mqtt_conf_params import MqttConfigurationParameters
 from smart_objects.resources.CoapControllable import CoapControllable
@@ -56,16 +57,20 @@ class RackCoolingUnit(SmartObject, CoapControllable):
 
         site.add_resource(
             (".well-known", "core"),
-            resource.WKCResource(site.get_resources_as_linkheader, impl_info=None)
+            resource.WKCResource(site.get_resources_as_linkheader, impl_info=None),
         )
 
         # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/fan/control
         resource_path = [
             "hvac",
-            "room", self.room_id,
-            "rack", self.rack_id,
-            "device", self.object_id,
-            "fan", "control",
+            "room",
+            self.room_id,
+            "rack",
+            self.rack_id,
+            "device",
+            self.object_id,
+            "fan",
+            "control",
         ]
 
         self.logger.info(
@@ -90,6 +95,8 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             for resource in self.resource_map.values():
                 if isinstance(resource, TemperatureSensor):
                     self._register_temperature_sensor_listener()
+                elif isinstance(resource, FanActuator):
+                    self._register_fan_actuator_listener()
 
         except Exception as e:
             self.logger.error(f"Error registering resources: {e}")
@@ -123,4 +130,37 @@ class RackCoolingUnit(SmartObject, CoapControllable):
 
         self.logger.info(
             f"📢 Registered temperature sensor listener for {temperature_sensor.resource_id} on topic {topic}"
+        )
+
+    def _register_fan_actuator_listener(self) -> None:
+        """Register listener for fan actuator state changes."""
+        fan_actuator = self.get_resource("fan")
+        if fan_actuator is None:
+            self.logger.error("Fan actuator resource not found!")
+            print("Fan actuator resource not found!")
+            return
+
+        # Topic for fan telemetry: hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/control/{fan_id}
+        topic = "{0}/{1}/{2}/{3}/{4}/{5}/{6}/{7}".format(
+            MqttConfigurationParameters.BASIC_TOPIC,
+            self.room_id,
+            MqttConfigurationParameters.RACK_TOPIC,
+            self.rack_id,
+            MqttConfigurationParameters.DEVICE_TOPIC,
+            self.object_id,
+            MqttConfigurationParameters.CONTROL_TOPIC,
+            fan_actuator.resource_id,
+        )
+
+        listener = self._get_listener(
+            data_type=fan_actuator.data_type,
+            message_type=ControlMessage,
+            topic=topic,
+            qos=1,
+        )
+
+        fan_actuator.add_data_listener(listener)
+
+        self.logger.info(
+            f"📢 Registered fan actuator listener for {fan_actuator.resource_id} on topic {topic}"
         )

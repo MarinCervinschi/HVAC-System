@@ -2,7 +2,7 @@ from aiocoap import resource, Message, Code
 import json
 import traceback
 from smart_objects.models.Actuator import Actuator
-from typing import  Optional, Dict
+from typing import Optional, Dict, Any
 
 
 class ActuatorControlResource(resource.Resource):
@@ -42,8 +42,16 @@ class ActuatorControlResource(resource.Resource):
         try:
             payload = request.payload.decode()
             command = json.loads(payload)
+            event_type: str = command.get("event_type", "MANUAL")
+            event_data: Dict[str, Any] = command.get("event_data", {})
+            if command.get("event_type") is not None:
+                del command["event_type"]
+            if command.get("event_data") is not None:
+                del command["event_data"]
 
-            success = self.actuator.apply_command(command)
+            success = self.actuator.apply_command(
+                command, event_type=event_type, event_data=event_data
+            )
 
             if success:
                 return Message(

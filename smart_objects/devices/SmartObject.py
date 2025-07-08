@@ -3,9 +3,10 @@ import logging
 import paho.mqtt.client as mqtt
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar, Any, Dict
-from smart_objects.models.Sensor import Sensor
 from smart_objects.models.Actuator import Actuator
 from smart_objects.messages.GenericMessage import GenericMessage
+from smart_objects.messages.control_message import ControlMessage
+from smart_objects.messages.telemetry_message import TelemetryMessage
 from smart_objects.resources.SmartObjectResource import SmartObjectResource
 from smart_objects.resources.ResourceDataListener import ResourceDataListener
 
@@ -95,6 +96,7 @@ class SmartObject(ABC, Generic[T]):
         data_type: Any,
         message_type: GenericMessage,
         topic: str,
+        metadata: Dict[str, Any] = {},
         qos: int = 0,
         retain: bool = False,
     ):
@@ -102,20 +104,35 @@ class SmartObject(ABC, Generic[T]):
         publish_data = self._publish_data
 
         resource_id = topic.split("/")[-1]
+        if not metadata:
+            metadata = {}
 
-        metadata = {
-            "object_id": self.object_id,
-            "resource_id": resource_id,
-            "room_id": self.room_id,
-            "rack_id": self.rack_id,
-        }
+        metadata.update(
+            {
+                "object_id": self.object_id,
+                "resource_id": resource_id,
+                "room_id": self.room_id,
+                "rack_id": self.rack_id,
+            }
+        )
 
         class Listener(ResourceDataListener[data_type]):
-            def on_data_changed(self, resource, updated_value):
+            def on_data_changed(self, resource, updated_value, **kwargs):
                 try:
-                    payload = message_type(
-                        resource.type, updated_value, metadata=metadata
-                    )
+                    payload = None
+                    if message_type == ControlMessage:
+                        payload = message_type(
+                            type_=resource.type,
+                            metadata=metadata,
+                            timestamp=None,
+                            **kwargs,
+                        )
+                    elif message_type == TelemetryMessage:
+                        payload = message_type(
+                            type_=resource.type,
+                            data_value=updated_value,
+                            metadata=metadata,
+                        )
 
                     publish_data(topic, payload, qos, retain)
                 except Exception as e:
