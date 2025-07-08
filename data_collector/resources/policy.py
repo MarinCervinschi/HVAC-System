@@ -46,6 +46,175 @@ class PolicyRoomAPI(Resource):
         except Exception as e:
             return {"status": "error", "message": str(e)}, 500
 
+    def post(self, room_id: str):
+        try:
+            if not self.system_manager:
+                return {"error": "System manager not available"}, 500
+
+            room = self.system_manager.get_room_by_id(room_id)
+            if not room:
+                return {"error": f"Room {room_id} not found"}, 404
+
+            data = request.get_json(force=True)
+            if not data:
+                return {"error": "Invalid data"}, 400
+
+            # Validate required fields for room policy
+            required_fields = ["object_id", "resource_id", "sensor_type", "condition", "action"]
+            for field in required_fields:
+                if field not in data:
+                    return {"error": f"Missing required field: {field}"}, 400
+
+            # Validate condition structure
+            if "condition" not in data or not isinstance(data["condition"], dict):
+                return {"error": "Invalid condition format"}, 400
+            
+            condition = data["condition"]
+            if "operator" not in condition or "value" not in condition:
+                return {"error": "Condition must contain 'operator' and 'value'"}, 400
+
+            allowed_operators = [">", "<", "==", ">=", "<=", "!="]
+            if condition["operator"] not in allowed_operators:
+                return {"error": f"Invalid operator. Allowed: {allowed_operators}"}, 400
+
+            # Validate action structure
+            if "action" not in data or not isinstance(data["action"], dict):
+                return {"error": "Invalid action format"}, 400
+            
+            action = data["action"]
+            if "command" not in action:
+                return {"error": "Action must contain 'command'"}, 400
+
+            # Create a new room policy with proper structure
+            policy = {
+                "type": "room",
+                "room_id": room_id,
+                "object_id": data["object_id"],
+                "resource_id": data["resource_id"],
+                "sensor_type": data["sensor_type"],
+                "condition": data["condition"],
+                "action": data["action"]
+            }
+
+            # Add optional fields if provided
+            if "description" in data:
+                policy["description"] = data["description"]
+            if "id" in data:
+                policy["id"] = data["id"]
+
+            # Add policy through policy manager
+            policy_manager = self.system_manager.data_collectors.get(room_id).policy_manager
+            created_policy = policy_manager.add_policy(policy)
+
+            return {"status": "success", "policy": created_policy}, 201
+
+        except ValueError as ve:
+            return {"status": "error", "message": str(ve)}, 400
+        except Exception as e:
+            return {"status": "error", "message": str(e)}, 500
+
+    def put(self, room_id: str):
+        try:
+            if not self.system_manager:
+                return {"error": "System manager not available"}, 500
+
+            room = self.system_manager.get_room_by_id(room_id)
+            if not room:
+                return {"error": f"Room {room_id} not found"}, 404
+
+            data = request.get_json(force=True)
+            if not data:
+                return {"error": "Invalid data"}, 400
+
+            # Get policy ID from request data
+            if "id" not in data:
+                return {"error": "Policy ID is required for update"}, 400
+
+            policy_id = data["id"]
+
+            # Validate required fields for room policy
+            required_fields = ["object_id", "resource_id", "sensor_type", "condition", "action"]
+            for field in required_fields:
+                if field not in data:
+                    return {"error": f"Missing required field: {field}"}, 400
+
+            # Validate condition structure
+            if "condition" not in data or not isinstance(data["condition"], dict):
+                return {"error": "Invalid condition format"}, 400
+            
+            condition = data["condition"]
+            if "operator" not in condition or "value" not in condition:
+                return {"error": "Condition must contain 'operator' and 'value'"}, 400
+
+            allowed_operators = [">", "<", "==", ">=", "<=", "!="]
+            if condition["operator"] not in allowed_operators:
+                return {"error": f"Invalid operator. Allowed: {allowed_operators}"}, 400
+
+            # Validate action structure
+            if "action" not in data or not isinstance(data["action"], dict):
+                return {"error": "Invalid action format"}, 400
+            
+            action = data["action"]
+            if "command" not in action:
+                return {"error": "Action must contain 'command'"}, 400
+
+            # Create the updated room policy with proper structure
+            updated_policy = {
+                "id": policy_id,
+                "type": "room",
+                "room_id": room_id,
+                "object_id": data["object_id"],
+                "resource_id": data["resource_id"],
+                "sensor_type": data["sensor_type"],
+                "condition": data["condition"],
+                "action": data["action"]
+            }
+
+            # Add optional fields if provided
+            if "description" in data:
+                updated_policy["description"] = data["description"]
+
+            # Update policy through policy manager
+            policy_manager = self.system_manager.data_collectors.get(room_id).policy_manager
+            result_policy = policy_manager.update_policy(policy_id, updated_policy)
+
+            return {"status": "success", "policy": result_policy}, 200
+
+        except ValueError as ve:
+            return {"status": "error", "message": str(ve)}, 400
+        except Exception as e:
+            return {"status": "error", "message": str(e)}, 500
+
+    def delete(self, room_id: str):
+        try:
+            if not self.system_manager:
+                return {"error": "System manager not available"}, 500
+
+            room = self.system_manager.get_room_by_id(room_id)
+            if not room:
+                return {"error": f"Room {room_id} not found"}, 404
+
+            # Get policy ID from query parameters or request data
+            policy_id = request.args.get('id')
+            if not policy_id:
+                data = request.get_json(silent=True)
+                if data and "id" in data:
+                    policy_id = data["id"]
+            
+            if not policy_id:
+                return {"error": "Policy ID is required for deletion"}, 400
+
+            # Delete policy through policy manager
+            policy_manager = self.system_manager.data_collectors.get(room_id).policy_manager
+            deleted_policy = policy_manager.delete_policy(policy_id)
+
+            return {"status": "success", "message": f"Policy {policy_id} deleted successfully", "deleted_policy": deleted_policy}, 200
+
+        except ValueError as ve:
+            return {"status": "error", "message": str(ve)}, 400
+        except Exception as e:
+            return {"status": "error", "message": str(e)}, 500
+
 
 class PolicyRackAPI(Resource):
     def __init__(self, **kwargs):

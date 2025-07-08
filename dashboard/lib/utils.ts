@@ -19,6 +19,7 @@ export function formatName(value:string): string {
 }
 
 export function formatType(type: string): string {
+  if (!type) return ""
   const lastPart = type.split(":").pop() || ""
   return lastPart
 }
