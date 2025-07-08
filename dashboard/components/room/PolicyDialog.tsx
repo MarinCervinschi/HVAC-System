@@ -46,6 +46,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
+import { toast } from "sonner";
 
 interface PolicyDialogProps {
   smartObjects: SmartObject[];
@@ -122,11 +123,11 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
           );
           setPolicies(uniquePolicies);
         } else {
-          console.error("Errore nel caricamento delle policy");
+          toast.error("Errore nel caricamento delle policy");
           setPolicies([]);
         }
       } catch (error) {
-        console.error("Errore nella richiesta:", error);
+        toast.error("Errore nella richiesta: " + error);
         setPolicies([]);
       } finally {
         setIsLoading(false);
@@ -191,10 +192,10 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
         setEditingPolicy(null);
       } else {
         const errorData = await response.json();
-        console.error("Errore nel salvataggio della policy:", errorData.message || 'Errore sconosciuto');
+        toast.error("Errore nel salvataggio della policy: " + (errorData.message || 'Errore sconosciuto'));
       }
     } catch (error) {
-      console.error("Errore nella richiesta:", error);
+      toast.error("Errore nella richiesta: " + error);
     }
   };
 
@@ -216,10 +217,10 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
         setPolicies((prev) => prev.filter((p) => p.id !== policyId));
       } else {
         const errorData = await response.json();
-        console.error("Errore nell'eliminazione della policy:", errorData.message || 'Errore sconosciuto');
+        toast.error("Errore nell'eliminazione della policy: " + (errorData.message || 'Errore sconosciuto'));
       }
     } catch (error) {
-      console.error("Errore nella richiesta:", error);
+      toast.error("Errore nella richiesta: " + error);
     }
   };
 
@@ -266,10 +267,10 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
         });
       } else {
         const errorData = await response.json();
-        console.error("Errore nella creazione della policy:", errorData.message || 'Errore sconosciuto');
+        toast.error("Errore nella creazione della policy: " + (errorData.message || 'Errore sconosciuto'));
       }
     } catch (error) {
-      console.error("Errore nella richiesta:", error);
+      toast.error("Errore nella richiesta: " + error);
     }
   };
 

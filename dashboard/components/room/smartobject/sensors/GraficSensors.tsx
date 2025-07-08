@@ -80,7 +80,6 @@ export default function GraficSensors({ smartObject, sensorTypes }: GraficSensor
 
     const getSensorConfig = (sensor: Sensor): SensorConfig => {
         const defaultConfig = defaultSensorConfigs[formatType(sensor.type)];
-        console.log(`Getting config for sensor: ${sensor.resource_id} (${formatType(sensor.type)})`)
 
         if (!defaultConfig) {
             // Fallback configuration for unknown sensors
@@ -110,7 +109,6 @@ export default function GraficSensors({ smartObject, sensorTypes }: GraficSensor
                 {smartObject?.sensors && smartObject.sensors.length > 0 ? (
                     <div className={`grid gap-6 ${smartObject.sensors.length === 1 ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
                         {smartObject.sensors.map((sensor, index) => {
-                            console.log(`Rendering sensor: ${sensor.resource_id} (${sensor.type}) with value: ${sensor.value}${sensor.unit}`)
                             const config = getSensorConfig(sensor)
                             const IconComponent = config.icon
                             const mockData = generateMockData(sensor.value)

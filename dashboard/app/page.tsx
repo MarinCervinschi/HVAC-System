@@ -99,7 +99,6 @@ export default function Dashboard() {
                 key={room.room_id}
                 className="cursor-pointer hover:shadow-lg transition-shadow"
                 onClick={() => {
-                  console.log("Room clicked:", room.room_id)
                   router.push(`/rooms/${room.room_id}`)
                 }}
               >

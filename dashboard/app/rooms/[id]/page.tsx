@@ -57,7 +57,7 @@ export default function RoomDetailPage() {
         }))
         setRoomInfo({ ...convertedRoomData, smart_objects: updatedSmartObjects })
       } catch (err: any) {
-        console.error("Error fetching room:", err)
+        toast.error("Error fetching room: " + err)
         setError(err.message || "An error occurred while fetching room data")
       } finally {
         setLoading(false)
@@ -109,7 +109,7 @@ export default function RoomDetailPage() {
           } : prev
         )
       } catch (error) {
-        console.error("Error parsing MQTT message:", error)
+        toast.error("Error parsing MQTT message: " + error)
       }
     },
   })

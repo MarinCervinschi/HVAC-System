@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertTriangle, AlertCircle, CheckCircle, Clock, Thermometer, Droplets, Zap, X, Snowflake, Fan, Gauge } from "lucide-react"
 import { useMQTTClient } from "@/hooks/useMqttClient"
 import { formatName, formatType } from "@/lib/utils"
+import { toast } from "sonner"
 
 
 const getSeverityColor = (severity: string) => {
@@ -156,8 +157,6 @@ const parseTelemetryMessage = (topic: string, message: string): DeviceTelemetry 
         icon: getDeviceIcon(deviceType, 'policy'),
         deviceType: deviceType
       };
-
-      console.log('Parsed POLICY_APPLIED telemetry:', telemetry);
       
       return telemetry;
     }
@@ -201,9 +200,6 @@ const parseTelemetryMessage = (topic: string, message: string): DeviceTelemetry 
         icon: getDeviceIcon(deviceType, 'manual'),
         deviceType: deviceType
       };
-
-      console.log('Parsed MANUAL telemetry:', telemetry);
-      
       return telemetry;
     }
     
@@ -211,7 +207,7 @@ const parseTelemetryMessage = (topic: string, message: string): DeviceTelemetry 
     
 
   } catch (error) {
-    console.error('Error parsing MQTT telemetry message:', error);
+    toast.error('Error parsing MQTT telemetry message: '+ error);
     return null;
   }
 };
@@ -222,8 +218,7 @@ export default function AlertsPage() {
 
   // MQTT message handler
   const handleMQTTMessage = useCallback((topic: string, message: string) => {
-    console.log(`📨 Received MQTT message on topic ${topic}:`, message);
-    
+   
     const newTelemetry = parseTelemetryMessage(topic, message);
     if (newTelemetry) {
       setTelemetries(prevTelemetries => {

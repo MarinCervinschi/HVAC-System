@@ -126,7 +126,7 @@ export default function RackDetailPage() {
             const res = await fetch(`${API_URL}/room/${roomId}/rack/${rackId}`)
 
             if (!res.ok) {
-                console.error("Failed to fetch rack data:", res.statusText)
+                toast.error("Failed to fetch rack data: " + res.statusText)
                 setError("Failed to fetch rack data")
                 return
             }
@@ -176,7 +176,6 @@ export default function RackDetailPage() {
         brokerUrl: "ws://localhost:9001",
         topics: mqttTopics,
         onMessage: (topic, message) => {
-            console.log("📥 MQTT message received for rack:", { topic, message });
 
             try {
                 // Converti il messaggio dal formato backend al JSON valido
@@ -203,7 +202,6 @@ export default function RackDetailPage() {
                     return
                 }
 
-                console.log("🔍 Processing rack message for resourceId:", resourceId, "with value:", value)
 
                 const newHistoryEntry = {
                     time: new Date(timestamp).toLocaleTimeString(),
@@ -217,7 +215,6 @@ export default function RackDetailPage() {
                             ...obj,
                             sensors: obj.sensors?.map(sensor => {
                                 if (sensor.resource_id === resourceId) {
-                                    console.log("✅ Updating rack sensor:", sensor.resource_id, "with new value:", value)
 
                                     const updatedHistory = [
                                         ...(sensor.history ?? []),
@@ -240,15 +237,11 @@ export default function RackDetailPage() {
                     } : prev
                 )
             } catch (error) {
-                console.error("❌ Error parsing rack MQTT message:", error)
-                console.error("❌ Raw message:", message)
+                toast.error("❌ Error parsing rack MQTT message: " + error)
+                toast.error("❌ Raw message: " + message)
             }
         },
     })
-
-    console.log("🔍 Rack Info:", rackInfo)
-    console.log("🔍 Rack MQTT Topics to subscribe:", mqttTopics)
-
 
     const handleActuatorToggle = (smartObjectId: string) => async (actuatorId: string, checked: boolean) => {
         setIsToggling((prev) => ({ ...prev, [actuatorId]: true }))
@@ -270,7 +263,7 @@ export default function RackDetailPage() {
             })
 
             if (!response.ok) {
-                console.error('Failed to toggle actuator:', response.statusText)
+                toast.error('Failed to toggle actuator: ' + response.statusText)
                 setError('Failed to toggle actuator')
                 return
             }

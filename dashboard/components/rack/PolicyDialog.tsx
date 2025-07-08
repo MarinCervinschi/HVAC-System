@@ -123,6 +123,7 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
 
   const getActionText = (action: PolicyAction) => {
     const commands = Object.entries(action.command)
+      .filter(([key]) => key !== "event_type" && key !== "event_data")
       .map(
         ([key, value]) =>
           `${
@@ -236,10 +237,10 @@ export function PolicyDialog({ smartObject }: PolicyDialogProps) {
           },
         });
       } else {
-        console.error("Errore nella creazione della policy");
+        toast.error("Errore nella creazione della policy");
       }
     } catch (error) {
-      console.error("Errore nella richiesta:", error);
+      toast.error("Errore nella richiesta: " + error);
     }
   };
 
