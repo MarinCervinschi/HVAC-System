@@ -1,13 +1,14 @@
 import logging
 from aiocoap import resource
-from typing import ClassVar, Dict, Any
 import paho.mqtt.client as mqtt
-from .SmartObject import SmartObject
-from smart_objects.actuators.cooling_level_actuator import CoolingLevelsActuator
-from smart_objects.resources.CoapControllable import CoapControllable
-from smart_objects.resources.actuator_control_resource import ActuatorControlResource
+from typing import ClassVar, Dict, Any
+from smart_objects.devices.SmartObject import SmartObject
+from config.coap_conf_params import CoapConfigurationParameters
 from config.mqtt_conf_params import MqttConfigurationParameters
 from smart_objects.messages.control_message import ControlMessage
+from smart_objects.resources.CoapControllable import CoapControllable
+from smart_objects.actuators.cooling_level_actuator import CoolingLevelsActuator
+from smart_objects.resources.actuator_control_resource import ActuatorControlResource
 
 
 class CoolingSystemHub(SmartObject, CoapControllable):
@@ -50,15 +51,11 @@ class CoolingSystemHub(SmartObject, CoapControllable):
             resource.WKCResource(site.get_resources_as_linkheader, impl_info=None),
         )
 
-        resource_path = [
-            "hvac",
-            "room",
-            self.room_id,
-            "device",
-            self.object_id,
-            "cooling_levels",
-            "control",
-        ]
+        resource_path = CoapConfigurationParameters.build_coap_room_path(
+            room_id=self.room_id,
+            device_id=self.object_id,
+            resource_id="cooling_levels",
+        )
 
         self.logger.info(
             f"📢 Registered CoAP cooling levels control resource for {cooling_levels_actuator.resource_id} at path: {'/'.join(resource_path)}"

@@ -4,6 +4,7 @@ import paho.mqtt.client as mqtt
 from typing import ClassVar, Dict, Any
 from smart_objects.devices.SmartObject import SmartObject
 from config.mqtt_conf_params import MqttConfigurationParameters
+from config.coap_conf_params import CoapConfigurationParameters
 from smart_objects.sensors.airspeed_sensor import AirSpeedSensor
 from smart_objects.messages.control_message import ControlMessage
 from smart_objects.messages.telemetry_message import TelemetryMessage
@@ -61,18 +62,12 @@ class AirflowManager(SmartObject, CoapControllable):
             resource.WKCResource(site.get_resources_as_linkheader, impl_info=None),
         )
 
-        # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/cooling_levels/control
-        resource_path = [
-            "hvac",
-            "room",
-            self.room_id,
-            "rack",
-            self.rack_id,
-            "device",
-            self.object_id,
-            "cooling_levels",
-            "control",
-        ]
+        resource_path = CoapConfigurationParameters.build_coap_rack_path(
+            room_id=self.room_id,
+            rack_id=self.rack_id,
+            device_id=self.object_id,
+            resource_id="cooling_levels",
+        )
 
         self.logger.info(
             f"📢 Registered CoAP cooling levels control resource for {cooling_levels_actuator.resource_id} at path: {'/'.join(resource_path)}"

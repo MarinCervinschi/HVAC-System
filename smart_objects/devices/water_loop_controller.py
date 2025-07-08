@@ -11,6 +11,7 @@ from config.mqtt_conf_params import MqttConfigurationParameters
 from smart_objects.resources.CoapControllable import CoapControllable
 from smart_objects.sensors.pression_sensor import PressureSensor
 from smart_objects.resources.actuator_control_resource import ActuatorControlResource
+from config.coap_conf_params import CoapConfigurationParameters
 
 
 class WaterLoopController(SmartObject, CoapControllable):
@@ -60,18 +61,12 @@ class WaterLoopController(SmartObject, CoapControllable):
             resource.WKCResource(site.get_resources_as_linkheader, impl_info=None),
         )
 
-        # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/pump/control
-        resource_path = [
-            "hvac",
-            "room",
-            self.room_id,
-            "rack",
-            self.rack_id,
-            "device",
-            self.object_id,
-            "pump",
-            "control",
-        ]
+        resource_path = CoapConfigurationParameters.build_coap_rack_path(
+            room_id=self.room_id,
+            rack_id=self.rack_id,
+            device_id=self.object_id,
+            resource_id="pump",
+        )
 
         self.logger.info(
             f"📢 Registered CoAP pump control resource for {pump_actuator.resource_id} at path: {'/'.join(resource_path)}"

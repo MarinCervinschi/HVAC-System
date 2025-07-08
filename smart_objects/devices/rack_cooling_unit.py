@@ -7,6 +7,7 @@ from ..messages.telemetry_message import TelemetryMessage
 from smart_objects.messages.control_message import ControlMessage
 from smart_objects.actuators.fan_actuator import FanActuator
 from config.mqtt_conf_params import MqttConfigurationParameters
+from config.coap_conf_params import CoapConfigurationParameters
 from smart_objects.resources.CoapControllable import CoapControllable
 from smart_objects.sensors.temperature_sensor import TemperatureSensor
 from smart_objects.resources.actuator_control_resource import ActuatorControlResource
@@ -60,18 +61,12 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             resource.WKCResource(site.get_resources_as_linkheader, impl_info=None),
         )
 
-        # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/fan/control
-        resource_path = [
-            "hvac",
-            "room",
-            self.room_id,
-            "rack",
-            self.rack_id,
-            "device",
-            self.object_id,
-            "fan",
-            "control",
-        ]
+        resource_path = CoapConfigurationParameters.build_coap_rack_path(
+            room_id=self.room_id,
+            rack_id=self.rack_id,
+            device_id=self.object_id,
+            resource_id="fan",
+        )
 
         self.logger.info(
             f"📢 Registered CoAP fan control resource for {fan_actuator.resource_id} at path: {'/'.join(resource_path)}"
