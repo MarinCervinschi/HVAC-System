@@ -15,8 +15,7 @@ class DataCollector:
         """Connect using an existing MQTT client"""
         topics = [
             (f"hvac/room/{self.room_id}/device/+/telemetry/+", 0),
-            (f"hvac/room/{self.room_id}/rack/+/device/+/telemetry/+", 1),
-            # ("/other/topic/#", 2),
+            (f"hvac/room/{self.room_id}/rack/+/device/+/telemetry/+", 0),
         ]
         mqtt_client.subscribe(topics)
 
