@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Thermometer, Droplets, Gauge, Eye, Zap, Wind } from "lucide-react"
+import { Thermometer, Droplets, Gauge, Zap, Wind } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { SmartObject } from "@/types/smartobject"
 import { Sensor } from "@/types/sensor"
@@ -58,25 +58,7 @@ const defaultSensorConfigs: Record<string, SensorConfig> = {
     }
 }
 
-// Function to generate mock data for charts
-const generateMockData = (baseValue: number, variance: number = 2) => {
-    const data = []
-    const startTime = new Date()
-    startTime.setMinutes(startTime.getMinutes() - 32)
-
-    for (let i = 0; i < 8; i++) {
-        const time = new Date(startTime)
-        time.setMinutes(time.getMinutes() + i * 4)
-        const value = baseValue + (Math.random() - 0.5) * variance
-        data.push({
-            time: time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-            value: Math.round(value * 10) / 10
-        })
-    }
-    return data
-}
-
-export default function GraficSensors({ smartObject, sensorTypes }: GraficSensorsProps) {
+export default function GraficSensors({ smartObject }: GraficSensorsProps) {
 
     const getSensorConfig = (sensor: Sensor): SensorConfig => {
         const defaultConfig = defaultSensorConfigs[formatType(sensor.type)];
@@ -111,7 +93,6 @@ export default function GraficSensors({ smartObject, sensorTypes }: GraficSensor
                         {smartObject.sensors.map((sensor, index) => {
                             const config = getSensorConfig(sensor)
                             const IconComponent = config.icon
-                            const mockData = generateMockData(sensor.value)
 
                             return (
                                 <div

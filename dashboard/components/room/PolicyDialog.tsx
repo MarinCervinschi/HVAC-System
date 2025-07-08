@@ -35,7 +35,6 @@ import {
   Policy,
   PolicyAction,
   PolicyCondition,
-  SENSOR_TYPE_LABELS,
 } from "@/types/policy";
 import { SmartObject } from "@/types/smartobject";
 import { findSensorById, formatName, formatType } from "@/lib/utils";
@@ -294,19 +293,6 @@ export function PolicyDialog({ smartObjects, roomId }: PolicyDialogProps) {
           ...prev.action.command,
           [field]: value,
         },
-      },
-    }));
-  };
-
-  const updateNewPolicyActionField = (
-    field: "resource_id" | "actuator_type",
-    value: string
-  ) => {
-    setNewPolicy((prev) => ({
-      ...prev,
-      action: {
-        ...prev.action,
-        [field]: value,
       },
     }));
   };

@@ -9,7 +9,6 @@ import { formatName } from "@/lib/utils";
 export function RackHeader() {
     const router = useRouter();
     const params = useParams();
-    const roomId = params.id as string;
     const rackId = params.rackId as string;
     const rack = formatName(rackId)
 

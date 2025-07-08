@@ -16,99 +16,6 @@ import { toast } from "sonner"
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.1:5000/hvac/api"
 
 
-
-const mockRack: Rack = {
-    rack_id: "rack_A1",
-    room_id: "room_A1",
-    rack_type: "air_cooled",
-    status: "ON",
-    smart_objects: [
-        {
-            id: "rack_cooling_unit",
-            room_id: "room_A1",
-            rack_id: "rack_A1",
-            sensors: [
-                {
-                    resource_id: "rack_cooling_unit_temp",
-                    type: "iot:sensor:temperature",
-                    value: 0.0,
-                    unit: "Celsius",
-                    timestamp: 0,
-                    min: 25.0,
-                    max: 45.0
-                }
-            ],
-            actuators: [
-                {
-                    resource_id: "rack_cooling_unit_fan",
-                    type: "iot:actuator:fan",
-                    is_operational: true,
-                    max_speed: 100,
-                    status: "ON",
-                    last_updated: 1751831206,
-                    speed: 0,
-                    target_speed: 0
-                }
-            ]
-        },
-        {
-            id: "energy_metering_unit",
-            room_id: "room_A1",
-            rack_id: "rack_A1",
-            sensors: [
-                {
-                    resource_id: "energy_metering_unit_energy",
-                    type: "iot:sensor:energy",
-                    value: 0.0,
-                    unit: "kWh",
-                    timestamp: 0,
-                    min: 0.0,
-                    max: 1000.0
-
-                }
-            ],
-            actuators: [
-                {
-                    resource_id: "energy_metering_unit_switch",
-                    type: "iot:actuator:switch",
-                    is_operational: true,
-                    status: "ON",
-                    last_updated: 1751831206
-
-                }
-            ]
-        },
-        {
-            id: "airflow_manager",
-            room_id: "room_A1",
-            rack_id: "rack_A1",
-            sensors: [
-                {
-                    resource_id: "airflow_manager_air_speed",
-                    type: "iot:sensor:air_speed",
-                    value: 0.0,
-                    unit: "m/s",
-                    timestamp: 0,
-                    min: 0.0,
-                    max: 100.0
-                }
-            ],
-            actuators: [
-                {
-                    resource_id: "airflow_manager_cooling_levels",
-                    type: "iot:actuator:cooling_levels",
-                    is_operational: true,
-                    max_level: 5,
-                    min_level: 0,
-                    status: "ON",
-                    last_updated: 1751831206,
-                    level: 0
-                }
-            ]
-        }
-    ]
-}
-
 export default function RackDetailPage() {
     const params = useParams()
     const roomId = params.id as string
@@ -158,9 +65,6 @@ export default function RackDetailPage() {
     }
 
     useEffect(() => {
-        // Usa i mock data invece della fetch
-        //setRackInfo(mockRack)
-        // Uncomment per usare i dati reali
         fetchRackData()
     }, [rackId, roomId])
 
@@ -201,7 +105,6 @@ export default function RackDetailPage() {
                     console.warn("⚠️ No valid data_value found in rack telemetry message:", telemetryData)
                     return
                 }
-
 
                 const newHistoryEntry = {
                     time: new Date(timestamp).toLocaleTimeString(),

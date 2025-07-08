@@ -7,7 +7,6 @@ import {
     Zap,
     Thermometer,
     Activity,
-    AlertTriangle,
     CheckCircle,
 } from "lucide-react"
 import { Sensor } from "@/types/sensor"
@@ -22,17 +21,10 @@ const sensorIcons = {
 
 interface SensorCardProps {
     sensor: Sensor
-    //policy?: { min: number; max: number }
 }
 
-export function SensorCard({ sensor, /*policy*/ }: SensorCardProps) {
+export function SensorCard({ sensor }: SensorCardProps) {
     const SensorIcon = sensorIcons[formatType(sensor.type) as keyof typeof sensorIcons] || Activity
-   
-    //const sensorPolicy = policy || sensor.policy
-    /*
-    const isOverThreshold = sensorPolicy && 
-        (sensor.currentValue < sensorPolicy.min || sensor.currentValue > sensorPolicy.max)
-    */
 
     return (
         <Card>
@@ -49,13 +41,6 @@ export function SensorCard({ sensor, /*policy*/ }: SensorCardProps) {
                         <span className="text-2xl font-bold">
                             {sensor.value} {sensor.unit}
                         </span>
-                        {/*sensorPolicy && (
-                            isOverThreshold ? (
-                                <AlertTriangle className="h-5 w-5 text-red-500" />
-                            ) :  (
-                                <CheckCircle className="h-5 w-5 text-green-500" />
-                            )
-                        )*/}
                         <CheckCircle className="h-5 w-5 text-green-500" />
                     </div>
                     <div className="space-y-1">
