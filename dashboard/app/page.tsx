@@ -2,13 +2,14 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Building2, Server, Cpu, ArrowRight, Loader } from "lucide-react"
+import { Building2, Server, Cpu, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Rooms } from "@/types/rooms"
 import { useEffect, useState } from "react"
 import { formatName } from "@/lib/utils"
 import { notFound } from "next/navigation"
 import { toast } from "sonner"
+import Loader from "@/components/loader"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.1:5000/hvac/api"
 
@@ -51,6 +52,7 @@ export default function Dashboard() {
   }
   
   if (error) return notFound()
+
   return (
     <div className="flex flex-col min-h-full">
       <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
