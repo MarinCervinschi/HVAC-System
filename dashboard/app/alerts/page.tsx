@@ -6,61 +6,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AlertTriangle, AlertCircle, CheckCircle, Clock, Thermometer, Droplets, Zap, X } from "lucide-react"
+import { AlertTriangle, AlertCircle, CheckCircle, Clock, Thermometer, Droplets, Zap, X, Snowflake, Fan, Gauge } from "lucide-react"
 import { useMQTTClient } from "@/hooks/useMqttClient"
+import { formatName, formatType } from "@/lib/utils"
 
-interface DeviceTelemetry {
-  id: string;
-  title: string;
-  device: string;
-  location: string;
-  severity: "critical" | "high" | "medium" | "low";
-  message: string;
-  currentValue: string;
-  threshold: string;
-  timestamp: string;
-  icon: React.ComponentType<{ className?: string }>;
-  deviceType?: string;
-}
-
-const initialTelemetries: DeviceTelemetry[] = [
-  {
-    id: "1",
-    title: "High Temperature",
-    device: "Temperature Sensor - Server Room",
-    location: "Server Room",
-    severity: "high",
-    message: "Temperature has exceeded the threshold of 25°C",
-    currentValue: "26.8°C",
-    threshold: "25°C",
-    timestamp: "2024-01-15 14:30:25",
-    icon: Thermometer,
-  },
-  {
-    id: "2",
-    title: "Critical Humidity",
-    device: "Humidity Sensor - Warehouse",
-    location: "Warehouse",
-    severity: "critical",
-    message: "Critical humidity level detected",
-    currentValue: "85%",
-    threshold: "75%",
-    timestamp: "2024-01-15 14:25:10",
-    icon: Droplets,
-  },
-  {
-    id: "3",
-    title: "Abnormal Energy Consumption",
-    device: "Energy Meter - Production",
-    location: "Production Area",
-    severity: "medium",
-    message: "Energy consumption above average",
-    currentValue: "5.2 kW",
-    threshold: "4.5 kW",
-    timestamp: "2024-01-15 14:15:45",
-    icon: Zap,
-  },
-]
 
 const getSeverityColor = (severity: string) => {
   switch (severity) {
@@ -79,6 +28,19 @@ const getSeverityColor = (severity: string) => {
 
 // Helper function to get icon based on device type or sensor type
 const getDeviceIcon = (deviceType: string, alertType: string): React.ComponentType<{ className?: string }> => {
+
+  // Check for specific device types in the deviceType string
+  if (deviceType.toLowerCase().includes('cooling_levels') || deviceType.toLowerCase().includes('cooling')) {
+    return Snowflake;  // Ice/snowflake icon for cooling systems
+  }
+  if (deviceType.toLowerCase().includes('fan')) {
+    return Fan;  // Fan icon for fan devices
+  }
+  if (deviceType.toLowerCase().includes('pump')) {
+    return Gauge;  // Gauge icon for pump devices
+  }
+  
+  // Fallback to original logic for other types
   if (alertType.toLowerCase().includes('temperature') || deviceType.toLowerCase().includes('temperature')) {
     return Thermometer;
   }
@@ -88,6 +50,7 @@ const getDeviceIcon = (deviceType: string, alertType: string): React.ComponentTy
   if (alertType.toLowerCase().includes('energy') || alertType.toLowerCase().includes('power') || deviceType.toLowerCase().includes('energy')) {
     return Zap;
   }
+  
   return AlertCircle;
 };
 
@@ -101,33 +64,152 @@ const determineSeverity = (currentValue: number, threshold: number, deviceType: 
   return "low";
 };
 
+interface DeviceTelemetry {
+  id: string;
+  room_name?: string; // Optional room name for telemetry
+  rack_name?: string; // Optional rack name for telemetry
+  object_name?: string; // Optional object name for telemetry
+  device_name?: string; // Optional device name for telemetry
+
+  location?: string; // Location derived from room and rack names
+  event_type?: string; // Event type for telemetry
+  title: string;
+  description: string;
+  info_status?: string; 
+  severity: "critical" | "high" | "medium" | "low";
+  threshold: string;
+  timestamp: string;
+  icon: React.ComponentType<{ className?: string }>;
+  deviceType?: string;
+}
+
+
 // Helper function to parse MQTT telemetry message
 const parseTelemetryMessage = (topic: string, message: string): DeviceTelemetry | null => {
   try {
     const data = JSON.parse(message);
     
     // Extract room and device info from topic
-    // Topic format: hvac/room/{roomId}/event/{deviceType}
+    // Topic format: hvac/room/{roomId}/rack/{rackId}/device/{deviceId}/control/{resourceId}
+    // or: hvac/room/{roomId}/device/{deviceId}/control/{resourceId}
     const topicParts = topic.split('/');
-    const roomId = topicParts[2];
-    const deviceType = topicParts[4] || 'unknown';
+
+    const roomName = formatName(data.metadata.room_id);
+    const rackName = data.metadata.rack_id ? formatName(data.metadata.rack_id) : null;
+
+    let location;
+    if (rackName){
+      location = `${roomName} - ${rackName}`;
+    } else {
+      location = roomName;
+    }
+
+    const deviceName = formatName(data.metadata.object_id);
+    const resourceName = formatName(data.metadata.resource_id) || '';
+
+    const eventType = data.event_type || '';
+    const title = (formatType(data.type) + " Actuator " + eventType).toUpperCase();
+    const description = data.event_data.description || '';
+    const oldState = data.event_data.old_state;
+    const newState = data.event_data.new_state;
+
+    // Handle POLICY_APPLIED events
+    if (eventType === "POLICY_APPLIED") {
+      const metadata = data.metadata || {};
+      const eventData = data.event_data || {};
+      const deviceType = data.type || '';
+      let info_status = '';
+      
+      if (oldState && newState) {
+        // Compare states to create meaningful message
+        if (oldState.status !== newState.status) {
+          info_status += ` - Status changed from ${oldState.status} to ${newState.status}`;
+        }
+        if (oldState.speed !== newState.speed) {
+          info_status += ` - Speed changed from ${oldState.speed || 0} to ${newState.speed || 0}`;
+        }
+        if (oldState.level !== newState.level) {
+          info_status += ` - Level changed from ${oldState.level || 0} to ${newState.level || 0}`;
+        }
+        if (oldState.target_speed !== newState.target_speed) {
+          info_status += ` - Target speed: ${newState.target_speed || 0}`;
+        }
+      }
+      
+      // Get threshold from event data
+      const threshold = eventData.threshold ? `${eventData.threshold}` : 'N/A';
+      
+      const telemetry: DeviceTelemetry = {
+        id: `policy_${Date.now()}_${Math.random()}`,
+        room_name: roomName,
+        rack_name: rackName || undefined,
+        object_name: deviceName,
+        device_name: resourceName,
+        location: location,
+        event_type: eventType,
+        info_status: info_status,
+        title: title,
+        description: description,
+        severity: "critical", // Always critical for POLICY_APPLIED
+        threshold: threshold,
+        timestamp: new Date(data.timestamp || Date.now()).toLocaleString(),
+        icon: getDeviceIcon(deviceType, 'policy'),
+        deviceType: deviceType
+      };
+
+      console.log('Parsed POLICY_APPLIED telemetry:', telemetry);
+      
+      return telemetry;
+    }
     
-    // Create telemetry from MQTT data
-    const telemetry: DeviceTelemetry = {
-      id: `mqtt_${Date.now()}_${Math.random()}`,
-      title: data.alert_type || `${deviceType} Reading`,
-      device: data.device_id || `${deviceType} - ${roomId}`,
-      location: data.room_id || roomId,
-      severity: data.severity || determineSeverity(data.current_value, data.threshold, deviceType),
-      message: data.message || `${deviceType} value out of threshold`,
-      currentValue: `${data.current_value}${data.unit || ''}`,
-      threshold: `${data.threshold}${data.unit || ''}`,
-      timestamp: new Date().toLocaleString(),
-      icon: getDeviceIcon(deviceType, data.alert_type || ''),
-      deviceType: deviceType
-    };
+    // Handle MANUAL events
+    if (eventType === "MANUAL") {
+      const metadata = data.metadata || {};
+      const deviceType = data.type || '';
+      let info_status = '';
+      
+      if (oldState && newState) {
+        // Compare states to create meaningful message for manual changes
+        if (oldState.status !== newState.status) {
+          info_status += ` - Status manually changed from ${oldState.status} to ${newState.status}`;
+        }
+        if (oldState.speed !== newState.speed) {
+          info_status += ` - Speed manually adjusted from ${oldState.speed || 0} to ${newState.speed || 0}`;
+        }
+        if (oldState.level !== newState.level) {
+          info_status += ` - Level manually adjusted from ${oldState.level || 0} to ${newState.level || 0}`;
+        }
+        if (oldState.target_speed !== newState.target_speed) {
+          info_status += ` - Target speed manually set to: ${newState.target_speed || 0}`;
+        }
+      }
+      
+      const telemetry: DeviceTelemetry = {
+        id: `manual_${Date.now()}_${Math.random()}`,
+        room_name: roomName,
+        rack_name: rackName || undefined,
+        object_name: deviceName,
+        device_name: resourceName,
+        location: location,
+        event_type: eventType,
+        info_status: info_status,
+        title: title,
+        description: "Manual device control operation",
+        severity: "medium", // Always medium for MANUAL
+        threshold: "Manual Control",
+        timestamp: new Date(data.timestamp || Date.now()).toLocaleString(),
+        icon: getDeviceIcon(deviceType, 'manual'),
+        deviceType: deviceType
+      };
+
+      console.log('Parsed MANUAL telemetry:', telemetry);
+      
+      return telemetry;
+    }
     
-    return telemetry;
+    return null;
+    
+
   } catch (error) {
     console.error('Error parsing MQTT telemetry message:', error);
     return null;
@@ -135,7 +217,7 @@ const parseTelemetryMessage = (topic: string, message: string): DeviceTelemetry 
 };
 
 export default function AlertsPage() {
-  const [telemetries, setTelemetries] = useState<DeviceTelemetry[]>(initialTelemetries);
+  const [telemetries, setTelemetries] = useState<DeviceTelemetry[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<string>("Disconnected");
 
   // MQTT message handler
@@ -145,23 +227,26 @@ export default function AlertsPage() {
     const newTelemetry = parseTelemetryMessage(topic, message);
     if (newTelemetry) {
       setTelemetries(prevTelemetries => {
-        // Check if telemetry already exists (avoid duplicates)
+        // Check if telemetry already exists (avoid duplicates based on unique combination)
         const existingTelemetry = prevTelemetries.find(telemetry => 
-          telemetry.device === newTelemetry.device && 
-          telemetry.title === newTelemetry.title
+          telemetry.object_name === newTelemetry.object_name && 
+          telemetry.device_name === newTelemetry.device_name &&
+          telemetry.room_name === newTelemetry.room_name &&
+          telemetry.rack_name === newTelemetry.rack_name &&
+          Math.abs(new Date(telemetry.timestamp).getTime() - new Date(newTelemetry.timestamp).getTime()) < 5000 // Less than 5 seconds apart
         );
         
         if (existingTelemetry) {
-          // Update existing telemetry
+          // Update existing telemetry only if it's very recent (within 5 seconds)
           return prevTelemetries.map(telemetry => 
             telemetry.id === existingTelemetry.id 
               ? { ...newTelemetry, id: existingTelemetry.id }
               : telemetry
           );
         } else {
-          // Add new telemetry (keep only last 50 entries)
+          // Add new telemetry (keep only last 10 entries)
           const updatedTelemetries = [newTelemetry, ...prevTelemetries];
-          return updatedTelemetries.slice(0, 50);
+          return updatedTelemetries.slice(0, 10);
         }
       });
     }
@@ -170,7 +255,10 @@ export default function AlertsPage() {
   // MQTT connection
   const { client, isConnected } = useMQTTClient({
     brokerUrl: "ws://localhost:9001",
-    topics: ["hvac/room/+/event/+"], // Subscribe to all room events
+    topics: [
+      "hvac/room/+/device/+/control/+",
+      "hvac/room/+/rack/+/device/+/control/+"
+    ], // Topics to listen for POLICY_APPLIED events
     onMessage: handleMQTTMessage,
   });
 
@@ -196,7 +284,7 @@ export default function AlertsPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Critical</CardTitle>
@@ -204,15 +292,6 @@ export default function AlertsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">{criticalTelemetries.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">High</CardTitle>
-              <AlertCircle className="h-4 w-4 text-orange-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{highTelemetries.length}</div>
             </CardContent>
           </Card>
           <Card>
@@ -230,7 +309,7 @@ export default function AlertsPage() {
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{telemetries.length}</div>
+              <div className="text-2xl font-bold">{telemetries?.length || 0}</div>
             </CardContent>
           </Card>
         </div>
@@ -239,10 +318,10 @@ export default function AlertsPage() {
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Device Telemetry</h2>
           <div className="space-y-3">
-            {telemetries.map((telemetry) => {
+            {telemetries && telemetries.map((telemetry) => {
               const IconComponent = telemetry.icon
               return (
-                <Card key={telemetry.id} className={`border-l-4 ${
+                <Card key={telemetry.id} className={`border-l-4 min-h-[220px] ${
                   telemetry.severity === "critical" ? "border-l-red-500" :
                   telemetry.severity === "high" ? "border-l-orange-500" :
                   telemetry.severity === "medium" ? "border-l-yellow-500" :
@@ -252,6 +331,11 @@ export default function AlertsPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                          // Color by device type first, then by severity
+                          telemetry.deviceType?.toLowerCase().includes('cooling_levels') || telemetry.deviceType?.toLowerCase().includes('cooling') ? "bg-blue-100 text-blue-600" :
+                          telemetry.deviceType?.toLowerCase().includes('fan') ? "bg-green-100 text-green-600" :
+                          telemetry.deviceType?.toLowerCase().includes('pump') ? "bg-purple-100 text-purple-600" :
+                          // Fallback to severity colors for other types
                           telemetry.severity === "critical" ? "bg-red-100 text-red-600" :
                           telemetry.severity === "high" ? "bg-orange-100 text-orange-600" :
                           telemetry.severity === "medium" ? "bg-yellow-100 text-yellow-600" :
@@ -262,7 +346,7 @@ export default function AlertsPage() {
                         <div>
                           <CardTitle className="text-base">{telemetry.title}</CardTitle>
                           <CardDescription>
-                            {telemetry.device} - {telemetry.location}
+                            {telemetry.object_name} - {telemetry.location}
                           </CardDescription>
                         </div>
                       </div>
@@ -275,11 +359,14 @@ export default function AlertsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <p className="text-sm">{telemetry.message}</p>
+                      <p className="text-sm">{telemetry.description}</p>
+                      {telemetry.info_status && (
+                        <p className="text-xs text-muted-foreground">{telemetry.info_status}</p>
+                      )}
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                         <div>
-                          <span className="text-muted-foreground">Current Value:</span>
-                          <div className="font-semibold">{telemetry.currentValue}</div>
+                          <span className="text-muted-foreground">Device:</span>
+                          <div className="font-semibold">{telemetry.object_name}</div>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Threshold:</span>
