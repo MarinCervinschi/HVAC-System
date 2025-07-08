@@ -57,29 +57,34 @@ The HVAC system manages the automatic control of temperature, humidity, air pres
 ## 🧩 Main Components
 
 ### 1. Gateway (`/gateway`)
+
 - **Function**: CoAP proxy for discovery and communication with smart objects
 - **Technologies**: aiocoap, asyncio
 - **Port**: 5683 (CoAP standard)
 
 ### 2. Data Collector (`/data_collector`)
+
 - **Function**: REST API for managing rooms, racks, and devices
 - **Technologies**: Flask, Flask-RESTful, Flask-CORS
 - **Port**: 5000
 - **Endpoints**: `/hvac/api/rooms`, `/hvac/api/room/{id}`, `/hvac/api/rack/{id}`
 
 ### 3. Cloud Simulator (`/cloud_simulator`)
+
 - **Function**: Cloud simulation for telemetry collection
 - **Technologies**: Flask, InfluxDB Client
 - **Port**: 5002
 - **Storage**: InfluxDB + JSONL files
 
 ### 4. Dashboard (`/dashboard`)
+
 - **Function**: Responsive web interface for control and monitoring
 - **Technologies**: Next.js 15, React 19, TypeScript, Tailwind CSS
 - **Port**: 3000
 - **Features**: Real-time MQTT, charts, actuator control
 
 ### 5. Smart Objects (`/smart_objects`)
+
 - **Function**: IoT device simulation with sensors and actuators
 - **Technologies**: Python, paho-mqtt, aiocoap
 - **Protocols**: MQTT (telemetry), CoAP (control)
@@ -89,33 +94,40 @@ The HVAC system manages the automatic control of temperature, humidity, air pres
 ### Available Devices
 
 #### 1. **RackCoolingUnit** 🌡️
+
 - **Sensors**: Temperature Sensor
 - **Actuators**: Fan Actuator
 - **Purpose**: Server rack cooling control
 
 #### 2. **WaterLoopController** 💧
+
 - **Sensors**: Pressure Sensor
-- **Actuators**: Pump Actuator  
+- **Actuators**: Pump Actuator
 - **Purpose**: Water cooling circuit management
 
 #### 3. **AirflowManager** 💨
+
 - **Sensors**: Airspeed Sensor
 - **Actuators**: Cooling Level Actuator
 - **Purpose**: Airflow and cooling level control
 
 #### 4. **EnvironmentMonitor** 🌍
+
 - **Sensors**: Temperature Sensor, Humidity Sensor
 - **Purpose**: Room environmental monitoring
 
 #### 5. **EnergyMeteringUnit** ⚡
+
 - **Sensors**: Energy Sensor
 - **Purpose**: Energy consumption monitoring
 
 #### 6. **CoolingSystemHub** ❄️
+
 - **Actuators**: Cooling Level Actuator
 - **Purpose**: Central hub for cooling control
 
 ### Sensor Types
+
 - **Temperature**: 0-60°C, accuracy 0.01°C
 - **Humidity**: 0-70%, accuracy 0.01%
 - **Pressure**: 950-1050 hPa, accuracy 0.01 hPa
@@ -123,6 +135,7 @@ The HVAC system manages the automatic control of temperature, humidity, air pres
 - **Energy**: 0-1000 kWh, accuracy 0.001 kWh
 
 ### Actuator Types
+
 - **Fan**: ON/OFF + speed (0-100%)
 - **Pump**: ON/OFF
 - **Cooling Level**: Levels 0-5
@@ -130,12 +143,14 @@ The HVAC system manages the automatic control of temperature, humidity, air pres
 ## 📋 Requirements
 
 ### Software
+
 - **Python**: 3.11+
 - **Node.js**: 18+
 - **Docker**: 20.0+
 - **Docker Compose**: 2.0+
 
 ### Recommended Hardware
+
 - **RAM**: 4GB+
 - **Storage**: 2GB+ free
 - **CPU**: 2+ cores
@@ -143,12 +158,14 @@ The HVAC system manages the automatic control of temperature, humidity, air pres
 ## 🚀 Installation
 
 ### 1. Clone the Repository
+
 ```bash
 git clone <repository-url>
 cd HVAC-System
 ```
 
 ### 2. Setup Python Environment
+
 ```bash
 # Create virtual environment
 python -m venv venv
@@ -160,6 +177,7 @@ pip install -r requirements.txt
 ```
 
 ### 3. Setup Dashboard (Next.js)
+
 ```bash
 cd dashboard
 npm install
@@ -168,6 +186,7 @@ cd ..
 ```
 
 ### 4. Start Docker Services
+
 ```bash
 # Start InfluxDB, Grafana, and Cloud API
 docker compose up -d
@@ -180,6 +199,7 @@ chmod +x rebuild.sh
 ## ⚙️ Configuration
 
 ### 1. MQTT Configuration (`/config/mqtt_conf_params.py`)
+
 ```python
 BROKER_ADDRESS = "127.0.0.1"
 BROKER_PORT = 1883
@@ -187,6 +207,7 @@ BASE_TOPIC = "hvac/system"
 ```
 
 ### 2. CoAP Configuration (`/config/coap_conf_params.py`)
+
 ```python
 COAP_SERVER_ADDRESS = "127.0.0.1"
 COAP_GATEWAY_PORT = 5683
@@ -194,24 +215,26 @@ GATEWAY_URI = "coap://127.0.0.1:5683"
 ```
 
 ### 3. Rooms Configuration (`/data_collector/conf/rooms_config.json`)
+
 ```json
 {
-    "rooms": [
+  "rooms": [
+    {
+      "room_id": "room_A1",
+      "location": "Building A, Floor 1",
+      "racks": [
         {
-            "room_id": "room_A1",
-            "location": "Building A, Floor 1",
-            "racks": [
-                {
-                    "rack_id": "rack_A1",
-                    "type": "air_cooled"
-                }
-            ]
+          "rack_id": "rack_A1",
+          "type": "air_cooled"
         }
-    ]
+      ]
+    }
+  ]
 }
 ```
 
 ### 4. Automation Policies (`/data_collector/conf/policy.json`)
+
 Defines automatic rules for control based on sensor values.
 
 ## 🏃‍♂️ Usage
@@ -219,36 +242,42 @@ Defines automatic rules for control based on sensor values.
 ### 1. Start Components
 
 #### CoAP Gateway
+
 ```bash
-python main.py
+python gateway.py
 ```
 
 #### Data Collector API
+
 ```bash
 python run_app.py
 ```
 
 #### Web Dashboard
+
 ```bash
 cd dashboard
 npm run dev
 ```
 
 #### Smart Objects (Example)
+
 ```bash
-python process.py
+python tests_scripts/process.py
 ```
 
 ### 2. System Testing
 
 #### CoAP Connectivity Test
+
 ```bash
-python coap_test.py
+python tests_scripts/coap_test.py
 ```
 
 #### Event Monitoring
+
 ```bash
-python monitor_control_events.py
+python tests_scripts/monitor_control_events.py
 ```
 
 ### 3. Access Interfaces
@@ -261,22 +290,26 @@ python monitor_control_events.py
 ## 📡 API Endpoints
 
 ### Rooms API
+
 ```
 GET    /hvac/api/rooms              # List rooms
 GET    /hvac/api/room/{room_id}     # Room details
 ```
 
 ### Racks API
+
 ```
 GET    /hvac/api/rack/{rack_id}     # Rack details
 ```
 
 ### Device Control API
+
 ```
 POST   /hvac/api/device/control     # Device control
 ```
 
 ### Policy API
+
 ```
 POST   /hvac/api/policy/update      # Update policies
 GET    /hvac/api/policy/room/{id}   # Room policies
@@ -284,6 +317,7 @@ GET    /hvac/api/policy/rack/{id}   # Rack policies
 ```
 
 ### Cloud API
+
 ```
 POST   /api/telemetry/{room_id}     # Send telemetry
 GET    /api/telemetry/{room_id}     # Retrieve telemetry
@@ -292,6 +326,7 @@ GET    /api/telemetry/{room_id}     # Retrieve telemetry
 ## 📊 Dashboard
 
 ### Main Features
+
 - **Room View**: Overview and controls per room
 - **Rack View**: Rack details with smart objects
 - **Real-time Charts**: Sensor data visualization
@@ -300,6 +335,7 @@ GET    /api/telemetry/{room_id}     # Retrieve telemetry
 - **Responsive Design**: Optimized for desktop and mobile
 
 ### UI Components
+
 - **Sensor Cards**: Sensor status display
 - **Actuator Cards**: Actuator controls
 - **Telemetry Tables**: Historical data tables
@@ -308,17 +344,20 @@ GET    /api/telemetry/{room_id}     # Retrieve telemetry
 ## 📈 Monitoring
 
 ### InfluxDB
+
 - **Organization**: hvac-org
 - **Bucket**: hvac_data
 - **Token**: my-secret-token
 - **Retention**: Configurable
 
 ### Grafana
+
 - **Dashboards**: Pre-configured for HVAC
 - **Panels**: Temperature, Humidity, Energy, Airflow
 - **Alerts**: Configurable for critical thresholds
 
 ### Logs
+
 - **Telemetry**: `/telemetry_logs/` (JSONL format)
 - **Application**: Console output with configurable levels
 - **Gateway**: `/gateway/logs/`
@@ -326,6 +365,7 @@ GET    /api/telemetry/{room_id}     # Retrieve telemetry
 ## 🛠️ Development
 
 ### Project Structure
+
 ```
 HVAC-System/
 ├── config/                 # System configurations
@@ -347,6 +387,7 @@ HVAC-System/
 5. **Update UI** in `/dashboard/components/`
 
 ### Testing and Debugging
+
 ```bash
 # Test individual smart objects
 python process.py
@@ -370,6 +411,7 @@ docker compose logs -f
 5. **Open** a Pull Request
 
 ### Guidelines
+
 - Follow existing code style
 - Add tests for new features
 - Update documentation
@@ -378,10 +420,6 @@ docker compose logs -f
 ## 📄 License
 
 This project is developed for academic purposes - UNIMORE.
-
-## 👥 Authors
-
-Project developed as part of a university course at UNIMORE.
 
 ---
 
