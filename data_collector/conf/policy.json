@@ -32,7 +32,7 @@
         "resource_id": "rack_cooling_unit_temp",
         "sensor_type": "iot:sensor:temperature",
         "condition": {
-          "operator": ">",
+          "operator": "<",
           "value": 12
         },
         "action": {
