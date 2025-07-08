@@ -108,16 +108,11 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             self.logger.error("Temperature sensor resource not found!")
             return
 
-        # /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/telemetry/{temperature_sensor.resource_id}
-        topic = "{0}/{1}/{2}/{3}/{4}/{5}/{6}/{7}".format(
-            MqttConfigurationParameters.BASIC_TOPIC,
-            self.room_id,
-            MqttConfigurationParameters.RACK_TOPIC,
-            self.rack_id,
-            MqttConfigurationParameters.DEVICE_TOPIC,
-            self.object_id,
-            MqttConfigurationParameters.TELEMETRY_TOPIC,
-            temperature_sensor.resource_id,
+        topic = MqttConfigurationParameters.build_telemetry_rack_topic(
+            room_id=self.room_id,
+            rack_id=self.rack_id,
+            device_id=self.object_id,
+            resource_id=temperature_sensor.resource_id,
         )
 
         listener = self._get_listener(
@@ -140,16 +135,11 @@ class RackCoolingUnit(SmartObject, CoapControllable):
             print("Fan actuator resource not found!")
             return
 
-        # Topic for fan telemetry: hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/control/{fan_id}
-        topic = "{0}/{1}/{2}/{3}/{4}/{5}/{6}/{7}".format(
-            MqttConfigurationParameters.BASIC_TOPIC,
-            self.room_id,
-            MqttConfigurationParameters.RACK_TOPIC,
-            self.rack_id,
-            MqttConfigurationParameters.DEVICE_TOPIC,
-            self.object_id,
-            MqttConfigurationParameters.CONTROL_TOPIC,
-            fan_actuator.resource_id,
+        topic = MqttConfigurationParameters.build_control_rack_topic(
+            room_id=self.room_id,
+            rack_id=self.rack_id,
+            device_id=self.object_id,
+            resource_id=fan_actuator.resource_id,
         )
 
         listener = self._get_listener(

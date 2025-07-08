@@ -5,6 +5,7 @@ from typing import Dict, Any
 import paho.mqtt.client as mqtt
 from .SmartObject import SmartObject
 from ..messages.telemetry_message import TelemetryMessage
+from smart_objects.messages.control_message import ControlMessage
 from smart_objects.actuators.pump_actuator import PumpActuator
 from config.mqtt_conf_params import MqttConfigurationParameters
 from smart_objects.resources.CoapControllable import CoapControllable
@@ -56,22 +57,26 @@ class WaterLoopController(SmartObject, CoapControllable):
 
         site.add_resource(
             (".well-known", "core"),
-            resource.WKCResource(site.get_resources_as_linkheader, impl_info=None)
+            resource.WKCResource(site.get_resources_as_linkheader, impl_info=None),
         )
 
         # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/pump/control
         resource_path = [
             "hvac",
-            "room", self.room_id,
-            "rack", self.rack_id,
-            "device", self.object_id,
-            "pump", "control",
+            "room",
+            self.room_id,
+            "rack",
+            self.rack_id,
+            "device",
+            self.object_id,
+            "pump",
+            "control",
         ]
 
         self.logger.info(
             f"📢 Registered CoAP pump control resource for {pump_actuator.resource_id} at path: {'/'.join(resource_path)}"
         )
-        
+
         attributes = {
             "room_id": self.room_id,
             "rack_id": self.rack_id,
@@ -91,6 +96,8 @@ class WaterLoopController(SmartObject, CoapControllable):
             for resource in self.resource_map.values():
                 if isinstance(resource, PressureSensor):
                     self._register_pressure_sensor_listener()
+                elif isinstance(resource, PumpActuator):
+                    self._register_pump_actuator_listener()
 
         except Exception as e:
             self.logger.error(f"Error registering resources: {e}")
@@ -102,16 +109,11 @@ class WaterLoopController(SmartObject, CoapControllable):
             self.logger.error("Pressure sensor resource not found!")
             return
 
-        # /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/telemetry/{pressure_sensor.resource_id}
-        topic = "{0}/{1}/{2}/{3}/{4}/{5}/{6}/{7}".format(
-            MqttConfigurationParameters.BASIC_TOPIC,
-            self.room_id,
-            MqttConfigurationParameters.RACK_TOPIC,
-            self.rack_id,
-            MqttConfigurationParameters.DEVICE_TOPIC,
-            self.object_id,
-            MqttConfigurationParameters.TELEMETRY_TOPIC,
-            pressure_sensor.resource_id,
+        topic = MqttConfigurationParameters.build_telemetry_rack_topic(
+            room_id=self.room_id,
+            rack_id=self.rack_id,
+            device_id=self.object_id,
+            resource_id=pressure_sensor.resource_id,
         )
 
         listener = self._get_listener(
@@ -124,4 +126,29 @@ class WaterLoopController(SmartObject, CoapControllable):
 
         self.logger.info(
             f"📢 Registered pressure sensor listener for {pressure_sensor.resource_id} on topic {topic}"
+        )
+
+    def _register_pump_actuator_listener(self) -> None:
+        pump_actuator = self.get_resource("pump")
+        if pump_actuator is None:
+            self.logger.error("Pump actuator resource not found!")
+            return
+
+        topic = MqttConfigurationParameters.build_control_rack_topic(
+            room_id=self.room_id,
+            rack_id=self.rack_id,
+            device_id=self.object_id,
+            resource_id=pump_actuator.resource_id,
+        )
+
+        listener = self._get_listener(
+            data_type=pump_actuator.data_type,
+            message_type=ControlMessage,
+            topic=topic,
+        )
+
+        pump_actuator.add_data_listener(listener)
+
+        self.logger.info(
+            f"📢 Registered pump actuator listener for {pump_actuator.resource_id} on topic {topic}"
         )

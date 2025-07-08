@@ -46,16 +46,11 @@ class EnergyMeteringUnit(SmartObject):
             self.logger.error("Energy sensor resource not found!")
             return
 
-        # /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/telemetry/{energy_sensor.resource_id}
-        topic = "{0}/{1}/{2}/{3}/{4}/{5}/{6}/{7}".format(
-            MqttConfigurationParameters.BASIC_TOPIC,
-            self.room_id,
-            MqttConfigurationParameters.RACK_TOPIC,
-            self.rack_id,
-            MqttConfigurationParameters.DEVICE_TOPIC,
-            self.object_id,
-            MqttConfigurationParameters.TELEMETRY_TOPIC,
-            energy_sensor.resource_id,
+        topic = MqttConfigurationParameters.build_telemetry_rack_topic(
+            room_id=self.room_id,
+            rack_id=self.rack_id,
+            device_id=self.object_id,
+            resource_id=energy_sensor.resource_id,
         )
 
         listener = self._get_listener(

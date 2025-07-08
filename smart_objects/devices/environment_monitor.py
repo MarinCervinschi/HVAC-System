@@ -1,12 +1,12 @@
 import logging
-from aiocoap import resource
-from typing import Dict, Any, ClassVar
+from typing import ClassVar
 import paho.mqtt.client as mqtt
 from .SmartObject import SmartObject
 from ..messages.telemetry_message import TelemetryMessage
 from smart_objects.sensors.humidity_sensor import HumiditySensor
 from config.mqtt_conf_params import MqttConfigurationParameters
 from smart_objects.sensors.temperature_sensor import TemperatureSensor
+
 
 class EnvironmentMonitor(SmartObject):
     OBJECT_ID: ClassVar[str] = "environment_monitor"
@@ -59,14 +59,10 @@ class EnvironmentMonitor(SmartObject):
             self.logger.error("Temperature sensor resource not found!")
             return
 
-        # /hvac/room/{room_id}/device/{object_id}/telemetry/{temperature_sensor.resource_id}
-        topic = "{0}/{1}/{2}/{3}/{4}/{5}".format(
-            MqttConfigurationParameters.BASIC_TOPIC,
-            self.room_id,
-            MqttConfigurationParameters.DEVICE_TOPIC,
-            self.object_id,
-            MqttConfigurationParameters.TELEMETRY_TOPIC,
-            temperature_sensor.resource_id,
+        topic = MqttConfigurationParameters.build_telemetry_room_topic(
+            room_id=self.room_id,
+            device_id=self.object_id,
+            resource_id=temperature_sensor.resource_id,
         )
 
         listener = self._get_listener(
@@ -87,14 +83,10 @@ class EnvironmentMonitor(SmartObject):
             self.logger.error("Humidity sensor resource not found!")
             return
 
-        # /hvac/room/{room_id}/device/{object_id}/telemetry/{humidity_sensor.resource_id}
-        topic = "{0}/{1}/{2}/{3}/{4}/{5}".format(
-            MqttConfigurationParameters.BASIC_TOPIC,
-            self.room_id,
-            MqttConfigurationParameters.DEVICE_TOPIC,
-            self.object_id,
-            MqttConfigurationParameters.TELEMETRY_TOPIC,
-            humidity_sensor.resource_id,
+        topic = MqttConfigurationParameters.build_telemetry_room_topic(
+            room_id=self.room_id,
+            device_id=self.object_id,
+            resource_id=humidity_sensor.resource_id,
         )
 
         listener = self._get_listener(

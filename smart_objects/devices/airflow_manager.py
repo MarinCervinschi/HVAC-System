@@ -1,13 +1,14 @@
 import logging
 from aiocoap import resource
-from typing import ClassVar, Dict, Any
 import paho.mqtt.client as mqtt
-from .SmartObject import SmartObject
-from ..messages.telemetry_message import TelemetryMessage
-from smart_objects.actuators.cooling_level_actuator import CoolingLevelsActuator
+from typing import ClassVar, Dict, Any
+from smart_objects.devices.SmartObject import SmartObject
 from config.mqtt_conf_params import MqttConfigurationParameters
-from smart_objects.resources.CoapControllable import CoapControllable
 from smart_objects.sensors.airspeed_sensor import AirSpeedSensor
+from smart_objects.messages.control_message import ControlMessage
+from smart_objects.messages.telemetry_message import TelemetryMessage
+from smart_objects.resources.CoapControllable import CoapControllable
+from smart_objects.actuators.cooling_level_actuator import CoolingLevelsActuator
 from smart_objects.resources.actuator_control_resource import ActuatorControlResource
 
 
@@ -24,7 +25,9 @@ class AirflowManager(SmartObject, CoapControllable):
         CoapControllable.__init__(self)
 
         self.resource_map["air_speed"] = AirSpeedSensor(f"{self.OBJECT_ID}_air_speed")
-        self.resource_map["cooling_levels"] = CoolingLevelsActuator(f"{self.OBJECT_ID}_cooling_levels")
+        self.resource_map["cooling_levels"] = CoolingLevelsActuator(
+            f"{self.OBJECT_ID}_cooling_levels"
+        )
 
         self.logger = logging.getLogger(f"{self.OBJECT_ID}")
 
@@ -55,16 +58,20 @@ class AirflowManager(SmartObject, CoapControllable):
 
         site.add_resource(
             (".well-known", "core"),
-            resource.WKCResource(site.get_resources_as_linkheader, impl_info=None)
+            resource.WKCResource(site.get_resources_as_linkheader, impl_info=None),
         )
 
         # Example: /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/cooling_levels/control
         resource_path = [
             "hvac",
-            "room", self.room_id,
-            "rack", self.rack_id,
-            "device", self.object_id,
-            "cooling_levels", "control",
+            "room",
+            self.room_id,
+            "rack",
+            self.rack_id,
+            "device",
+            self.object_id,
+            "cooling_levels",
+            "control",
         ]
 
         self.logger.info(
@@ -90,6 +97,8 @@ class AirflowManager(SmartObject, CoapControllable):
             for resource in self.resource_map.values():
                 if isinstance(resource, AirSpeedSensor):
                     self._register_air_speed_sensor_listener()
+                elif isinstance(resource, CoolingLevelsActuator):
+                    self._register_cooling_levels_listener()
 
         except Exception as e:
             self.logger.error(f"Error registering resources: {e}")
@@ -101,16 +110,11 @@ class AirflowManager(SmartObject, CoapControllable):
             self.logger.error("Air speed sensor resource not found!")
             return
 
-        # /hvac/room/{room_id}/rack/{rack_id}/device/{object_id}/telemetry/{air_speed_sensor.resource_id}
-        topic = "{0}/{1}/{2}/{3}/{4}/{5}/{6}/{7}".format(
-            MqttConfigurationParameters.BASIC_TOPIC,
-            self.room_id,
-            MqttConfigurationParameters.RACK_TOPIC,
-            self.rack_id,
-            MqttConfigurationParameters.DEVICE_TOPIC,
-            self.object_id,
-            MqttConfigurationParameters.TELEMETRY_TOPIC,
-            air_speed_sensor.resource_id,
+        topic = MqttConfigurationParameters.build_telemetry_rack_topic(
+            room_id=self.room_id,
+            rack_id=self.rack_id,
+            device_id=self.object_id,
+            resource_id=air_speed_sensor.resource_id,
         )
 
         listener = self._get_listener(
@@ -123,4 +127,28 @@ class AirflowManager(SmartObject, CoapControllable):
 
         self.logger.info(
             f"📢 Registered air speed sensor listener for {air_speed_sensor.resource_id} on topic {topic}"
+        )
+
+    def _register_cooling_levels_listener(self) -> None:
+        cooling_levels = self.get_resource("cooling_levels")
+        if cooling_levels is None:
+            self.logger.error("Cooling levels actuator resource not found!")
+            return
+
+        topic = MqttConfigurationParameters.build_control_room_topic(
+            room_id=self.room_id,
+            device_id=self.object_id,
+            resource_id=cooling_levels.resource_id,
+        )
+
+        listener = self._get_listener(
+            data_type=cooling_levels.data_type,
+            message_type=ControlMessage,
+            topic=topic,
+        )
+
+        cooling_levels.add_data_listener(listener)
+
+        self.logger.info(
+            f"📢 Registered cooling levels listener for {cooling_levels.resource_id} on topic {topic}"
         )
