@@ -1,5 +1,32 @@
 # HVAC System - Intelligent HVAC Control and Monitoring System
 
+<!-- Badges -->
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+
+![MQTT](https://img.shields.io/badge/MQTT-660066?style=for-the-badge&logo=mqtt&logoColor=white)
+![CoAP](https://img.shields.io/badge/CoAP-RFC7252-FF6B6B?style=for-the-badge)
+![InfluxDB](https://img.shields.io/badge/InfluxDB-22ADF6?style=for-the-badge&logo=influxdb&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+
+![License](https://img.shields.io/badge/License-Academic-green?style=for-the-badge)
+![GitHub views](https://komarev.com/ghpvc/?username=MarinCervinschi&repo=HVAC-System&style=for-the-badge)
+![GitHub repo size](https://img.shields.io/github/repo-size/MarinCervinschi/HVAC-System?style=for-the-badge)
+![GitHub last commit](https://img.shields.io/github/last-commit/MarinCervinschi/HVAC-System?style=for-the-badge)
+![GitHub issues](https://img.shields.io/github/issues/MarinCervinschi/HVAC-System?style=for-the-badge)
+![GitHub stars](https://img.shields.io/github/stars/MarinCervinschi/HVAC-System?style=for-the-badge)
+
+</div>
+
+---
+
 A distributed system for the control and monitoring of HVAC (Heating, Ventilation, Air Conditioning) plants based on IoT and microservices architecture. The system integrates smart objects, CoAP gateways, MQTT broker, web dashboard, and telemetry system for intelligent management of rooms and cooling racks.
 
 ## 📋 Table of Contents
