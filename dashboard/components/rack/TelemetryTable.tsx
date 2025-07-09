@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import {
     Activity,
-    AlertTriangle,
     CheckCircle,
 } from "lucide-react"
 import { SmartObject } from "@/types/smartobject"
@@ -12,39 +11,11 @@ import { formatName } from "@/lib/utils"
 
 interface TelemetryTableProps {
     smartObject: SmartObject
-    //getSensorPolicy: (sensor: Sensor) => { min: number; max: number }
 }
 
 
 
-export function TelemetryTable({ smartObject, /*getSensorPolicy*/ }: TelemetryTableProps) {
-    //const sensorsWithData = smartObject.sensors.filter((sensor) => sensor.data && sensor.data.length > 0)
-
-    
-    const sensorsWithData = [
-        {
-            id: "sensor-1",
-            name: "Temperature",
-            unit: "°C",
-            data: [
-                { time: "10:00", value: 22.5, timestamp: "2024-06-01T10:00:00Z" },
-                { time: "10:05", value: 22.7, timestamp: "2024-06-01T10:05:00Z" },
-                // ...other readings
-            ]
-        },
-        {
-            id: "sensor-2",
-            name: "Humidity",
-            unit: "%",
-            data: [
-                { time: "10:00", value: 45, timestamp: "2024-06-01T10:00:00Z" },
-                { time: "10:05", value: 46, timestamp: "2024-06-01T10:05:00Z" },
-                // ...other readings
-            ]
-        }
-    ]
-    
-    if (sensorsWithData.length === 0) return null
+export function TelemetryTable({ smartObject }: TelemetryTableProps) {
 
     return (
         <Card>
@@ -58,7 +29,6 @@ export function TelemetryTable({ smartObject, /*getSensorPolicy*/ }: TelemetryTa
             <CardContent>
                 <div className="space-y-6">
                     {smartObject.sensors?.map((sensor) => {
-                        //const policy = getSensorPolicy(sensor)
 
                         return (
                             <div key={sensor.resource_id} className="space-y-2">
@@ -81,9 +51,7 @@ export function TelemetryTable({ smartObject, /*getSensorPolicy*/ }: TelemetryTa
                                             <tbody>
                                                 {(sensor.history || []).length > 0 ? (
                                                     (sensor.history || []).slice(-9).map((dataPoint, index) => {
-                                                        /*const isOverThreshold = 
-                                                            dataPoint.value < policy.min || dataPoint.value > policy.max
-                                                        */
+                                                
                                                         return (
                                                             <tr key={index} className="border-b">
                                                                 <td className="h-10 px-4 align-middle font-medium">
@@ -118,15 +86,7 @@ export function TelemetryTable({ smartObject, /*getSensorPolicy*/ }: TelemetryTa
                                             </tbody>
                                         </table>
                                     </div>
-                                </div>
-                                {/*
-                                    <div className="text-xs text-muted-foreground">
-                                        Policy: {policy.min}
-                                        {sensor.unit} - {policy.max}
-                                        {sensor.unit} | Mostrando le ultime 10 letture
-                                    </div>
-                                */}
-                               
+                                </div>   
                             </div>
                         )
                     })}

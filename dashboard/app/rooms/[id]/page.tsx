@@ -1,9 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { notFound, useParams, useRouter } from "next/navigation"
+import { notFound, useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
 import { Room } from "@/types/room"
 import { SmartObject } from "@/types/smartobject"
 import { Sensor } from "@/types/sensor"
@@ -20,16 +19,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.1:5000/hvac/api
 
 export default function RoomDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const roomId = params.id as string
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [roomInfo, setRoomInfo] = useState<Room>()
   const [coolingLevel, setCoolingLevel] = useState(3)
   const [coolingStatus, setCoolingStatus] = useState(true)
-  const [tempPolicy, setTempPolicy] = useState({ min: 18, max: 25 })
-  const [humidityPolicy, setHumidityPolicy] = useState({ min: 40, max: 60 })
-
 
   useEffect(() => {
     const fetchRoom = async () => {
