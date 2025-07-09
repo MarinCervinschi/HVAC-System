@@ -15,8 +15,8 @@
 ![InfluxDB](https://img.shields.io/badge/InfluxDB-22ADF6?style=for-the-badge&logo=influxdb&logoColor=white)
 ![Grafana](https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+[![GitHub license](https://img.shields.io/github/license/MarinCervinschi/HVAC-System?style=for-the-badge)](LICENSE)
 
-![License](https://img.shields.io/badge/License-Academic-green?style=for-the-badge)
 ![GitHub views](https://komarev.com/ghpvc/?username=MarinCervinschi&repo=HVAC-System&style=for-the-badge)
 ![GitHub repo size](https://img.shields.io/github/repo-size/MarinCervinschi/HVAC-System?style=for-the-badge)
 ![GitHub last commit](https://img.shields.io/github/last-commit/MarinCervinschi/HVAC-System?style=for-the-badge)
